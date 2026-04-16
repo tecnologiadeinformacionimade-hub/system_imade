@@ -1,0 +1,3231 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal ERP · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255, 255, 255, 0.72);
+            --border: rgba(0, 0, 0, 0.07);
+            --border-mid: rgba(0, 0, 0, 0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10, 132, 255, 0.08);
+            --accent-soft2: rgba(10, 132, 255, 0.14);
+            --green: #30D158;
+            --green-soft: rgba(48, 209, 88, 0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255, 69, 58, 0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255, 159, 10, 0.10);
+            --purple: #BF5AF2;
+            --purple-soft: rgba(191, 90, 242, 0.10);
+            --indigo: #5E5CE6;
+            --indigo-soft: rgba(94, 92, 230, 0.10);
+            --teal: #5AC8FA;
+            --teal-soft: rgba(90, 200, 250, 0.12);
+            --pink: #FF375F;
+            --pink-soft: rgba(255, 55, 95, 0.10);
+
+            --sidebar-w: 268px;
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+        }
+
+        /* ── LAYOUT SHELL ── */
+        #shell {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ════════════════════════════════════════
+           LOADER
+        ════════════════════════════════════════ */
+        #globalLoader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: blur(32px) saturate(180%);
+            -webkit-backdrop-filter: blur(32px) saturate(180%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        #globalLoader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.02);
+        }
+
+        .loader-card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: var(--radius-xl);
+            padding: 36px 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--shadow-float);
+        }
+
+        .loader-ring {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(10, 132, 255, 0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader-text {
+            text-align: center;
+        }
+
+        .loader-text strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .loader-text span {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            display: block;
+        }
+
+        /* ════════════════════════════════════════
+           SIDEBAR
+        ════════════════════════════════════════ */
+        #sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid var(--border);
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        /* Brand */
+        .sidebar-brand {
+            padding: 18px 16px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .brand-logo img {
+            width: 26px;
+            height: 26px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-top: 1px;
+        }
+
+        /* Nav */
+        nav {
+            flex: 1;
+            padding: 10px 8px;
+            overflow-y: auto;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            padding: 10px 10px 4px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-btn .nav-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .nav-btn.active .nav-icon {
+            background: var(--accent-soft2);
+        }
+
+        .nav-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Submenu */
+        .nav-group {
+            margin-top: 4px;
+        }
+
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px 2px;
+            cursor: pointer;
+        }
+
+        .nav-group-header .label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .nav-group-header .chevron {
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .nav-group-header .chevron.open {
+            transform: rotate(-180deg);
+        }
+
+        .submenu-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.28s ease;
+        }
+
+        .submenu-content.open {
+            max-height: 300px;
+        }
+
+        .nav-group-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 6px 10px;
+        }
+
+        /* User Profile */
+        .sidebar-footer {
+            padding: 10px 10px 12px;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 8px;
+            border-radius: var(--radius-sm);
+            transition: background 0.15s;
+        }
+
+        .user-card:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, #5AC8FA 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.3);
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-status {
+            font-size: 10px;
+            color: var(--green);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .user-status::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+        }
+
+        .logout-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            flex-shrink: 0;
+        }
+
+        .logout-btn:hover {
+            background: var(--red-soft);
+            color: var(--red);
+        }
+
+        .logout-btn svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        /* ════════════════════════════════════════
+           MAIN CONTENT
+        ════════════════════════════════════════ */
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* Header */
+        #appHeader {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(242, 242, 247, 0.80);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 40;
+            position: sticky;
+            top: 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .breadcrumb .root {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .breadcrumb .sep {
+            color: var(--text-muted);
+            opacity: 0.5;
+            font-size: 11px;
+        }
+
+        .breadcrumb .current {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-time {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xs);
+            padding: 4px 8px;
+        }
+
+        /* Bell */
+        .bell-wrap {
+            position: relative;
+        }
+
+        .bell-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: var(--radius-xs);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-2);
+            transition: background 0.15s, color 0.15s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .bell-btn:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: var(--accent-soft2);
+        }
+
+        .bell-btn svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        #notifBadge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--red);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 2px var(--bg);
+        }
+
+        /* Notif Dropdown */
+        #notifDropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 320px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border-mid);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-float);
+            overflow: hidden;
+            max-height: 420px;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            transform-origin: top right;
+        }
+
+        #notifDropdown.hidden {
+            display: none;
+        }
+
+        #notifDropdown.opacity-0 {
+            opacity: 0;
+            transform: scale(0.97) translateY(-4px);
+        }
+
+        .notif-header {
+            padding: 12px 14px 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-2);
+        }
+
+        .notif-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .notif-header button {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: background 0.1s;
+        }
+
+        .notif-header button:hover {
+            background: var(--accent-soft);
+        }
+
+        #notifList {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .notif-item {
+            padding: 10px 10px;
+            border-radius: var(--radius-sm);
+            transition: background 0.12s;
+            cursor: default;
+        }
+
+        .notif-item:hover {
+            background: var(--surface-2);
+        }
+
+        .notif-item-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+
+        .notif-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .notif-sender {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .notif-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .notif-msg {
+            font-size: 12px;
+            color: var(--text-2);
+            padding-left: 12px;
+            line-height: 1.4;
+        }
+
+        .notif-empty {
+            padding: 28px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ════════════════════════════════════════
+           PAGE CONTENT
+        ════════════════════════════════════════ */
+        #pageContent {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 28px 40px;
+        }
+
+        /* Views */
+        .app-view {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .app-view.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        .page-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        /* ── TOAST ── */
+        #toastContainer {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-mid);
+            border-radius: 100px;
+            box-shadow: var(--shadow-float);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            pointer-events: auto;
+            transform: translateY(-12px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.hide {
+            transform: translateY(-8px);
+            opacity: 0;
+            transition: all 0.25s ease;
+        }
+
+        .toast-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .toast-icon.success {
+            background: var(--green);
+            color: white;
+        }
+
+        .toast-icon.error {
+            background: var(--red);
+            color: white;
+        }
+
+        .toast-icon.info {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ════════════════════════════════════════
+           DASHBOARD WIDGETS
+        ════════════════════════════════════════ */
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .widget-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Clock widget */
+        .widget-clock {
+            grid-column: span 2;
+            background: linear-gradient(145deg, #0F0F14 0%, #1A1A2E 50%, #16213E 100%);
+            border-radius: var(--radius-xl);
+            padding: 28px 32px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .widget-clock::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(10, 132, 255, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .widget-clock::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -40px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(191, 90, 242, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .clock-top {
+            position: relative;
+            z-index: 1;
+        }
+
+        .clock-day {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .clock-time {
+            font-size: 60px;
+            font-weight: 300;
+            color: white;
+            letter-spacing: -3px;
+            line-height: 1;
+            font-family: var(--font);
+        }
+
+        .clock-bottom {
+            position: relative;
+            z-index: 1;
+        }
+
+        .clock-date {
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Status widget */
+        .widget-status {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 24px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .widget-icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .widget-icon-wrap svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .widget-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            margin-top: 12px;
+        }
+
+        .widget-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pill.online {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .status-pill::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Quick actions */
+        .qa-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .qa-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .qa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-2);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .qa-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .qa-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.25);
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 56px 24px;
+            text-align: center;
+            background: var(--surface);
+            border: 2px dashed var(--border-mid);
+            border-radius: var(--radius-xl);
+        }
+
+        .empty-icon {
+            width: 52px;
+            height: 52px;
+            background: var(--surface-2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .empty-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 300px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* ════════════════════════════════════════
+           CARD (generic)
+        ════════════════════════════════════════ */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 28px 32px;
+        }
+
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-header .ch-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-header .ch-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .card-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* ════════════════════════════════════════
+           FORM ELEMENTS
+        ════════════════════════════════════════ */
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            font-family: var(--font);
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .form-select {
+            width: 100%;
+            appearance: none;
+            background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
+            border: 1.5px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            padding: 11px 40px 11px 14px;
+            font-family: var(--font);
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .form-textarea {
+            width: 100%;
+            resize: vertical;
+            min-height: 110px;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            font-family: var(--font);
+            font-size: 14px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            line-height: 1.6;
+        }
+
+        .form-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 11px 22px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(10, 132, 255, 0.30);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .apple-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 1.5px solid var(--border-mid);
+            border-radius: 7px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+
+        .apple-checkbox:checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .apple-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 7px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* ════════════════════════════════════════
+           PERMISOS VIEW
+        ════════════════════════════════════════ */
+        .perm-layout {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            height: 680px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .perm-left {
+            width: 320px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-2);
+        }
+
+        .perm-search-wrap {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .perm-search-inner {
+            position: relative;
+        }
+
+        .perm-search-inner input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px 9px 34px;
+            font-family: var(--font);
+            font-size: 13px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .perm-search-inner input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .perm-search-inner svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .user-list-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .user-list-item.selected {
+            background: var(--accent-soft);
+        }
+
+        .user-list-item .uli-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .user-list-item .uli-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-list-item .uli-role {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-top: 1px;
+        }
+
+        .user-list-item.selected .uli-role {
+            color: var(--accent);
+        }
+
+        .perm-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .perm-empty {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .perm-empty svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 14px;
+            opacity: 0.3;
+        }
+
+        .perm-content {
+            padding: 28px 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .perm-user-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 22px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .perm-avatar-lg {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #5AC8FA);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 14px rgba(10, 132, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .perm-user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .perm-user-badge {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--surface-2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .perm-section {
+            background: linear-gradient(135deg, rgba(10, 132, 255, 0.04), rgba(10, 132, 255, 0.02));
+            border: 1px solid rgba(10, 132, 255, 0.12);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        .perm-section label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .perm-hint {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .perm-checks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .perm-check-card {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .perm-check-card:has(.apple-checkbox:checked) {
+            border-color: rgba(48, 209, 88, 0.25);
+            background: var(--green-soft);
+        }
+
+        .perm-check-card .pcc-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .perm-check-card .pcc-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .perm-check-card .pcc-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .perm-check-card .pcc-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .perm-check-card .pcc-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .perm-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .perm-footer-note {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ════════════════════════════════════════
+           CONFIG / NOTIF VIEWS
+        ════════════════════════════════════════ */
+        .config-card,
+        .notif-send-card {
+            max-width: 580px;
+        }
+
+        .config-user-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        .config-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #5AC8FA);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            box-shadow: 0 3px 10px rgba(10, 132, 255, 0.22);
+        }
+
+        .config-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .config-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .form-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ════════════════════════════════════════
+           CODIGOS VIEW (Integrado)
+        ════════════════════════════════════════ */
+        .codigos-view {
+            display: none;
+            animation: fadeUp 0.28s ease;
+        }
+
+        .codigos-view.active {
+            display: block;
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 36px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--surface);
+            border: 1.5px solid var(--border-mid);
+            color: var(--text-muted);
+            transition: all 0.25s;
+        }
+
+        .step.active .step-num {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .step.active {
+            color: var(--text);
+        }
+
+        .step.done .step-num {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+
+        .step.done {
+            color: var(--green);
+        }
+
+        .step-line {
+            flex: 1;
+            height: 1.5px;
+            background: var(--border-mid);
+            margin: 0 10px;
+            min-width: 32px;
+            transition: background 0.3s;
+        }
+
+        .step-line.done {
+            background: var(--green);
+        }
+
+        /* Database Grid */
+        .db-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            max-width: 1000px;
+        }
+
+        .db-card {
+            position: relative;
+            background: var(--surface);
+            border: 1.5px solid var(--border-mid);
+            border-radius: var(--radius-xl);
+            padding: 28px 24px 24px;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .db-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.18s;
+        }
+
+        .db-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .db-card:hover::before {
+            opacity: 1;
+        }
+
+        .db-card:active {
+            transform: translateY(-1px) scale(0.99);
+        }
+
+        .db-card.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-md);
+        }
+
+        .db-card[data-db="imade-gt"] {
+            --db-clr: #0A84FF;
+            --db-soft: rgba(10, 132, 255, 0.10);
+        }
+
+        .db-card[data-db="imade-sv"] {
+            --db-clr: #30D158;
+            --db-soft: rgba(48, 209, 88, 0.10);
+        }
+
+        .db-card[data-db="imade-hn"] {
+            --db-clr: #FF9F0A;
+            --db-soft: rgba(255, 159, 10, 0.10);
+        }
+
+        .db-card[data-db="pym"] {
+            --db-clr: #BF5AF2;
+            --db-soft: rgba(191, 90, 242, 0.10);
+        }
+
+        .db-card[data-db="itc"] {
+            --db-clr: #5AC8FA;
+            --db-soft: rgba(90, 200, 250, 0.12);
+        }
+
+        .db-card::before {
+            background: radial-gradient(ellipse at top left, var(--db-soft), transparent 70%);
+        }
+
+        .db-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--db-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .db-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .db-icon .db-flag {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .db-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .db-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .db-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+        .db-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            background: var(--db-soft);
+            color: var(--db-clr);
+            position: relative;
+            z-index: 1;
+            align-self: flex-start;
+        }
+
+        .db-arrow {
+            position: absolute;
+            right: 18px;
+            bottom: 18px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--db-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .db-arrow svg {
+            width: 14px;
+            height: 14px;
+            color: var(--db-clr);
+        }
+
+        .db-card:hover .db-arrow {
+            transform: translate(2px, -2px);
+            background: var(--db-clr);
+        }
+
+        .db-card:hover .db-arrow svg {
+            color: white;
+        }
+
+        /* Action Grid */
+        .action-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 24px;
+            padding: 8px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-2);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-back:hover {
+            background: var(--surface-2);
+            transform: translateX(-1px);
+        }
+
+        .action-back svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .selected-db-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+            max-width: 520px;
+        }
+
+        .sdb-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .sdb-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .sdb-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 1px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+            max-width: 600px;
+        }
+
+        .action-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border-mid);
+            border-radius: var(--radius-xl);
+            padding: 28px 24px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.18s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-card:hover::after {
+            opacity: 1;
+        }
+
+        .action-card:active {
+            transform: scale(0.98);
+        }
+
+        .action-card.create {
+            --ac-clr: #0A84FF;
+            --ac-soft: rgba(10, 132, 255, 0.09);
+        }
+
+        .action-card.create::after {
+            background: radial-gradient(ellipse at top left, rgba(10, 132, 255, 0.07), transparent 65%);
+        }
+
+        .action-card.prices {
+            --ac-clr: #30D158;
+            --ac-soft: rgba(48, 209, 88, 0.09);
+        }
+
+        .action-card.prices::after {
+            background: radial-gradient(ellipse at top left, rgba(48, 209, 88, 0.07), transparent 65%);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background: var(--ac-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--ac-clr);
+        }
+
+        .action-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .action-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .action-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ac-clr);
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-cta svg {
+            width: 12px;
+            height: 12px;
+            transition: transform 0.15s;
+        }
+
+        .action-card:hover .action-cta svg {
+            transform: translateX(3px);
+        }
+
+        /* ════════════════════════════════════════
+           HIDDEN UTILITY
+        ════════════════════════════════════════ */
+        .portal-hidden {
+            display: none !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer"></div>
+
+    <!-- GLOBAL LOADER -->
+    <div id="globalLoader">
+        <div class="loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-text">
+                <strong>Portal Grupo Imade</strong>
+                <span>Conectando con el servidor…</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SHELL -->
+    <div id="shell">
+
+        <!-- ══ SIDEBAR ══ -->
+        <aside id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <img src="IMADE.jpg" alt="Imade"
+                        onerror="this.style.display='none';this.parentNode.innerHTML='<span style=font-size:18px;font-weight:800;color:var(--accent)>G</span>'">
+                </div>
+                <div>
+                    <div class="brand-name">Grupo Imade</div>
+                    <div class="brand-sub">Sistemas ERP</div>
+                </div>
+            </div>
+
+            <nav>
+                <div class="nav-section-label">Menú Principal</div>
+
+                <a href="#" onclick="switchView('dashboard',this)" class="nav-btn active" id="navDashboard">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                    </span>
+                    Inicio
+                </a>
+
+                <a href="#" onclick="switchView('configuracion',this)" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </span>
+                    Configuración
+                </a>
+
+                <!-- DEPARTAMENTO IT -->
+                <div id="nav-group-it" class="nav-group portal-hidden">
+                    <div class="nav-group-divider"></div>
+                    <div class="nav-group-header" onclick="toggleSubmenu('submenu-it','chevron-it')">
+                        <span class="label">Departamento IT</span>
+                        <svg id="chevron-it" class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="submenu-it" class="submenu-content">
+                        <a href="#" id="nav-admin" onclick="switchView('roles',this)" class="nav-btn portal-hidden"
+                            style="padding-left:14px">
+                            <span class="nav-icon" style="background:var(--indigo-soft)">
+                                <svg fill="none" stroke="var(--indigo)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </span>
+                            Gestión de Permisos
+                        </a>
+                        <a href="#" id="nav-send-notif" onclick="switchView('send-notif',this)"
+                            class="nav-btn portal-hidden" style="padding-left:14px">
+                            <span class="nav-icon" style="background:rgba(255,159,10,0.1)">
+                                <svg fill="none" stroke="var(--orange)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                </svg>
+                            </span>
+                            Enviar Notificación
+                        </a>
+                        <!-- Enlace a Módulo de Códigos Integrado -->
+                        <a href="#" id="nav-codigos" onclick="switchView('codigos',this)" class="nav-btn portal-hidden"
+                            style="padding-left:14px">
+                            <span class="nav-icon" style="background:var(--purple-soft)">
+                                <svg fill="none" stroke="var(--purple)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            </span>
+                            Productos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- DEPARTAMENTO CONTABILIDAD -->
+                <div id="nav-group-conta" class="nav-group portal-hidden">
+                    <div class="nav-group-divider"></div>
+                    <div class="nav-group-header" onclick="toggleSubmenu('submenu-conta','chevron-conta')">
+                        <span class="label">Contabilidad</span>
+                        <svg id="chevron-conta" class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="submenu-conta" class="submenu-content">
+                        <a href="cierres.html" id="nav-cierres" class="nav-btn portal-hidden" style="padding-left:14px">
+                            <span class="nav-icon" style="background:var(--green-soft)">
+                                <svg fill="none" stroke="var(--green)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </span>
+                            Cierres Contables
+                        </a>
+                        <a href="clientes.html" id="nav-clientes" class="nav-btn portal-hidden"
+                            style="padding-left:14px">
+                            <span class="nav-icon" style="background:var(--teal-soft)">
+                                <svg fill="none" stroke="var(--teal)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </span>
+                            Clientes
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="userIcon">U</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Cargando…</div>
+                        <div class="user-status">En línea</div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()" title="Cerrar sesión">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ══ MAIN ══ -->
+        <div id="main">
+            <!-- Header -->
+            <header id="appHeader">
+                <div class="breadcrumb">
+                    <span class="root">Portal</span>
+                    <span class="sep">›</span>
+                    <span class="current" id="headerBreadcrumb">Inicio</span>
+                </div>
+                <div class="header-actions">
+                    <div class="header-time" id="headerTime">--:--</div>
+
+                    <!-- Bell -->
+                    <div class="bell-wrap">
+                        <button class="bell-btn" onclick="toggleNotifDropdown()" id="bellBtn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span id="notifBadge" class="hidden">0</span>
+                        </button>
+                        <!-- Notif Dropdown -->
+                        <div id="notifDropdown" class="hidden opacity-0">
+                            <div class="notif-header">
+                                <h3>Notificaciones</h3>
+                                <button onclick="clearNotifBadge()">Marcar leídas</button>
+                            </div>
+                            <div id="notifList">
+                                <div class="notif-empty">Sin notificaciones recientes.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div id="pageContent">
+
+                <!-- ═══ DASHBOARD ═══ -->
+                <div id="view-dashboard" class="app-view active">
+                    <div class="page-header">
+                        <h1 class="page-title" id="dashGreeting">Bienvenido</h1>
+                        <p class="page-sub">Panel principal del centro de control ERP.</p>
+                    </div>
+
+                    <div class="widget-grid">
+                        <!-- Clock -->
+                        <div class="widget-clock">
+                            <div class="clock-top">
+                                <div class="clock-day" id="iosDayName">—</div>
+                                <div class="clock-time" id="iosTime">00:00</div>
+                            </div>
+                            <div class="clock-bottom">
+                                <div class="clock-date" id="iosDateFull">Cargando…</div>
+                            </div>
+                        </div>
+
+                        <!-- ERP Status -->
+                        <div class="widget-status">
+                            <div>
+                                <div class="widget-icon-wrap" style="background:var(--green-soft)">
+                                    <svg fill="none" stroke="var(--green)" viewBox="0 0 24 24"
+                                        style="width:20px;height:20px">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="widget-title">ERP Activo</div>
+                                <div class="widget-desc">Sistemas operando con normalidad.</div>
+                                <div style="margin-top:10px"><span class="status-pill online">Operacional</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Info card -->
+                        <div class="widget-status"
+                            style="background:linear-gradient(145deg,#0A84FF,#5AC8FA);border:none">
+                            <div>
+                                <div class="widget-icon-wrap" style="background:rgba(255,255,255,0.2)">
+                                    <svg fill="none" stroke="white" viewBox="0 0 24 24" style="width:20px;height:20px">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="widget-title" style="color:white">Imade Control</div>
+                                <div class="widget-desc" style="color:rgba(255,255,255,0.7)">Navega con el menú lateral
+                                    para acceder a tus módulos.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div style="margin-bottom:20px">
+                        <div class="qa-title">Accesos Rápidos</div>
+                        <div class="qa-grid" id="quickActions">
+                            <a href="#" onclick="switchView('configuracion',null)" class="qa-btn">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Mi Cuenta
+                            </a>
+                            <a href="cierres.html" id="qa-cierres" class="qa-btn portal-hidden">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Cierres Contables
+                            </a>
+                            <!-- Enlace Rápido al Módulo de Códigos Integrado -->
+                            <a href="#" onclick="switchView('codigos',null)" id="qa-codigos"
+                                class="qa-btn portal-hidden">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                Crear Códigos
+                            </a>
+                            <a href="#" onclick="switchView('roles',null)" id="qa-admin" class="qa-btn portal-hidden">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Gestión de Usuarios
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="dashEmpty" class="empty-state portal-hidden">
+                        <div class="empty-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h3>Sin módulos asignados</h3>
+                        <p>Tu cuenta no posee módulos autorizados. Contacta con el administrador del sistema.</p>
+                    </div>
+                </div>
+
+                <!-- ═══ MÓDULO CÓDIGOS (INTEGRADO) ═══ -->
+                <div id="view-codigos" class="app-view">
+
+                    <!-- STEP INDICATOR -->
+                    <div class="step-indicator" id="stepIndicator">
+                        <div class="step active" id="step1">
+                            <div class="step-num">1</div>
+                            <span>Seleccionar Base de Datos</span>
+                        </div>
+                        <div class="step-line" id="line12"></div>
+                        <div class="step" id="step2">
+                            <div class="step-num">2</div>
+                            <span>Elegir Operación</span>
+                        </div>
+                        <div class="step-line" id="line23"></div>
+                        <div class="step" id="step3">
+                            <div class="step-num">3</div>
+                            <span>Ejecutar</span>
+                        </div>
+                    </div>
+
+                    <!-- CODIGOS SUB-VIEW 1: DBs -->
+                    <div id="codigos-view-db" class="codigos-view active">
+                        <div class="page-header">
+                            <h1 class="page-title">¿Con qué base de datos trabajarás?</h1>
+                            <p class="page-sub">Selecciona la empresa destino para esta operación.</p>
+                        </div>
+
+                        <div class="db-grid">
+                            <!-- Imade GT -->
+                            <div class="db-card" data-db="imade-gt" onclick="selectDB(this)">
+                                <div class="db-icon"><span class="db-flag">🇬🇹</span></div>
+                                <div class="db-body">
+                                    <div class="db-name">Imade GT</div>
+                                    <div class="db-desc">Guatemala — Base de datos principal de operaciones.</div>
+                                </div>
+                                <div class="db-badge">Guatemala</div>
+                                <div class="db-arrow">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Imade SV -->
+                            <div class="db-card" data-db="imade-sv" onclick="selectDB(this)">
+                                <div class="db-icon"><span class="db-flag">🇸🇻</span></div>
+                                <div class="db-body">
+                                    <div class="db-name">Imade SV</div>
+                                    <div class="db-desc">El Salvador — Sucursal El Salvador.</div>
+                                </div>
+                                <div class="db-badge">El Salvador</div>
+                                <div class="db-arrow">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Imade HN -->
+                            <div class="db-card" data-db="imade-hn" onclick="selectDB(this)">
+                                <div class="db-icon"><span class="db-flag">🇭🇳</span></div>
+                                <div class="db-body">
+                                    <div class="db-name">Imade HN</div>
+                                    <div class="db-desc">Honduras — Sucursal Honduras.</div>
+                                </div>
+                                <div class="db-badge">Honduras</div>
+                                <div class="db-arrow">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- PYM -->
+                            <div class="db-card" data-db="pym" onclick="selectDB(this)">
+                                <div class="db-icon">
+                                    <svg fill="none" stroke="var(--purple)" viewBox="0 0 24 24"
+                                        style="width:22px;height:22px">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <div class="db-body">
+                                    <div class="db-name">PYM</div>
+                                    <div class="db-desc">Empresa PYM — Gestión interna de artículos y precios.</div>
+                                </div>
+                                <div class="db-badge">PYM</div>
+                                <div class="db-arrow">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- ITC -->
+                            <div class="db-card" data-db="itc" onclick="selectDB(this)">
+                                <div class="db-icon">
+                                    <svg fill="none" stroke="var(--teal)" viewBox="0 0 24 24"
+                                        style="width:22px;height:22px">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="db-body">
+                                    <div class="db-name">ITC</div>
+                                    <div class="db-desc">Imade Tech Company — Infraestructura y tecnología.</div>
+                                </div>
+                                <div class="db-badge">ITC</div>
+                                <div class="db-arrow">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CODIGOS SUB-VIEW 2: ACTION -->
+                    <div id="codigos-view-action" class="codigos-view hidden">
+                        <button class="action-back" onclick="goBackCodigos()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Cambiar base de datos
+                        </button>
+
+                        <!-- Banner con DB seleccionada -->
+                        <div class="selected-db-banner" id="selectedBanner">
+                            <div class="sdb-icon" id="bannerIcon">🇬🇹</div>
+                            <div>
+                                <div class="sdb-label">Base de datos seleccionada</div>
+                                <div class="sdb-name" id="bannerName">Imade GT</div>
+                            </div>
+                        </div>
+
+                        <div class="page-header" style="margin-bottom:24px">
+                            <h1 class="page-title">¿Qué operación realizarás?</h1>
+                            <p class="page-sub">Selecciona la acción que deseas ejecutar en <strong
+                                    id="actionSubDB">—</strong>.</p>
+                        </div>
+
+                        <div class="action-grid">
+                            <!-- Crear Artículos -->
+                            <a id="link-crear" href="#" onclick="goToOperation('crear')" class="action-card create">
+                                <div class="action-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                                <div class="action-body">
+                                    <div class="action-title">Crear Artículos</div>
+                                    <div class="action-desc">Registra nuevos artículos en la base de datos seleccionada
+                                        con todos sus atributos.</div>
+                                </div>
+                                <div class="action-cta">
+                                    Ir al formulario
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <!-- Actualizar Precios -->
+                            <a id="link-precios" href="#" onclick="goToOperation('precios')" class="action-card prices">
+                                <div class="action-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                </div>
+                                <div class="action-body">
+                                    <div class="action-title">Actualizar Precios</div>
+                                    <div class="action-desc">Modifica los precios de artículos existentes de forma
+                                        individual o masiva.</div>
+                                </div>
+                                <div class="action-cta">
+                                    Ir al formulario
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ ENVIAR NOTIFICACIÓN ═══ -->
+                <div id="view-send-notif" class="app-view">
+                    <div class="page-header">
+                        <h1 class="page-title">Envío de Notificaciones</h1>
+                        <p class="page-sub">Transmite un mensaje global a todos los usuarios del Portal.</p>
+                    </div>
+
+                    <div class="card notif-send-card">
+                        <div class="card-header">
+                            <div class="ch-icon" style="background:rgba(255,159,10,0.1)">
+                                <svg fill="none" stroke="var(--orange)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3>Nueva Alerta Global</h3>
+                                <p>El mensaje se registrará en la hoja de Notificaciones de Google Sheets.</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-stack">
+                                <div>
+                                    <label class="form-label">Contenido del Mensaje</label>
+                                    <textarea id="notifMessage" class="form-textarea"
+                                        placeholder="Ej: El sistema estará en mantenimiento el viernes a las 18:00 hrs…"
+                                        required></textarea>
+                                </div>
+                                <div style="display:flex;justify-content:flex-end">
+                                    <button id="btnSendNotif" onclick="sendGlobalNotification(event)"
+                                        class="btn-primary">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                        Enviar a Todos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ CONFIGURACIÓN ═══ -->
+                <div id="view-configuracion" class="app-view">
+                    <div class="page-header">
+                        <h1 class="page-title">Configuración</h1>
+                        <p class="page-sub">Administra las credenciales y detalles de tu cuenta.</p>
+                    </div>
+
+                    <div class="card config-card">
+                        <div class="config-user-bar">
+                            <div class="config-avatar" id="configUserIcon">U</div>
+                            <div>
+                                <div class="config-name" id="configUserName">Usuario</div>
+                                <div class="config-label">Cuenta conectada</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+                                <svg width="16" height="16" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span style="font-size:13px;font-weight:700;color:var(--text)">Seguridad y
+                                    Contraseña</span>
+                            </div>
+                            <div id="formPassword" class="form-stack">
+                                <div>
+                                    <label class="form-label">Contraseña Actual</label>
+                                    <input type="password" id="pwdCurrent" class="form-input" placeholder="••••••••">
+                                </div>
+                                <div>
+                                    <label class="form-label">Nueva Contraseña</label>
+                                    <input type="password" id="pwdNew" class="form-input" placeholder="••••••••">
+                                </div>
+                                <div>
+                                    <label class="form-label">Confirmar Nueva Contraseña</label>
+                                    <input type="password" id="pwdConfirm" class="form-input" placeholder="••••••••">
+                                </div>
+                                <div>
+                                    <button onclick="changePassword(event)" class="btn-primary">Actualizar
+                                        Contraseña</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ GESTIÓN ROLES ═══ -->
+                <div id="view-roles" class="app-view">
+                    <div class="page-header">
+                        <h1 class="page-title">Gestión de Usuarios</h1>
+                        <p class="page-sub">Asigna roles predefinidos o permisos manuales a cada cuenta.</p>
+                    </div>
+
+                    <div class="perm-layout">
+                        <!-- Left -->
+                        <div class="perm-left">
+                            <div class="perm-search-wrap">
+                                <div class="perm-search-inner">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input type="text" id="searchUserInput" placeholder="Buscar por nombre o correo…">
+                                </div>
+                            </div>
+                            <div class="user-list" id="userList"><!-- JS --></div>
+                        </div>
+
+                        <!-- Right -->
+                        <div class="perm-right">
+                            <div id="permEmpty" class="perm-empty">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <p style="font-weight:600;font-size:14px;color:var(--text-2);margin-bottom:4px">
+                                    Selecciona un usuario</p>
+                                <p>Elige una cuenta de la lista para gestionar su acceso.</p>
+                            </div>
+
+                            <div id="permContent" class="hidden perm-content">
+                                <!-- User Header -->
+                                <div class="perm-user-header">
+                                    <div class="perm-avatar-lg" id="avatarLetter">U</div>
+                                    <div>
+                                        <div class="perm-user-name" id="targetEmail">usuario@empresa.com</div>
+                                        <span class="perm-user-badge" id="userBadge">Rol</span>
+                                    </div>
+                                </div>
+
+                                <!-- Rol Selector -->
+                                <div class="perm-section">
+                                    <label>Rol asignado en la empresa</label>
+                                    <select id="rolSelect" onchange="onRoleChange()" class="form-select">
+                                        <option value="Personalizado">🛠️ Permisos Manuales (Personalizado)</option>
+                                    </select>
+                                    <p id="rolHint" class="perm-hint">Si seleccionas un Rol, los permisos se controlan
+                                        automáticamente desde la hoja "Roles".</p>
+                                </div>
+
+                                <!-- Checkboxes -->
+                                <div id="checkboxesContainer" class="perm-checks" style="transition:opacity 0.2s">
+                                    <div
+                                        style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">
+                                        Permisos del Usuario</div>
+
+                                    <div class="perm-check-card">
+                                        <div class="pcc-icon" style="background:var(--indigo-soft)">
+                                            <svg fill="none" stroke="var(--indigo)" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pcc-body">
+                                            <div class="pcc-name">Acceso Administrador</div>
+                                            <div class="pcc-desc">Control total del sistema y configuración de usuarios.
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="chkAdmin" class="apple-checkbox">
+                                    </div>
+
+                                    <div class="perm-check-card">
+                                        <div class="pcc-icon" style="background:var(--green-soft)">
+                                            <svg fill="none" stroke="var(--green)" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pcc-body">
+                                            <div class="pcc-name">Cierres Contables</div>
+                                            <div class="pcc-desc">Gestión y auditoría de cierres contables.</div>
+                                        </div>
+                                        <input type="checkbox" id="chkCierres" class="apple-checkbox">
+                                    </div>
+
+                                    <div class="perm-check-card">
+                                        <div class="pcc-icon" style="background:var(--teal-soft)">
+                                            <svg fill="none" stroke="var(--teal)" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        </div>
+                                        <div class="pcc-body">
+                                            <div class="pcc-name">Clientes</div>
+                                            <div class="pcc-desc">Gestión y visualización de la cartera de clientes.
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="chkClientes" class="apple-checkbox">
+                                    </div>
+
+                                    <div class="perm-check-card">
+                                        <div class="pcc-icon" style="background:var(--purple-soft)">
+                                            <svg fill="none" stroke="var(--purple)" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        </div>
+                                        <div class="pcc-body">
+                                            <div class="pcc-name">Productos</div>
+                                            <div class="pcc-desc">Registro y generación de códigos de productos.</div>
+                                        </div>
+                                        <input type="checkbox" id="chkCodigos" class="apple-checkbox">
+                                    </div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="perm-footer">
+                                    <span class="perm-footer-note">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Impacto inmediato en Google Sheets.
+                                    </span>
+                                    <button onclick="savePerms()" id="btnSave" class="btn-primary">
+                                        Sincronizar Rol
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /pageContent -->
+        </div><!-- /main -->
+    </div><!-- /shell -->
+
+    <script>
+        // ════════════════════════════════════════
+        // CONFIG GENERAL
+        // ════════════════════════════════════════
+        const API_URL = "https://script.google.com/macros/s/AKfycby2DxAneaFMo9pWjrhWHD3_0KIo6qhzL69gSsMmpE1PeghFxnjU-_wkYlCtbHcshbfu3w/exec";
+
+        let usuariosDB = [];
+        let rolesDB = [];
+        let filteredDB = [];
+        let selectedUser = null;
+        const myEmail = localStorage.getItem('userEmail');
+
+        let unreadCount = 0;
+        let notificationsList = [];
+        let lastNotifTime = new Date().getTime() - (1000 * 60 * 60 * 24);
+        let isFirstPoll = true;
+
+        const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        // ════════════════════════════════════════
+        // CONFIG MÓDULO CÓDIGOS
+        // ════════════════════════════════════════
+        const DB_MAP = {
+            'imade-gt': { nombre: 'Imade GT', icono: '🇬🇹', bg: '#0A84FF', crear: 'crear_imade_gt.html', precios: 'precios_imade_gt.html' },
+            'imade-sv': { nombre: 'Imade SV', icono: '🇸🇻', bg: '#30D158', crear: 'crear_imade_sv.html', precios: 'precios_imade_sv.html' },
+            'imade-hn': { nombre: 'Imade HN', icono: '🇭🇳', bg: '#FF9F0A', crear: 'crear_imade_hn.html', precios: 'precios_imade_hn.html' },
+            'pym': { nombre: 'PYM', icono: '🏢', bg: '#BF5AF2', crear: 'crear_pym.html', precios: 'precios_pym.html' },
+            'itc': { nombre: 'ITC', icono: '💻', bg: '#5AC8FA', crear: 'crear_itc.html', precios: 'precios_itc.html' },
+        };
+        let selectedDBKey = null;
+
+        // ════════════════════════════════════════
+        // HELPERS
+        // ════════════════════════════════════════
+        function getDisplayName(userObj) {
+            if (!userObj) return myEmail || 'Usuario';
+            const nom = userObj.nombre;
+            if (nom && typeof nom === 'string' && nom.trim() !== '' && nom !== 'Sin Nombre' && nom !== 'undefined') return nom.trim();
+            if (userObj.correo) {
+                const part = userObj.correo.split('@')[0];
+                return part.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            }
+            return userObj.correo || myEmail || 'Usuario';
+        }
+
+        function toggleVisible(id, show) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            show ? el.classList.remove('portal-hidden') : el.classList.add('portal-hidden');
+        }
+
+        // ════════════════════════════════════════
+        // INIT
+        // ════════════════════════════════════════
+        async function init() {
+            if (!myEmail) { window.location.href = 'index.html'; return; }
+
+            startClock();
+
+            document.getElementById('searchUserInput').addEventListener('input', function () {
+                const q = this.value.trim().toLowerCase();
+                filteredDB = q ? usuariosDB.filter(u => getDisplayName(u).toLowerCase().includes(q) || u.correo.toLowerCase().includes(q)) : usuariosDB;
+                renderList();
+            });
+
+            await loadUsersFromSheet();
+            checkNotifications();
+            setInterval(checkNotifications, 10000);
+        }
+
+        // ════════════════════════════════════════
+        // CLOCK
+        // ════════════════════════════════════════
+        function startClock() {
+            function tick() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('iosTime').textContent = timeStr;
+                document.getElementById('headerTime').textContent = timeStr;
+                let day = now.toLocaleDateString('es-ES', { weekday: 'long' });
+                document.getElementById('iosDayName').textContent = day.charAt(0).toUpperCase() + day.slice(1);
+                document.getElementById('iosDateFull').textContent = now.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+            tick(); setInterval(tick, 1000);
+        }
+
+        // ════════════════════════════════════════
+        // LOADER
+        // ════════════════════════════════════════
+        function removeLoader() {
+            const el = document.getElementById('globalLoader');
+            if (el) { el.classList.add('fade-out'); setTimeout(() => el.remove(), 650); }
+        }
+
+        // ════════════════════════════════════════
+        // DATA
+        // ════════════════════════════════════════
+        async function loadUsersFromSheet() {
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: 'obtener_usuarios' }) }).then(r => r.json());
+                if (res.success) {
+                    usuariosDB = res.usuarios;
+                    rolesDB = res.roles || [];
+                    filteredDB = usuariosDB;
+                    populateRolesDropdown();
+                    renderList();
+                    applyAccess();
+                } else { showToast('Error al leer base de datos', 'error'); }
+            } catch (e) { console.error(e); }
+            finally { removeLoader(); }
+        }
+
+        function populateRolesDropdown() {
+            const sel = document.getElementById('rolSelect');
+            sel.innerHTML = '<option value="Personalizado">🛠️ Permisos Manuales (Personalizado)</option>';
+            rolesDB.forEach(r => sel.innerHTML += `<option value="${r.nombre}">💼 Plantilla: ${r.nombre}</option>`);
+        }
+
+        function applyAccess() {
+            const me = usuariosDB.find(u => u.correo.toLowerCase() === myEmail.toLowerCase());
+            const nombre = getDisplayName(me);
+
+            // Greeting
+            const hora = new Date().getHours();
+            const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+            document.getElementById('dashGreeting').textContent = `${saludo}, ${nombre.split(' ')[0]}`;
+
+            // Sidebar user
+            document.getElementById('userName').textContent = nombre;
+            document.getElementById('userIcon').textContent = nombre.charAt(0).toUpperCase();
+
+            // Config
+            document.getElementById('configUserName').textContent = nombre;
+            document.getElementById('configUserIcon').textContent = nombre.charAt(0).toUpperCase();
+
+            const p = me ? me.permisos : { admin: false, cierres: false, codigos: false, clientes: false };
+            const isAdmin = p.admin === true;
+            const hasCierres = isAdmin || p.cierres === true;
+            const hasCodigos = isAdmin || p.codigos === true;
+            const hasClientes = isAdmin || p.clientes === true;
+
+            const showIT = isAdmin || hasCodigos;
+            const showConta = hasCierres || hasClientes; // Si tiene cierres o clientes, ve contabilidad
+
+            toggleVisible('nav-group-it', showIT);
+            toggleVisible('nav-group-conta', showConta);
+            toggleVisible('nav-admin', isAdmin);
+            toggleVisible('nav-send-notif', isAdmin);
+            toggleVisible('nav-codigos', hasCodigos);
+
+            toggleVisible('nav-cierres', hasCierres);
+            toggleVisible('nav-clientes', hasClientes); // Ahora se maneja por su propio permiso
+
+            // Quick actions
+            toggleVisible('qa-cierres', hasCierres);
+            toggleVisible('qa-codigos', hasCodigos);
+            toggleVisible('qa-admin', isAdmin);
+
+            toggleVisible('dashEmpty', !(isAdmin || hasCierres || hasCodigos || hasClientes));
+        }
+
+        // ════════════════════════════════════════
+        // NAVIGATION GLOBAL
+        // ════════════════════════════════════════
+        function switchView(id, el) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + id);
+            if (target) target.classList.add('active');
+
+            if (el) {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                el.classList.add('active');
+            }
+
+            const titles = { dashboard: 'Inicio', roles: 'Gestión de Permisos', configuracion: 'Configuración', 'send-notif': 'Enviar Notificación', codigos: 'Creación de Códigos' };
+            document.getElementById('headerBreadcrumb').textContent = titles[id] || 'ERP';
+
+            if (id === 'codigos') {
+                goBackCodigos(); // Asegurarnos de que el módulo siempre inicia en el paso 1
+            }
+
+            return false;
+        }
+
+        function toggleSubmenu(menuId, iconId) {
+            const menu = document.getElementById(menuId);
+            const icon = document.getElementById(iconId);
+            menu.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        function logout() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            window.location.href = 'index.html';
+        }
+
+        // ════════════════════════════════════════
+        // LÓGICA MÓDULO CÓDIGOS (INTEGRADO)
+        // ════════════════════════════════════════
+        function setStepCodigos(n) {
+            [1, 2, 3].forEach(i => {
+                const s = document.getElementById('step' + i);
+                s.classList.remove('active', 'done');
+                if (i < n) s.classList.add('done');
+                else if (i === n) s.classList.add('active');
+            });
+            ['line12', 'line23'].forEach((id, idx) => {
+                const l = document.getElementById(id);
+                l.classList.toggle('done', n > idx + 1);
+            });
+        }
+
+        function showCodigosView(id) {
+            document.querySelectorAll('.codigos-view').forEach(v => {
+                v.style.display = 'none';
+                v.classList.remove('active');
+            });
+            const v = document.getElementById('codigos-view-' + id);
+            v.style.display = 'block';
+            setTimeout(() => v.classList.add('active'), 10);
+        }
+
+        function selectDB(card) {
+            selectedDBKey = card.dataset.db;
+            const db = DB_MAP[selectedDBKey];
+            if (!db) return;
+
+            // Actualizar vista de "banner"
+            document.getElementById('bannerIcon').textContent = db.icono;
+            document.getElementById('bannerName').textContent = db.nombre;
+            document.getElementById('actionSubDB').textContent = db.nombre;
+
+            document.querySelectorAll('.db-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            setTimeout(() => {
+                setStepCodigos(2);
+                showCodigosView('action');
+                document.getElementById('headerBreadcrumb').textContent = `Códigos › ${db.nombre}`;
+            }, 160);
+        }
+
+        function goBackCodigos() {
+            selectedDBKey = null;
+            setStepCodigos(1);
+            showCodigosView('db');
+            document.getElementById('headerBreadcrumb').textContent = 'Creación de Códigos';
+            document.querySelectorAll('.db-card').forEach(c => c.classList.remove('selected'));
+        }
+
+        function goToOperation(op) {
+            if (!selectedDBKey) return false;
+            const db = DB_MAP[selectedDBKey];
+            const url = op === 'crear' ? db.crear : db.precios;
+
+            setStepCodigos(3);
+            showToast(`Abriendo ${op === 'crear' ? 'Crear Artículos' : 'Actualizar Precios'} · ${db.nombre}`, 'info');
+
+            setTimeout(() => {
+                window.location.href = url;
+            }, 700);
+
+            return false;
+        }
+
+
+        // ════════════════════════════════════════
+        // NOTIFICATIONS
+        // ════════════════════════════════════════
+        async function checkNotifications() {
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: 'check_notificacion' }) }).then(r => r.json());
+                if (res.success && res.notificaciones) {
+                    const all = res.notificaciones;
+                    const news = all.filter(n => n.time > lastNotifTime);
+                    if (news.length > 0) {
+                        notificationsList = [...all].reverse();
+                        if (!isFirstPoll) {
+                            playSound();
+                            unreadCount += news.length;
+                            updateBadge();
+                            showToast(`Nueva notificación de ${news[news.length - 1].remitente}`, 'success');
+                        }
+                        lastNotifTime = news[news.length - 1].time;
+                        renderNotifDropdown();
+                    }
+                }
+                isFirstPoll = false;
+            } catch (e) { }
+        }
+
+        function playSound() { try { notifSound.currentTime = 0; notifSound.play().catch(() => { }); } catch (e) { } }
+
+        function updateBadge() {
+            const b = document.getElementById('notifBadge');
+            if (unreadCount > 0) { b.textContent = unreadCount > 99 ? '99+' : unreadCount; b.classList.remove('hidden'); }
+            else { b.classList.add('hidden'); }
+        }
+
+        function toggleNotifDropdown() {
+            const dp = document.getElementById('notifDropdown');
+            if (dp.classList.contains('hidden')) {
+                dp.classList.remove('hidden');
+                setTimeout(() => dp.classList.remove('opacity-0'), 10);
+                clearNotifBadge();
+            } else {
+                dp.classList.add('opacity-0');
+                setTimeout(() => dp.classList.add('hidden'), 180);
+            }
+        }
+
+        function clearNotifBadge() { unreadCount = 0; updateBadge(); }
+
+        function renderNotifDropdown() {
+            const c = document.getElementById('notifList');
+            if (!notificationsList.length) { c.innerHTML = '<div class="notif-empty">Sin notificaciones recientes.</div>'; return; }
+            c.innerHTML = notificationsList.map(n => {
+                const time = new Date(n.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return `<div class="notif-item">
+            <div class="notif-item-top">
+                <div class="notif-dot"></div>
+                <span class="notif-sender">${n.remitente}</span>
+                <span class="notif-time">${time}</span>
+            </div>
+            <div class="notif-msg">${n.mensaje}</div>
+        </div>`;
+            }).join('');
+        }
+
+        async function sendGlobalNotification(e) {
+            if (e) e.preventDefault();
+            const msgEl = document.getElementById('notifMessage');
+            const msg = msgEl.value.trim();
+            if (!msg) return;
+            const btn = document.getElementById('btnSendNotif');
+            const orig = btn.innerHTML;
+            btn.innerHTML = 'Enviando…'; btn.disabled = true;
+            const me = usuariosDB.find(u => u.correo.toLowerCase() === myEmail.toLowerCase());
+            const remitente = getDisplayName(me);
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: 'enviar_notificacion', mensaje: msg, remitente }) }).then(r => r.json());
+                if (res.success) { showToast('Mensaje enviado a todos con éxito', 'success'); msgEl.value = ''; checkNotifications(); }
+                else showToast('No se pudo enviar la notificación', 'error');
+            } catch (e) { showToast('Error de conexión', 'error'); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        // ════════════════════════════════════════
+        // USER LIST
+        // ════════════════════════════════════════
+        function renderList() {
+            const c = document.getElementById('userList');
+            if (!filteredDB.length) { c.innerHTML = '<div style="padding:28px 12px;text-align:center;font-size:12px;color:var(--text-muted);font-style:italic">Sin resultados</div>'; return; }
+            c.innerHTML = filteredDB.map(u => {
+                const name = getDisplayName(u);
+                const isAdm = u.permisos.admin === true;
+                const rol = (u.rol && u.rol !== 'Personalizado') ? u.rol : (isAdm ? 'Admin. Manual' : 'Personalizado');
+                const bg = isAdm ? 'background:var(--indigo-soft);color:var(--indigo)' : 'background:var(--surface-2);color:var(--text-muted)';
+                const sel = selectedUser?.correo === u.correo ? 'selected' : '';
+                return `<div onclick="selectUser('${u.correo}')" class="user-list-item ${sel}">
+            <div class="uli-avatar" style="${bg}">${name.charAt(0).toUpperCase()}</div>
+            <div style="flex:1;min-width:0">
+                <div class="uli-name">${name}</div>
+                <div class="uli-role">${rol}</div>
+            </div>
+        </div>`;
+            }).join('');
+        }
+
+        function selectUser(email) {
+            selectedUser = usuariosDB.find(u => u.correo === email);
+            if (!selectedUser) return;
+            document.getElementById('permEmpty').style.display = 'none';
+            const pc = document.getElementById('permContent');
+            pc.classList.remove('hidden');
+            pc.style.display = 'flex';
+
+            const name = getDisplayName(selectedUser);
+            document.getElementById('targetEmail').textContent = name;
+            document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
+            document.getElementById('rolSelect').value = selectedUser.rol || 'Personalizado';
+            onRoleChange(true);
+            renderList();
+        }
+
+        function onRoleChange(isSelectingUser = false) {
+            const val = document.getElementById('rolSelect').value;
+            const cont = document.getElementById('checkboxesContainer');
+            const hint = document.getElementById('rolHint');
+            const badge = document.getElementById('userBadge');
+
+            if (badge) badge.textContent = val === 'Personalizado' ? 'Permisos Manuales' : val;
+
+            if (val === 'Personalizado') {
+                cont.style.opacity = '1'; cont.style.pointerEvents = 'auto';
+                hint.textContent = "Podrás marcar o desmarcar permisos individualmente. Se guardarán en la hoja 'Usuarios'.";
+                if (!isSelectingUser && selectedUser) {
+                    document.getElementById('chkAdmin').checked = !!selectedUser.permisosManuales.admin;
+                    document.getElementById('chkCierres').checked = !!selectedUser.permisosManuales.cierres;
+                    document.getElementById('chkCodigos').checked = !!selectedUser.permisosManuales.codigos;
+                    document.getElementById('chkClientes').checked = !!selectedUser.permisosManuales.clientes;
+                } else if (selectedUser) {
+                    document.getElementById('chkAdmin').checked = !!selectedUser.permisos.admin;
+                    document.getElementById('chkCierres').checked = !!selectedUser.permisos.cierres;
+                    document.getElementById('chkCodigos').checked = !!selectedUser.permisos.codigos;
+                    document.getElementById('chkClientes').checked = !!selectedUser.permisos.clientes;
+                }
+            } else {
+                cont.style.opacity = '0.55'; cont.style.pointerEvents = 'none';
+                hint.innerHTML = `Permisos controlados por la plantilla <b>${val}</b> en la hoja "Roles". No se pueden editar aquí.`;
+                const rol = rolesDB.find(r => r.nombre === val);
+                if (rol) {
+                    document.getElementById('chkAdmin').checked = !!rol.admin;
+                    document.getElementById('chkCierres').checked = !!rol.cierres;
+                    document.getElementById('chkCodigos').checked = !!rol.codigos;
+                    document.getElementById('chkClientes').checked = !!rol.clientes;
+                }
+            }
+        }
+
+        async function savePerms() {
+            if (!selectedUser) return;
+            const btn = document.getElementById('btnSave');
+            const rol = document.getElementById('rolSelect').value;
+            const perms = {
+                admin: document.getElementById('chkAdmin').checked,
+                cierres: document.getElementById('chkCierres').checked,
+                codigos: document.getElementById('chkCodigos').checked,
+                clientes: document.getElementById('chkClientes').checked
+            };
+            btn.disabled = true;
+            const orig = btn.innerHTML;
+            btn.innerHTML = 'Sincronizando…';
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: 'guardar_permisos', email: selectedUser.correo, permisos: perms, rol }) }).then(r => r.json());
+                if (res.success) {
+                    selectedUser.rol = rol;
+                    if (rol === 'Personalizado') selectedUser.permisosManuales = { ...perms };
+                    selectedUser.permisos = { ...perms };
+                    showToast('Privilegios sincronizados correctamente', 'success');
+                    renderList();
+                    if (selectedUser.correo.toLowerCase() === myEmail.toLowerCase()) { setTimeout(() => location.reload(), 1200); return; }
+                    btn.style.background = 'var(--green)';
+                    btn.innerHTML = '¡Guardado!';
+                    setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; btn.style.background = ''; }, 1600);
+                } else { showToast(res.message || 'Error al sincronizar', 'error'); btn.disabled = false; btn.innerHTML = orig; }
+            } catch (e) { btn.disabled = false; btn.innerHTML = orig; }
+        }
+
+        // ════════════════════════════════════════
+        // CHANGE PASSWORD
+        // ════════════════════════════════════════
+        function changePassword(e) {
+            if (e) e.preventDefault();
+            const cur = document.getElementById('pwdCurrent').value;
+            const nw = document.getElementById('pwdNew').value;
+            const cfm = document.getElementById('pwdConfirm').value;
+            if (!cur || !nw || !cfm) { showToast('Completa todos los campos', 'error'); return; }
+            if (nw !== cfm) { showToast('Las contraseñas no coinciden', 'error'); return; }
+            showToast('Función disponible próximamente', 'info');
+        }
+
+        // ════════════════════════════════════════
+        // TOAST
+        // ════════════════════════════════════════
+        function showToast(msg, type = 'success') {
+            const cont = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            const iconChar = type === 'error' ? '✕' : (type === 'info' ? '→' : '✓');
+            t.innerHTML = `<div class="toast-icon ${type}">${iconChar}</div><span>${msg}</span>`;
+            cont.appendChild(t);
+            requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+            setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        // Close notif dropdown on outside click
+        document.addEventListener('click', e => {
+            const dp = document.getElementById('notifDropdown');
+            const bell = document.getElementById('bellBtn');
+            if (dp && !dp.classList.contains('hidden') && !dp.contains(e.target) && !bell.contains(e.target)) {
+                dp.classList.add('opacity-0');
+                setTimeout(() => dp.classList.add('hidden'), 180);
+            }
+        });
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>
