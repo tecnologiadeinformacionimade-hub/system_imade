@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión de Depósitos - Grupo Imade | Apple Design</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MSAL.js para Autenticación con Microsoft 365 -->
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    
+    <!-- Configuración Tailwind adaptada a Apple HIG -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        apple: {
+                            bg: '#F5F5F7', card: '#FFFFFF', text: '#1D1D1F', textMuted: '#86868B',
+                            blue: '#007AFF', blueHover: '#0066CC', blueLight: '#E5F0FF',
+                            green: '#34C759', greenLight: '#E8F8F0',
+                            red: '#FF3B30', redLight: '#FFEBEB',
+                            orange: '#FF9500', border: '#E5E5EA', search: '#7676801F'
+                        }
+                    },
+                    boxShadow: {
+                        'apple-soft': '0 4px 24px rgba(0, 0, 0, 0.04)',
+                        'apple-floating': '0 10px 40px rgba(0, 0, 0, 0.08)',
+                        'apple-btn': '0 2px 8px rgba(0, 122, 255, 0.3)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #F5F5F7; color: #1D1D1F; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        .apple-navbar { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid rgba(0,0,0,0.1); }
+        .apple-input { background-color: #F2F2F7; border: 1.5px solid transparent; transition: all 0.2s; }
+        .apple-input:focus { background-color: #FFFFFF; border-color: #007AFF; box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15); outline: none; }
+        .apple-search { background-color: rgba(118, 118, 128, 0.12); transition: background-color 0.2s; }
+        .apple-search:focus-within { background-color: rgba(118, 118, 128, 0.18); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 10px; }
+        .apple-active:active { transform: scale(0.96); opacity: 0.8; }
+        .apple-checkbox { appearance: none; width: 20px; height: 20px; border: 1.5px solid #C7C7CC; border-radius: 6px; cursor: pointer; transition: all 0.2s; position: relative;}
+        .apple-checkbox:checked { background-color: #007AFF; border-color: #007AFF; }
+        .apple-checkbox:checked::after { content: ''; position: absolute; top: 2px; left: 6px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .segmented-control { background-color: rgba(118, 118, 128, 0.12); padding: 2px; border-radius: 8px; display: inline-flex; }
+        .segmented-btn { padding: 4px 16px; font-size: 13px; font-weight: 500; border-radius: 6px; transition: all 0.2s ease; }
+        .segmented-btn.active { background-color: #FFFFFF; box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
+        .skeleton { background: linear-gradient(90deg, #E5E5EA 25%, #F2F2F7 37%, #E5E5EA 63%); background-size: 400% 100%; animation: skeleton-loading 1.4s ease infinite; }
+        @keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .apple-spinner { width: 40px; height: 40px; border: 3px solid rgba(118, 118, 128, 0.2); border-top-color: #86868B; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-apple-text min-h-screen flex flex-col relative selection:bg-apple-blue selection:text-white">
+
+    <!-- Global Loading -->
+    <div id="globalLoader" class="fixed inset-0 bg-white/60 backdrop-blur-xl z-[9999] hidden flex flex-col items-center justify-center transition-opacity duration-300 opacity-0">
+        <div class="apple-spinner mb-4"></div>
+        <h3 class="text-lg font-semibold tracking-tight">Sincronizando Depósitos</h3>
+        <p class="text-sm text-apple-textMuted mt-1">Conectando con SharePoint...</p>
+    </div>
+
+    <!-- Contenedor de Toasts -->
+    <div id="toastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none items-center w-full max-w-sm"></div>
+
+    <!-- Navegación -->
+    <nav class="apple-navbar sticky top-0 z-50 w-full">
+        <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14 items-center">
+                <div class="flex items-center gap-3 cursor-default">
+                    <div class="w-8 h-8 rounded-lg bg-apple-orange flex items-center justify-center text-white font-bold text-lg shadow-sm">Q</div>
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-[15px] font-semibold tracking-tight leading-tight">Grupo Imade</h1>
+                        <span class="text-[11px] text-apple-textMuted font-medium leading-tight">Módulo de Depósitos</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex flex-1 max-w-md mx-8 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                    <input type="text" id="globalSearch" placeholder="Buscar por referencia, banco o ID..." class="apple-search w-full pl-9 pr-4 py-1.5 rounded-[10px] text-[13px] outline-none placeholder-gray-500 text-apple-text">
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="inicio.html" class="apple-active flex items-center gap-1.5 text-apple-blue font-medium text-[13px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+                        <span class="hidden sm:inline">Inicio</span>
+                    </a>
+                    <div class="flex items-center gap-2 cursor-pointer apple-active" onclick="openSettingsModal()">
+                        <div id="userAvatar" class="w-7 h-7 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-xs shadow-sm skeleton"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Auth -->
+    <div id="authLoadingScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in relative z-10">
+        <div class="apple-spinner mb-6"></div>
+        <h2 class="text-[22px] font-semibold tracking-tight mb-2">Conectando con Microsoft</h2>
+        <p class="text-[13px] text-apple-textMuted max-w-sm mx-auto">Verificando acceso a los depósitos bancarios.</p>
+        <p id="authFallbackMsg" class="text-[11px] text-apple-textMuted mt-8 hidden">Iniciando Modo Demostración...</p>
+    </div>
+
+    <!-- Dashboard Principal -->
+    <main id="dashboardScreen" class="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 hidden relative z-10">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 animate-slide-up">
+            <div>
+                <h2 class="text-[34px] font-bold tracking-tight text-apple-text leading-none">Depósitos Bancarios</h2>
+                <p class="text-[15px] text-apple-textMuted mt-2 font-medium">Validación de boletas y transferencias.</p>
+            </div>
+            <button onclick="exportToCSV()" class="apple-active bg-white border border-apple-border shadow-sm px-4 py-2 rounded-full text-[13px] font-semibold text-apple-text hover:bg-gray-50 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar CSV
+            </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
+                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                </div>
+                <h3 id="statTotal" class="text-[28px] font-semibold text-apple-text leading-none">--</h3>
+                <p class="text-[13px] font-medium text-apple-textMuted mt-1">Total Registros</p>
+            </div>
+            <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
+                <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-apple-orange mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <h3 id="statPendiente" class="text-[28px] font-semibold text-apple-text leading-none">--</h3>
+                <p class="text-[13px] font-medium text-apple-textMuted mt-1">Por Confirmar</p>
+            </div>
+            <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
+                <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-apple-green mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h3 id="statFinalizado" class="text-[28px] font-semibold text-apple-text leading-none">--</h3>
+                <p class="text-[13px] font-medium text-apple-textMuted mt-1">Confirmados</p>
+            </div>
+            <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
+                <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-apple-red mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>
+                </div>
+                <h3 id="statRechazado" class="text-[28px] font-semibold text-apple-text leading-none">--</h3>
+                <p class="text-[13px] font-medium text-apple-textMuted mt-1">Rechazados</p>
+            </div>
+        </div>
+
+        <!-- Tabla de Depósitos -->
+        <div class="bg-white rounded-[24px] shadow-apple-soft border border-apple-border flex flex-col animate-slide-up overflow-hidden" style="animation-delay: 0.2s; min-height: 500px;">
+            <div class="px-6 py-4 border-b border-apple-border flex flex-col sm:flex-row justify-between items-center gap-4 bg-white z-20">
+                <div class="segmented-control w-full sm:w-auto overflow-x-auto">
+                    <button onclick="changeTab('En espera')" id="tab-En espera" class="segmented-btn active whitespace-nowrap">Pendientes <span id="badge-pendientes" class="ml-1 text-[10px] text-apple-textMuted hidden">(0)</span></button>
+                    <button onclick="changeTab('Confirmado')" id="tab-Confirmado" class="segmented-btn whitespace-nowrap">Confirmados</button>
+                    <button onclick="changeTab('Rechazado')" id="tab-Rechazado" class="segmented-btn whitespace-nowrap">Rechazados</button>
+                    <button onclick="changeTab('Todos')" id="tab-Todos" class="segmented-btn whitespace-nowrap">Todos</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto w-full flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-white border-b border-apple-border">
+                        <tr>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50" onclick="sortData('Id')">ID</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50" onclick="sortData('Fecha')">Fecha Depósito</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50" onclick="sortData('Banco')">Banco</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50" onclick="sortData('Referencia')">Boleta / Ref.</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50 text-right" onclick="sortData('Monto')">Monto</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-center">Boleta</th>
+                            <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-center cursor-pointer" onclick="sortData('Estado')">Estado</th>
+                            <th class="px-6 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100 bg-white">
+                        <tr><td colspan="8" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
+                        <tr><td colspan="8" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="px-6 py-4 border-t border-apple-border bg-gray-50/50 flex items-center justify-between">
+                <span class="text-[13px] text-apple-textMuted" id="paginationInfo">Mostrando 0 a 0 de 0</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="changePage(-1)" id="btnPrevPage" class="apple-active w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 disabled:opacity-40"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+                    <div id="pageNumbers" class="flex gap-1"></div>
+                    <button onclick="changePage(1)" id="btnNextPage" class="apple-active w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 disabled:opacity-40"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE EDICIÓN -->
+    <div id="editModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-[2rem] shadow-apple-floating w-full max-w-3xl overflow-hidden relative flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300" id="editModalContent">
+            
+            <div class="px-8 py-5 border-b border-apple-border flex justify-between items-center bg-white z-10 sticky top-0">
+                <h3 class="text-[22px] font-bold text-apple-text">Validar Depósito #<span id="modalId">--</span></h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg></button>
+            </div>
+
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                <!-- Columna Detalles -->
+                <div class="w-full md:w-1/2 p-8 border-r border-apple-border overflow-y-auto bg-[#F5F5F7]/50 flex flex-col gap-6">
+                    <div><p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Banco Destino</p><p id="modalBanco" class="text-[15px] font-semibold">--</p></div>
+                    <div><p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Boleta / Referencia</p><p id="modalReferencia" class="text-[15px] font-mono font-medium text-apple-blue">--</p></div>
+                    <div><p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Monto Depositado</p><p id="modalMonto" class="text-[22px] font-bold text-apple-green">Q 0.00</p></div>
+                    <div><p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Fecha Reportada</p><p id="modalFecha" class="text-[14px] text-gray-700">--</p></div>
+                    
+                    <div>
+                        <p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-2">Comprobante (Adjuntos)</p>
+                        <div id="modalAdjuntos" class="flex flex-col gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Columna Edición -->
+                <div class="w-full md:w-1/2 p-8 overflow-y-auto bg-white flex flex-col gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[13px] font-semibold text-apple-text">Dictamen de Tesorería</label>
+                        <select id="inputEstado" class="apple-input w-full rounded-xl py-3 px-4 text-[15px] cursor-pointer appearance-none">
+                            <option value="En espera">⏳ Pendiente de confirmar</option>
+                            <option value="Confirmado">✅ Confirmado en Banco</option>
+                            <option value="Rechazado">❌ Rechazado / No encontrado</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-2 flex-1">
+                        <label class="text-[13px] font-semibold text-apple-text">Observaciones / Comentarios</label>
+                        <textarea id="inputComentarios" rows="4" class="w-full apple-input rounded-xl px-4 py-3 text-[15px] resize-none flex-1 min-h-[120px]" placeholder="Ej. El monto difiere de la boleta, depositado en otra cuenta..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="px-8 py-5 border-t border-apple-border bg-gray-50 flex justify-end gap-3 z-10">
+                <button onclick="closeModal()" class="px-6 py-2.5 text-[14px] font-semibold text-apple-blue bg-apple-blueLight rounded-full">Cancelar</button>
+                <button onclick="saveItemChanges()" id="btnSave" class="px-6 py-2.5 text-[14px] font-semibold text-white bg-apple-blue rounded-full shadow-apple-btn flex items-center gap-2">
+                    <span id="btnSaveText">Guardar Validación</span>
+                    <svg id="btnSaveSpinner" class="animate-spin h-4 w-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle class="opacity-25" cx="12" cy="12" r="10"/><path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURACIÓN / DEMO -->
+    <div id="settingsModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeSettingsModal()"></div>
+        <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden relative flex flex-col p-6" id="settingsModalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-[17px] font-semibold">Ajustes</h3>
+                <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex justify-center items-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg></button>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-2 mb-6">
+                <div class="flex items-center justify-between p-3">
+                    <span class="text-[14px] font-medium">Modo Pruebas (Demo)</span>
+                    <input type="checkbox" id="demoModeToggle" class="apple-checkbox" onchange="toggleDemoMode()">
+                </div>
+            </div>
+            <button onclick="signOut()" class="w-full py-3 rounded-xl text-apple-red bg-apple-redLight font-semibold">Desconectar Microsoft</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        const state = {
+            items: [], filteredItems: [], currentTab: 'En espera', currentEditingId: null, currentEditingList: null,
+            searchQuery: '', sortCol: 'Fecha', sortAsc: false, page: 1, itemsPerPage: 10, isDemoMode: false
+        };
+
+        const msalConfig = {
+            auth: {
+                clientId: "4d1a060b-c2b6-4214-8bb5-c2639e627b74", 
+                authority: "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
+                redirectUri: window.location.href.split('?')[0].split('#')[0] 
+            },
+            cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+        };
+
+        // URL DE SHAREPOINT Y LISTAS POSIBLES ACTUALIZADAS
+        const siteUrl = "https://grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios";
+        const baseDomainUrl = "https://grupoimade.sharepoint.com";
+        const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/.default"] };
+
+        // Aquí agregué el nombre exacto de tu captura "Depositos Bancarios"
+        const SP_LIST_NAMES = [
+            'Depositos Bancarios',
+            'Confirmación de Depositos Bancarios',
+            'Boletas Confirmadas',
+            'Depositos'
+        ];
+
+        let msalInstance;
+
+        window.onload = async () => {
+            setupEventListeners();
+            try {
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                await initializeAuth();
+            } catch (e) { enableDemoMode(); }
+        };
+
+        function showLoader() { document.getElementById('globalLoader').classList.remove('hidden', 'opacity-0'); }
+        function hideLoader() { document.getElementById('globalLoader').classList.add('opacity-0'); setTimeout(() => document.getElementById('globalLoader').classList.add('hidden'), 300); }
+        function showToast(m, t='success') { const c=document.getElementById('toastContainer'), d=document.createElement('div'); d.className=`flex items-center gap-3 px-4 py-3 rounded-full shadow-apple-floating bg-white/90 backdrop-blur-xl border border-gray-100 translate-y-4 opacity-100 z-[9999] transition-all`; d.innerHTML=`<span class="text-[14px] font-medium px-2">${m}</span>`; c.appendChild(d); setTimeout(()=>{d.classList.add('opacity-0'); setTimeout(()=>d.remove(),300)},3000); }
+
+        async function initializeAuth() {
+            try {
+                const res = await msalInstance.handleRedirectPromise();
+                if (res) { document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); loadData(); } 
+                else {
+                    const acc = msalInstance.getAllAccounts();
+                    if (!acc.length) { document.getElementById('authFallbackMsg').classList.remove('hidden'); msalInstance.loginRedirect(tokenRequest); } 
+                    else { document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); loadData(); }
+                }
+            } catch (e) { enableDemoMode(); }
+        }
+
+        function signOut() { if(state.isDemoMode){location.reload();return;} sessionStorage.clear(); msalInstance.logoutRedirect(); }
+
+        function enableDemoMode() {
+            state.isDemoMode = true; document.getElementById('demoModeToggle').checked = true;
+            document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden');
+            state.items = Array.from({length: 30}, (_,i) => ({
+                Id: 1000+i, Fecha: new Date().toISOString(), _parsedBanco: ['Banrural', 'Industrial', 'GyT', 'BAM'][i%4],
+                _parsedReferencia: 'BOL-'+Math.floor(Math.random()*90000+10000), _parsedMonto: (Math.random()*5000+100).toFixed(2),
+                _parsedEstado: ['En espera', 'Confirmado', 'Rechazado'][Math.floor(Math.random()*3)],
+                _parsedComentarios: '', AttachmentFiles: [{FileName:'Boleta_demo.jpg', ServerRelativeUrl:'#'}], _listName: 'Demo'
+            }));
+            processData();
+        }
+        function toggleDemoMode() { document.getElementById('demoModeToggle').checked ? enableDemoMode() : location.reload(); }
+
+        async function fetchList(listName, headers) {
+            try {
+                const fieldsRes = await fetch(`${siteUrl}/_api/web/lists/getByTitle('${listName}')/Fields?$select=Title,InternalName`, { headers });
+                if (!fieldsRes.ok) return [];
+                const fieldsData = await fieldsRes.json();
+                
+                const getInt = (names) => { const f = fieldsData.value.find(x => names.some(n => x.Title.toLowerCase().includes(n.toLowerCase()))); return f ? f.InternalName : null; };
+                
+                // Mapeo Inteligente de Columnas
+                const sBan = getInt(['Banco', 'Cuenta', 'Institucion']);
+                const sRef = getInt(['Referencia', 'Boleta', 'Documento', 'Transaccion']);
+                const sMon = getInt(['Monto', 'Valor', 'Cantidad', 'Total']);
+                const sEst = getInt(['Estado', 'Confirmacion']);
+                const sCom = getInt(['Comentario', 'Observacion']);
+                
+                const fvt = []; 
+                if(sBan) fvt.push(`FieldValuesAsText/${sBan}`); 
+                if(sRef) fvt.push(`FieldValuesAsText/${sRef}`); 
+                if(sMon) fvt.push(`FieldValuesAsText/${sMon}`); 
+                if(sEst) fvt.push(`FieldValuesAsText/${sEst}`);
+                
+                const exp = `Author,AttachmentFiles${fvt.length>0?',FieldValuesAsText':''}`;
+                const sel = `*,Author/Title${fvt.length>0?','+fvt.join(','):''}`;
+                
+                const res = await fetch(`${siteUrl}/_api/web/lists/getByTitle('${listName}')/items?$top=5000&$select=${sel}&$expand=${exp}`, { headers });
+                if (!res.ok) return [];
+                
+                const data = await res.json();
+                return data.value.map(item => {
+                    const f = item.FieldValuesAsText || {};
+                    return {
+                        Id: item.Id, 
+                        Fecha: item.Fecha || item.Created,
+                        _parsedBanco: (sBan && f[sBan]) ? f[sBan] : (item[sBan] || 'N/A'),
+                        _parsedReferencia: (sRef && f[sRef]) ? f[sRef] : (item[sRef] || 'N/A'),
+                        _parsedMonto: (sMon && f[sMon]) ? f[sMon] : (item[sMon] || '0.00'),
+                        _parsedEstado: (sEst && f[sEst]) ? f[sEst] : (item[sEst] || item.Estado || 'En espera'),
+                        _parsedComentarios: (sCom ? item[sCom] : item.Comentarios) || '',
+                        AttachmentFiles: item.AttachmentFiles || [],
+                        _intEstado: sEst || 'Estado', 
+                        _intComentarios: sCom || 'Comentarios', 
+                        _listName: listName
+                    };
+                });
+            } catch (e) { return []; }
+        }
+
+        async function loadData() {
+            showLoader();
+            try {
+                const acc = msalInstance.getAllAccounts();
+                const token = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: acc[0] });
+                const head = { "Authorization": `Bearer ${token.accessToken}`, "Accept": "application/json;odata=nometadata" };
+                
+                let allItems = [];
+                // Intenta con todos los nombres posibles
+                for(let name of SP_LIST_NAMES) {
+                    const items = await fetchList(name, head);
+                    if(items.length > 0) allItems = allItems.concat(items);
+                }
+                
+                if (!allItems.length) throw new Error("No data");
+                state.items = allItems;
+                processData();
+            } catch (error) { 
+                console.error("Error cargando SP:", error);
+                enableDemoMode(); 
+            } finally { hideLoader(); }
+        }
+
+        function processData() {
+            let res = state.items;
+            if (state.currentTab !== 'Todos') res = res.filter(i => i._parsedEstado.toLowerCase().includes(state.currentTab.toLowerCase()));
+            
+            const q = state.searchQuery.toLowerCase();
+            if (q) res = res.filter(i => i.Id.toString().includes(q) || i._parsedBanco.toLowerCase().includes(q) || i._parsedReferencia.toLowerCase().includes(q));
+            
+            res.sort((a,b) => { let vA=a[state.sortCol]||a[`_parsed${state.sortCol}`]; let vB=b[state.sortCol]||b[`_parsed${state.sortCol}`]; if(vA<vB) return state.sortAsc?-1:1; if(vA>vB) return state.sortAsc?1:-1; return 0; });
+            
+            state.filteredItems = res;
+            updateStats(); renderTable();
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').innerText = state.items.length;
+            document.getElementById('statPendiente').innerText = state.items.filter(i => i._parsedEstado.includes('espera')).length;
+            document.getElementById('statFinalizado').innerText = state.items.filter(i => i._parsedEstado.includes('Confirmado')).length;
+            document.getElementById('statRechazado').innerText = state.items.filter(i => i._parsedEstado.includes('Rechazado')).length;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            const paged = state.filteredItems.slice((state.page-1)*state.itemsPerPage, state.page*state.itemsPerPage);
+            if (!paged.length) { tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-gray-400">Sin datos</td></tr>`; return; }
+            
+            paged.forEach(i => {
+                const date = isNaN(new Date(i.Fecha)) ? 'N/A' : new Date(i.Fecha).toLocaleDateString('es-ES');
+                const att = i.AttachmentFiles?.length ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[11px] font-bold">📄 Ver Boleta</span>` : '-';
+                let estBadge = `<span class="px-2 py-1 text-[11px] font-bold rounded bg-gray-100 text-gray-600">${i._parsedEstado}</span>`;
+                if(i._parsedEstado.toLowerCase().includes('confirmado')) estBadge = `<span class="px-2 py-1 text-[11px] font-bold rounded bg-apple-greenLight text-apple-green">Confirmado</span>`;
+                if(i._parsedEstado.toLowerCase().includes('espera')) estBadge = `<span class="px-2 py-1 text-[11px] font-bold rounded bg-orange-50 text-apple-orange">Pendiente</span>`;
+                if(i._parsedEstado.toLowerCase().includes('rechazado')) estBadge = `<span class="px-2 py-1 text-[11px] font-bold rounded bg-apple-redLight text-apple-red">Rechazado</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-gray-50 hover:bg-gray-50">
+                        <td class="px-4 py-3 text-[13px] font-mono text-gray-500">#${i.Id}</td>
+                        <td class="px-4 py-3 text-[13px] font-medium">${date}</td>
+                        <td class="px-4 py-3 text-[13px] font-semibold">${i._parsedBanco}</td>
+                        <td class="px-4 py-3 text-[13px] font-mono text-apple-blue">${i._parsedReferencia}</td>
+                        <td class="px-4 py-3 text-[13px] font-bold text-right">Q ${i._parsedMonto}</td>
+                        <td class="px-4 py-3 text-center cursor-pointer" onclick="openModal(${i.Id}, '${i._listName}')">${att}</td>
+                        <td class="px-4 py-3 text-center">${estBadge}</td>
+                        <td class="px-6 py-3 text-right">
+                            <button onclick="openModal(${i.Id}, '${i._listName}')" class="px-3 py-1 bg-gray-100 text-gray-600 hover:bg-apple-blue hover:text-white rounded-full text-[12px] font-semibold transition-colors">Validar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('globalSearch').addEventListener('input', e => { state.searchQuery = e.target.value; state.page = 1; processData(); });
+        }
+        function sortData(col) { state.sortCol = col; state.sortAsc = !state.sortAsc; processData(); }
+        function changeTab(t) { state.currentTab = t; state.page = 1; document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-${t}`).classList.add('active'); processData(); }
+        function changePage(d) { state.page += d; renderTable(); }
+
+        function openModal(id, lName) {
+            const item = state.items.find(i => i.Id === id && i._listName === lName);
+            if(!item) return;
+            state.currentEditingId = id; state.currentEditingList = lName;
+            
+            document.getElementById('modalId').innerText = item.Id;
+            document.getElementById('modalBanco').innerText = item._parsedBanco;
+            document.getElementById('modalReferencia').innerText = item._parsedReferencia;
+            document.getElementById('modalMonto').innerText = `Q ${item._parsedMonto}`;
+            document.getElementById('modalFecha').innerText = isNaN(new Date(item.Fecha)) ? 'N/A' : new Date(item.Fecha).toLocaleString('es-ES');
+            
+            const eSel = document.getElementById('inputEstado');
+            if(item._parsedEstado.toLowerCase().includes('confirmado')) eSel.value = 'Confirmado'; 
+            else if(item._parsedEstado.toLowerCase().includes('rechazado')) eSel.value = 'Rechazado'; 
+            else eSel.value = 'En espera';
+
+            document.getElementById('inputComentarios').value = item._parsedComentarios || '';
+
+            const attC = document.getElementById('modalAdjuntos'); attC.innerHTML = '';
+            if(item.AttachmentFiles?.length > 0) {
+                item.AttachmentFiles.forEach(f => {
+                    const url = state.isDemoMode ? '#' : `${baseDomainUrl}${f.ServerRelativeUrl}`;
+                    attC.innerHTML += `<a href="${url}" target="_blank" class="flex items-center gap-2 p-3 rounded-lg bg-gray-100 text-apple-blue font-medium text-[13px] hover:bg-gray-200">🖼️ Ver: ${f.FileName}</a>`;
+                });
+            } else { attC.innerHTML = `<div class="text-[13px] text-gray-400 p-3 border border-dashed rounded-lg text-center">Sin adjuntos</div>`; }
+
+            document.getElementById('editModal').classList.remove('hidden', 'opacity-0');
+        }
+
+        function closeModal() { document.getElementById('editModal').classList.add('hidden'); state.currentEditingId = null; }
+        function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden', 'opacity-0'); }
+        function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+
+        async function saveItemChanges() {
+            if(!state.currentEditingId) return;
+            const btn = document.getElementById('btnSave'), sp = document.getElementById('btnSaveSpinner');
+            const nEst = document.getElementById('inputEstado').value, nCom = document.getElementById('inputComentarios').value;
+            btn.disabled = true; sp.classList.remove('hidden');
+
+            try {
+                if(state.isDemoMode) {
+                    await new Promise(r => setTimeout(r, 600));
+                    const i = state.items.find(x => x.Id === state.currentEditingId);
+                    i._parsedEstado = nEst; i._parsedComentarios = nCom;
+                } else {
+                    const acc = msalInstance.getAllAccounts();
+                    const tok = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: acc[0] });
+                    const item = state.items.find(i => i.Id === state.currentEditingId && i._listName === state.currentEditingList);
+                    const pay = {};
+                    if(item._intEstado) pay[item._intEstado] = nEst;
+                    if(item._intComentarios) pay[item._intComentarios] = nCom;
+                    
+                    await fetch(`${siteUrl}/_api/web/lists/getByTitle('${state.currentEditingList}')/items(${state.currentEditingId})`, {
+                        method: 'PATCH', headers: { "Authorization": `Bearer ${tok.accessToken}`, "Accept": "application/json", "Content-Type": "application/json", "IF-MATCH": "*", "X-HTTP-Method": "MERGE" },
+                        body: JSON.stringify(pay)
+                    });
+                    await loadData();
+                }
+                showToast("Boleta validada"); closeModal(); if(state.isDemoMode) processData();
+            } catch(e) { showToast("Error al validar", "error"); } 
+            finally { btn.disabled = false; sp.classList.add('hidden'); }
+        }
+
+        function exportToCSV() {
+            const csv = "data:text/csv;charset=utf-8,ID,Fecha,Banco,Referencia,Monto,Estado\n" + state.filteredItems.map(i => `${i.Id},${i.Fecha},"${i._parsedBanco}","${i._parsedReferencia}",${i._parsedMonto},${i._parsedEstado}`).join("\n");
+            const a = document.createElement("a"); a.href = encodeURI(csv); a.download = "Depositos.csv"; a.click();
+        }
+    </script>
+</body>
+</html>
