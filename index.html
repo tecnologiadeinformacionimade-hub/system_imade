@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Grupo Imade</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #F2F2F7;
+    }
+
+    .ios-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ios-screen {
+      width: 100%;
+      max-width: 390px;
+    }
+
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 36px;
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .ios-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: -0.5px;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+
+    .ios-subtitle {
+      font-size: 15px;
+      color: #8E8E93;
+      text-align: center;
+      line-height: 1.4;
+      margin: 0;
+      max-width: 260px;
+    }
+
+    .ios-grouped {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 0.5px solid rgba(0,0,0,0.1);
+    }
+
+    .ios-field {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+      background: #fff;
+    }
+
+    .ios-field label {
+      font-size: 17px;
+      color: #000;
+      width: 115px;
+      flex-shrink: 0;
+      font-weight: 400;
+    }
+
+    .ios-field input {
+      flex: 1;
+      padding: 14px 0;
+      font-size: 17px;
+      color: #000;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Arial, sans-serif;
+    }
+
+    .ios-field input::placeholder {
+      color: #C7C7CC;
+    }
+
+    .ios-field + .ios-field::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 0;
+      height: 0.5px;
+      background: #C6C6C8;
+    }
+
+    .toggle-pwd {
+      background: none;
+      border: none;
+      padding: 0 8px;
+      cursor: pointer;
+      color: #C7C7CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    
+    .toggle-pwd:focus { outline: none; }
+
+    .toggle-pwd svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .ios-btn {
+      width: 100%;
+      background: #007AFF;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 600;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background 0.15s, transform 0.1s;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Arial, sans-serif;
+      letter-spacing: -0.1px;
+      box-sizing: border-box;
+    }
+
+    .ios-btn:active {
+      background: #005FC4;
+      transform: scale(0.98);
+    }
+
+    .ios-btn:disabled {
+      background: #A1C6FC;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .ios-error {
+      font-size: 13px;
+      color: #FF3B30;
+      margin-top: 12px;
+      padding: 0 4px;
+      min-height: 18px;
+      text-align: center;
+      transition: opacity 0.2s;
+    }
+
+    .ios-success { color: #34C759; }
+
+    .ios-footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 12px;
+      color: #8E8E93;
+    }
+
+    .text-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 15px;
+      color: #007AFF;
+      cursor: pointer;
+      text-decoration: none;
+      background: none;
+      border: none;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .view-section.active { display: block; }
+
+    .timer-text {
+      text-align: center;
+      font-size: 14px;
+      color: #FF9500;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .shake { animation: shake 0.4s ease; }
+    
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      display: inline-block;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HUD de Acceso Exitoso */
+    .apple-hud-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .apple-hud-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .apple-hud-box {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      width: 150px;
+      height: 150px;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.8);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .apple-hud-overlay.active .apple-hud-box {
+      transform: scale(1);
+    }
+
+    .apple-hud-icon {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 14px;
+    }
+
+    .apple-hud-text {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: -0.3px;
+    }
+
+    .apple-hud-check {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+
+    .apple-hud-overlay.active .apple-hud-check {
+      animation: drawCheck 0.6s ease forwards 0.2s;
+    }
+
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- HUD de Acceso Exitoso -->
+<div class="apple-hud-overlay" id="successHud">
+  <div class="apple-hud-box">
+    <svg class="apple-hud-icon" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
+      <path class="apple-hud-check" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M15 27 l7 7 l16 -16"/>
+    </svg>
+    <div class="apple-hud-text">Acceso exitoso</div>
+  </div>
+</div>
+
+<div class="ios-wrap">
+  <div class="ios-screen">
+    
+    <div class="logo-wrap">
+      <h1 class="ios-title" id="mainTitle">Iniciar sesión</h1>
+      <p class="ios-subtitle" id="mainSubtitle">Usa tu cuenta de Grupo Imade para acceder al portal.</p>
+    </div>
+
+    <div class="ios-error" id="globalMsg"></div>
+
+    <!-- VISTA 1: LOGIN -->
+    <div id="view-login" class="view-section active">
+      <div class="ios-grouped" id="loginCard">
+        <div class="ios-field">
+          <label for="login-email">Correo</label>
+          <input type="email" id="login-email" placeholder="nombre@ejemplo.com" autocapitalize="none" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="ios-field">
+          <label for="login-pwd">Contraseña</label>
+          <input type="password" id="login-pwd" placeholder="Obligatoria">
+          <button type="button" class="toggle-pwd" onclick="togglePassword('login-pwd', this)" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+      </div>
+      <button class="ios-btn" id="btnLogin" onclick="handleLogin()">Entrar</button>
+      <button class="text-link" onclick="switchView('forgot')">¿Olvidaste tu contraseña?</button>
+    </div>
+
+    <!-- VISTA 2: SOLICITAR CÓDIGO -->
+    <div id="view-forgot" class="view-section">
+      <div class="ios-grouped" id="forgotCard">
+        <div class="ios-field">
+          <label for="forgot-email">Correo</label>
+          <input type="email" id="forgot-email" placeholder="Para recibir el código" autocapitalize="none">
+        </div>
+      </div>
+      <button class="ios-btn" id="btnForgot" onclick="requestResetCode()">Enviar código</button>
+      <button class="text-link" onclick="switchView('login')">Volver al inicio de sesión</button>
+    </div>
+
+    <!-- VISTA 3: RESTABLECER CONTRASEÑA -->
+    <div id="view-reset" class="view-section">
+      <div class="ios-grouped" id="resetCard">
+        <div class="ios-field">
+          <label for="reset-code">Código</label>
+          <input type="text" id="reset-code" placeholder="6 dígitos" maxlength="6" inputmode="numeric" pattern="\d*">
+        </div>
+        <div class="ios-field">
+          <label for="reset-pwd">Nueva Cont.</label>
+          <input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres">
+          <button type="button" class="toggle-pwd" onclick="togglePassword('reset-pwd', this)" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+      </div>
+      <div class="timer-text" id="timerDisplay">El código expira en 05:00</div>
+      <button class="ios-btn" id="btnReset" onclick="submitNewPassword()">Restablecer contraseña</button>
+      <button class="text-link" onclick="switchView('login')">Cancelar</button>
+    </div>
+
+    <div class="ios-footer">Grupo Imade &copy; 2024</div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// CONFIGURACIÓN
+// ==========================================
+const ENCRYPTED_URL = "https://script.google.com/macros/s/AKfycbwC5HohHm7jstm8b3Anmcb5X4ZJDH6ptCLk_D8fmcZ2Wkc7B7qC1AeqALDxHGeZq3oN/exec";
+
+function getApiUrl() {
+  return ENCRYPTED_URL;
+}
+
+let currentEmailForReset = "";
+let timerInterval = null;
+
+// ==========================================
+// TOGGLE CONTRASEÑA
+// ==========================================
+function togglePassword(inputId, btnElement) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btnElement.style.color = isHidden ? '#007AFF' : '#C7C7CC';
+  btnElement.innerHTML = isHidden
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+}
+
+// ==========================================
+// EVENTOS TECLADO (Enter)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pwd').focus(); });
+  document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  document.getElementById('forgot-email').addEventListener('keydown', e => { if (e.key === 'Enter') requestResetCode(); });
+  document.getElementById('reset-code').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('reset-pwd').focus(); });
+  document.getElementById('reset-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewPassword(); });
+
+  // Solo permitir dígitos en el campo de código
+  document.getElementById('reset-code').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+  });
+});
+
+// ==========================================
+// CONTROL DE VISTAS
+// ==========================================
+function switchView(viewName) {
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + viewName).classList.add('active');
+  clearMsg();
+
+  const titles = {
+    login:  ['Iniciar sesión', 'Usa tu cuenta de Grupo Imade para acceder al portal.'],
+    forgot: ['Recuperar acceso', 'Ingresa tu correo y te enviaremos un código de 6 dígitos.'],
+    reset:  ['Crear contraseña', 'Ingresa el código enviado al correo y tu nueva contraseña.']
+  };
+
+  if (titles[viewName]) {
+    document.getElementById('mainTitle').textContent = titles[viewName][0];
+    document.getElementById('mainSubtitle').textContent = titles[viewName][1];
+  }
+}
+
+function showMsg(text, isError = true, cardId = null) {
+  const msgDiv = document.getElementById('globalMsg');
+  msgDiv.textContent = text;
+  msgDiv.className = isError ? 'ios-error' : 'ios-error ios-success';
+  
+  if (isError && cardId) {
+    const card = document.getElementById(cardId);
+    card.classList.remove('shake');
+    void card.offsetWidth; // Reflow para reiniciar animación
+    card.classList.add('shake');
+  }
+}
+
+function clearMsg() {
+  document.getElementById('globalMsg').textContent = '';
+}
+
+// ==========================================
+// PETICIONES AL SERVIDOR
+// ==========================================
+async function sendDataToScript(payload) {
+  const response = await fetch(getApiUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error('Formato de respuesta inválido del servidor.');
+  }
+}
+
+// ==========================================
+// 1. LOGIN
+// ==========================================
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  const btn = document.getElementById('btnLogin');
+
+  if (!email || !pwd) {
+    return showMsg('Por favor ingresa tu correo y contraseña.', true, 'loginCard');
+  }
+
+  clearMsg();
+  setBtnLoading(btn, true, 'Verificando');
+
+  try {
+    const res = await sendDataToScript({ accion: 'login', email, password: pwd });
+    
+    if (res.success) {
+      // ✅ CORRECCIÓN PRINCIPAL: Guardar email en localStorage ANTES de redirigir
+      localStorage.setItem('userEmail', res.user || email);
+
+      document.getElementById('successHud').classList.add('active');
+      btn.innerHTML = 'Entrar';
+      
+      setTimeout(() => {
+        window.location.href = 'inicio.html';
+      }, 1800);
+      
+    } else {
+      showMsg(res.message || 'Credenciales incorrectas.', true, 'loginCard');
+      setBtnLoading(btn, false, 'Entrar');
+    }
+  } catch (err) {
+    showMsg('Error de conexión. Intenta de nuevo.', true, 'loginCard');
+    setBtnLoading(btn, false, 'Entrar');
+  }
+}
+
+// ==========================================
+// 2. SOLICITAR CÓDIGO DE RECUPERACIÓN
+// ==========================================
+async function requestResetCode() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const btn = document.getElementById('btnForgot');
+
+  if (!email) {
+    return showMsg('Ingresa un correo electrónico válido.', true, 'forgotCard');
+  }
+
+  clearMsg();
+  setBtnLoading(btn, true, 'Enviando');
+
+  try {
+    const res = await sendDataToScript({ accion: 'solicitar_codigo', email });
+    
+    if (res.success) {
+      currentEmailForReset = email;
+      switchView('reset');
+      showMsg('Revisa tu bandeja de entrada. El código fue enviado.', false);
+      startTimer(300);
+    } else {
+      showMsg(res.message || 'El correo no está registrado.', true, 'forgotCard');
+    }
+  } catch (err) {
+    showMsg('Error de red al intentar enviar el código.', true, 'forgotCard');
+  } finally {
+    setBtnLoading(btn, false, 'Enviar código');
+  }
+}
+
+// ==========================================
+// 3. RESTABLECER CONTRASEÑA
+// ==========================================
+async function submitNewPassword() {
+  const code = document.getElementById('reset-code').value.replace(/\D/g, '');
+  const newPwd = document.getElementById('reset-pwd').value;
+  const btn = document.getElementById('btnReset');
+
+  if (!code || !newPwd) {
+    return showMsg('Llena ambos campos.', true, 'resetCard');
+  }
+  if (code.length !== 6) {
+    return showMsg('El código debe tener exactamente 6 dígitos.', true, 'resetCard');
+  }
+  if (newPwd.length < 6) {
+    return showMsg('La contraseña debe tener al menos 6 caracteres.', true, 'resetCard');
+  }
+  if (!currentEmailForReset) {
+    return showMsg('Sesión expirada. Vuelve a solicitar el código.', true, 'resetCard');
+  }
+
+  clearMsg();
+  setBtnLoading(btn, true, 'Actualizando');
+
+  try {
+    const res = await sendDataToScript({ 
+      accion: 'restablecer_password', 
+      email: currentEmailForReset,
+      codigo: code,
+      nuevaPassword: newPwd
+    });
+    
+    if (res.success) {
+      clearInterval(timerInterval);
+
+      // Pre-llenar email en el login para facilitar el acceso inmediato
+      document.getElementById('login-email').value = currentEmailForReset;
+      document.getElementById('login-pwd').value = '';
+      currentEmailForReset = '';
+
+      switchView('login');
+      showMsg('Contraseña actualizada. Ya puedes iniciar sesión.', false);
+    } else {
+      showMsg(res.message || 'El código es incorrecto o ha expirado.', true, 'resetCard');
+    }
+  } catch (err) {
+    showMsg('Error de red al actualizar contraseña.', true, 'resetCard');
+  } finally {
+    setBtnLoading(btn, false, 'Restablecer contraseña');
+  }
+}
+
+// ==========================================
+// UTILIDADES
+// ==========================================
+function startTimer(duration) {
+  clearInterval(timerInterval);
+  let timer = duration;
+  const display = document.getElementById('timerDisplay');
+  
+  timerInterval = setInterval(() => {
+    const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+    const seconds = String(timer % 60).padStart(2, '0');
+    display.textContent = `El código expira en ${minutes}:${seconds}`;
+    display.style.color = '#FF9500';
+
+    if (--timer < 0) {
+      clearInterval(timerInterval);
+      display.textContent = 'El código ha expirado. Solicita uno nuevo.';
+      display.style.color = '#FF3B30';
+    }
+  }, 1000);
+}
+
+function setBtnLoading(btnElement, isLoading, text) {
+  if (isLoading) {
+    btnElement.disabled = true;
+    btnElement.innerHTML = `${text}<span class="spinner"></span>`;
+  } else {
+    btnElement.disabled = false;
+    btnElement.innerHTML = text;
+  }
+}
+</script>
+
+</body>
+</html>
