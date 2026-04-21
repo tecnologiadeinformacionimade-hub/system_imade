@@ -329,7 +329,8 @@ const msalConfig = {
     cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
 };
 
-const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/AllSites.Read", "https://grupoimade.sharepoint.com/AllSites.Write"] };
+// CAMBIO CRÍTICO: Usar el scope ".default" obliga a Azure a entregar TODOS los permisos (AllSites) que ya aprobaste.
+const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/.default"] };
 
 // ── URLs SharePoint (ACTUALIZADO CON TUS LINKS EXACTOS) ──────────
 const SITE_URLS = [
@@ -436,16 +437,20 @@ async function getToken() {
 
 // ── DETECTAR URL DEL SITIO ───────────────────────────────────────
 async function detectSiteUrl(headers) {
-    for (const url of SITE_URLS) {
-        try {
-            const res = await fetch(`${url}/_api/web/title`, { headers });
-            if (res.ok) {
-                console.log(`✅ Sitio verificado: ${url}`);
-                return url;
-            }
-        } catch (e) { /* continuar */ }
+    const url = SITE_URLS[0];
+    const res = await fetch(`${url}/_api/web/title`, { headers });
+    if (res.ok) {
+        console.log(`✅ Sitio verificado: ${url}`);
+        return url;
+    } else {
+        // CAMBIO: Ahora extraemos el mensaje exacto que Microsoft nos devuelve para saber por qué nos bloquea
+        let errStr = await res.text();
+        try { 
+            const j = JSON.parse(errStr); 
+            errStr = (j.error && j.error.message && j.error.message.value) ? j.error.message.value : errStr; 
+        } catch(e) {}
+        throw new Error(`HTTP ${res.status}: ${errStr} (Asegúrate de que tu usuario tenga permisos sobre este sitio)`);
     }
-    throw new Error("No se pudo conectar al sitio de SharePoint. Verifica la URL del sitio y asegúrate de tener permisos.");
 }
 
 // ── LEER UNA LISTA ───────────────────────────────────────────────
@@ -493,7 +498,8 @@ async function fetchList(listName, headers) {
 
         const itemsRes = await fetch(url, { headers });
         if (!itemsRes.ok) {
-            const errText = await itemsRes.text();
+            let errText = await itemsRes.text();
+            try { const j = JSON.parse(errText); errText = j.error?.message?.value || errText; } catch(e){}
             console.error(`❌ Error leyendo items de "${listName}":`, errText);
             return [];
         }
