@@ -331,28 +331,21 @@ const msalConfig = {
 
 const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/AllSites.Read", "https://grupoimade.sharepoint.com/AllSites.Write"] };
 
-// ── URLs SharePoint ──────────────────────────────────────────────
-// SE AGREGÓ LA RUTA RAÍZ PRIMERO, PUES EL SITIO PUEDE ESTAR AHÍ.
+// ── URLs SharePoint (ACTUALIZADO CON TUS LINKS EXACTOS) ──────────
 const SITE_URLS = [
-    "https://grupoimade.sharepoint.com", // <-- Solución añadida aquí
-    "https://grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios",
-    "https://grupoimade.sharepoint.com/sites/ConfirmaciondeDepositosBancarios",
-    "https://grupoimade.sharepoint.com/sites/ConfirmacióndeDepositosBancarios"
+    "https://grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios"
 ];
 const BASE_DOMAIN = "https://grupoimade.sharepoint.com";
 
-// Nombres posibles de las listas (el código intentará cada uno)
+// Nombres exactos de las listas
 const SP_LIST_NAMES = [
     'Confirmacin de Depositos Bancarios',
-    'Confirmación de Depositos Bancarios',
-    'Confirmacion de Depositos Bancarios',
-    'Depositos Bancarios',
     'Boletas Confirmadas',
     'Boletas Rechazadas'
 ];
 
 let msalInstance;
-let activeSiteUrl = SITE_URLS[0]; // Se detecta automáticamente
+let activeSiteUrl = SITE_URLS[0]; 
 
 // ── INIT ─────────────────────────────────────────────────────────
 window.onload = async () => {
@@ -447,22 +440,12 @@ async function detectSiteUrl(headers) {
         try {
             const res = await fetch(`${url}/_api/web/title`, { headers });
             if (res.ok) {
-                console.log(`✅ Sitio encontrado: ${url}`);
+                console.log(`✅ Sitio verificado: ${url}`);
                 return url;
             }
         } catch (e) { /* continuar */ }
     }
     throw new Error("No se pudo conectar al sitio de SharePoint. Verifica la URL del sitio y asegúrate de tener permisos.");
-}
-
-// ── DETECTAR LISTAS DISPONIBLES ──────────────────────────────────
-async function getAvailableLists(headers) {
-    const res = await fetch(`${activeSiteUrl}/_api/web/lists?$select=Title&$filter=Hidden eq false`, { headers });
-    if (!res.ok) throw new Error("No se pudieron obtener las listas del sitio.");
-    const data = await res.json();
-    const titles = data.value.map(l => l.Title);
-    console.log("📋 Listas disponibles:", titles);
-    return titles;
 }
 
 // ── LEER UNA LISTA ───────────────────────────────────────────────
@@ -479,7 +462,7 @@ async function fetchList(listName, headers) {
 
         const fieldsData = await checkRes.json();
         const fields = fieldsData.value;
-        console.log(`📊 Lista "${listName}" - Columnas:`, fields.map(f => `${f.Title} (${f.InternalName})`));
+        console.log(`📊 Lista "${listName}" encontrada.`);
 
         const findField = (...keywords) => {
             for (const kw of keywords) {
@@ -498,8 +481,6 @@ async function fetchList(listName, headers) {
         const fLink     = findField('link', 'imagen', 'image', 'url', 'foto');
         const fCom      = findField('comentario', 'comment', 'nota', 'note');
         const fFecha    = findField('fecha', 'date', 'created0');
-
-        console.log(`🔑 Campos mapeados - Correo:${fCorreo} Obs:${fObs} Estado:${fEstado} Link:${fLink} Com:${fCom} Fecha:${fFecha}`);
 
         const expandFields = ['Author', 'AttachmentFiles'];
         const fvtFields = [fCorreo, fObs, fEstado, fLink, fCom, fFecha].filter(Boolean);
@@ -559,27 +540,15 @@ async function loadData() {
             "Accept": "application/json;odata=nometadata"
         };
 
-        // 1. Detectar URL del sitio correcta
+        // 1. Detectar URL del sitio exacta
         activeSiteUrl = await detectSiteUrl(headers);
 
-        // 2. Obtener listas disponibles y cruzar con nuestras candidatas
-        const availableLists = await getAvailableLists(headers);
-        const listsToFetch = SP_LIST_NAMES.filter(name =>
-            availableLists.some(avail => avail.toLowerCase() === name.toLowerCase())
-        );
-
-        // Si no matcheó ninguna, intentamos con todas las disponibles (excluyendo listas del sistema)
-        const finalLists = listsToFetch.length > 0 ? listsToFetch : availableLists.filter(l =>
-            !['Documents', 'Site Pages', 'Form Templates', 'Style Library', 'Site Assets'].includes(l)
-        );
-
-        console.log("📥 Listas a leer:", finalLists);
-        document.getElementById('listaBadge').textContent = `${finalLists.length} lista(s) encontrada(s)`;
+        document.getElementById('listaBadge').textContent = `Conectado al sitio`;
         document.getElementById('listaBadge').classList.remove('hidden');
 
-        // 3. Leer cada lista
+        // 2. Leer cada lista hardcodeada
         let allItems = [];
-        for (const name of finalLists) {
+        for (const name of SP_LIST_NAMES) {
             const items = await fetchList(name, headers);
             allItems = allItems.concat(items);
         }
