@@ -208,7 +208,7 @@
 </main>
 
 <!-- ═══════════════════════════════════════
-     MODAL EDICIÓN  (HTML CORREGIDO)
+     MODAL EDICIÓN
 ═══════════════════════════════════════ -->
 <div id="editModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal()"></div>
@@ -329,12 +329,12 @@ const msalConfig = {
     cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
 };
 
-// IMPORTANTE: El scope debe usar el dominio exacto de SharePoint
 const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/AllSites.Read", "https://grupoimade.sharepoint.com/AllSites.Write"] };
 
 // ── URLs SharePoint ──────────────────────────────────────────────
-// Probamos las variantes del nombre del sitio con y sin tilde
+// SE AGREGÓ LA RUTA RAÍZ PRIMERO, PUES EL SITIO PUEDE ESTAR AHÍ.
 const SITE_URLS = [
+    "https://grupoimade.sharepoint.com", // <-- Solución añadida aquí
     "https://grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios",
     "https://grupoimade.sharepoint.com/sites/ConfirmaciondeDepositosBancarios",
     "https://grupoimade.sharepoint.com/sites/ConfirmacióndeDepositosBancarios"
@@ -436,7 +436,6 @@ async function getToken() {
         const res = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: accounts[0] });
         return res.accessToken;
     } catch (e) {
-        // Si falla silent, intenta con popup
         const res = await msalInstance.acquireTokenPopup({ ...tokenRequest, account: accounts[0] });
         return res.accessToken;
     }
@@ -453,7 +452,7 @@ async function detectSiteUrl(headers) {
             }
         } catch (e) { /* continuar */ }
     }
-    throw new Error("No se pudo conectar al sitio de SharePoint. Verifica la URL del sitio.");
+    throw new Error("No se pudo conectar al sitio de SharePoint. Verifica la URL del sitio y asegúrate de tener permisos.");
 }
 
 // ── DETECTAR LISTAS DISPONIBLES ──────────────────────────────────
@@ -469,7 +468,6 @@ async function getAvailableLists(headers) {
 // ── LEER UNA LISTA ───────────────────────────────────────────────
 async function fetchList(listName, headers) {
     try {
-        // Primero verificamos que la lista existe
         const checkRes = await fetch(
             `${activeSiteUrl}/_api/web/lists/getByTitle('${encodeURIComponent(listName)}')/Fields?$select=Title,InternalName,TypeAsString`,
             { headers }
@@ -483,7 +481,6 @@ async function fetchList(listName, headers) {
         const fields = fieldsData.value;
         console.log(`📊 Lista "${listName}" - Columnas:`, fields.map(f => `${f.Title} (${f.InternalName})`));
 
-        // Búsqueda flexible de columnas
         const findField = (...keywords) => {
             for (const kw of keywords) {
                 const f = fields.find(x =>
@@ -504,7 +501,6 @@ async function fetchList(listName, headers) {
 
         console.log(`🔑 Campos mapeados - Correo:${fCorreo} Obs:${fObs} Estado:${fEstado} Link:${fLink} Com:${fCom} Fecha:${fFecha}`);
 
-        // Construir query
         const expandFields = ['Author', 'AttachmentFiles'];
         const fvtFields = [fCorreo, fObs, fEstado, fLink, fCom, fFecha].filter(Boolean);
         if (fvtFields.length) expandFields.push('FieldValuesAsText');
