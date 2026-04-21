@@ -1,908 +1,593 @@
 <!DOCTYPE html>
 <html lang="es" class="antialiased">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gestión de Depósitos - Grupo Imade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard de Documentos · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- LIBRERÍA OFICIAL DE MICROSOFT PARA AUTENTICACIÓN (MSAL) -->
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+
+    <style>
+        /* ==========================================
+           CSS BASE (Grupo Imade)
+        ========================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255, 255, 255, 0.72);
+            --border: rgba(0, 0, 0, 0.07);
+            --border-mid: rgba(0, 0, 0, 0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10, 132, 255, 0.08);
+            --green: #30D158;
+            --green-soft: rgba(48, 209, 88, 0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255, 69, 58, 0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255, 159, 10, 0.10);
+            --blue-soft: rgba(10, 132, 255, 0.10);
+            
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+            --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 4px; }
+
+        #shell { display: flex; height: 100vh; overflow: hidden; }
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+        /* ==========================================
+           LOADER GLOBAL
+        ========================================== */
+        #globalLoader { position: fixed; inset: 0; z-index: 9999; background: rgba(242, 242, 247, 0.85); backdrop-filter: blur(32px) saturate(180%); -webkit-backdrop-filter: blur(32px) saturate(180%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, transform 0.6s ease; }
+        #globalLoader.fade-out { opacity: 0; pointer-events: none; transform: scale(1.02); }
+        .loader-card { background: var(--surface-glass); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: var(--radius-xl); padding: 36px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: var(--shadow-float); }
+        .loader-ring { width: 44px; height: 44px; border: 3px solid rgba(10, 132, 255, 0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { text-align: center; }
+        .loader-text strong { display: block; font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+        .loader-text span { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: block; }
+
+        /* Header */
+        #appHeader {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(242, 242, 247, 0.80);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 40;
+            position: sticky;
+            top: 0;
+        }
+
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
+        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
+        .breadcrumb .current { color: var(--text); font-weight: 600; }
+
+        /* Page Content */
+        #pageContent { flex: 1; overflow-y: auto; padding: 32px 28px 60px; }
+        .page-header { margin-bottom: 32px; text-align: left; }
+        .page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.8px; color: var(--text); line-height: 1.1; margin-bottom: 8px; }
+        .page-sub { font-size: 15px; color: var(--text-muted); font-weight: 400; max-width: 100%; line-height: 1.5; }
+
+        /* Buttons */
+        .btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: white; border: none; border-radius: 100px; padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(10, 132, 255, 0.25); letter-spacing: -0.2px; text-decoration: none; }
+        .btn-pill:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(10, 132, 255, 0.35); color: white; }
+        .btn-pill:active { transform: scale(0.98); }
+
+        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 11px 22px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s, transform 0.1s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(10, 132, 255, 0.30); }
+
+        .qa-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.15s ease; box-shadow: var(--shadow-sm); }
+        .qa-btn:hover { background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .qa-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+        /* Cards */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow 0.3s, opacity 0.3s; margin-bottom: 20px; }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-header { padding: 20px 28px; border-bottom: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; }
+        .card-header-left { display: flex; align-items: center; gap: 14px; }
+        .card-body { padding: 24px 28px; }
+        
+        /* Elements */
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
+        .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .status-pill.pending { background: var(--orange-soft); color: var(--orange); border: 1px solid rgba(255, 159, 10, 0.2); }
+        .status-pill.approved { background: var(--green-soft); color: var(--green); border: 1px solid rgba(48, 209, 88, 0.2); }
+        .status-pill.rejected { background: var(--red-soft); color: var(--red); border: 1px solid rgba(255, 69, 58, 0.2); }
+
+        .obs-box { background: linear-gradient(135deg, rgba(10, 132, 255, 0.03), rgba(10, 132, 255, 0.01)); border: 1px solid rgba(10, 132, 255, 0.12); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; }
+        .obs-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: block; }
+        .obs-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+        /* Files Grid */
+        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+        .file-item { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; }
+        .file-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(10, 132, 255, 0.1); transform: translateY(-2px); }
+        .file-item .fi-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; font-size: 24px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--border-mid); }
+        .file-item .fi-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .file-item .fi-body { flex: 1; min-width: 0; }
+        .file-item .fi-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .file-item .fi-link-icon { color: var(--text-muted); margin-left: 10px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; transition: all 0.2s; }
+        .file-item:hover .fi-link-icon { background: var(--accent-soft); color: var(--accent); }
+
+        /* Empty State */
+        .empty-state { padding: 64px 24px; text-align: center; background: var(--surface); border: 2px dashed var(--border-mid); border-radius: var(--radius-xl); margin-top: 20px; }
+        .empty-state i { font-size: 56px; color: var(--text-muted); margin-bottom: 16px; opacity: 0.5; }
+        .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
+        .empty-state p { font-size: 14px; color: var(--text-muted); max-width: 320px; margin: 0 auto; line-height: 1.5; }
+
+        /* Toasts */
+        #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: 100px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; color: var(--text); pointer-events: auto; transform: translateY(-12px); opacity: 0; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.hide { transform: translateY(-8px); opacity: 0; transition: all 0.25s ease; }
+        .toast-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+        .toast-icon.success { background: var(--green); color: white; }
+        .toast-icon.error { background: var(--red); color: white; }
+        .toast-icon.info { background: var(--accent); color: white; }
+
+        /* Layout */
+        .dashboard-container { max-width: 1000px; margin: 0 auto; }
+
+        /* Responsividad */
+        @media (max-width: 768px) {
+            #appHeader { padding: 0 16px; }
+            .breadcrumb { font-size: 13px; }
+            .breadcrumb .root { display: none; }
+            .breadcrumb .sep { display: none; }
+            .btn-pill { padding: 8px 16px; font-size: 13px; gap: 6px; }
+            .btn-pill i { font-size: 16px !important; }
+            
+            #pageContent { padding: 24px 16px 40px; }
+            .page-title { font-size: 24px; margin-bottom: 6px; }
+            .page-sub { font-size: 13.5px; }
+            
+            .card-header { padding: 16px; flex-direction: column; align-items: flex-start; gap: 16px; }
+            .card-body { padding: 16px; }
+            .obs-box { padding: 16px; margin-bottom: 16px; }
+            .files-grid { grid-template-columns: 1fr; }
+            .card-actions { width: 100%; display: flex; gap: 8px; }
+            .card-actions .qa-btn { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- GLOBAL LOADER -->
+    <div id="globalLoader">
+        <div class="loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-text" id="loaderText">
+                <strong>Portal Grupo Imade</strong>
+                <span>Verificando autenticación con Microsoft 365...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer"></div>
+
+    <div id="shell">
+        <div id="main">
+            
+            <!-- HEADER -->
+            <header id="appHeader">
+                <div class="breadcrumb">
+                    <span class="root">Portal ERP</span>
+                    <span class="sep">›</span>
+                    <span class="current">Dashboard de Revisión</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="inicio.html" class="btn-pill">
+                        <i class="ph-bold ph-arrow-left" style="font-size: 18px;"></i> Volver a Inicio
+                    </a>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <div id="pageContent">
+                <div class="dashboard-container">
+                    
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard de Revisión</h1>
+                        <p class="page-sub">Audita, confirma o rechaza las boletas de depósito enviadas. Conectado directamente con SharePoint vía Azure AD.</p>
+                    </div>
+
+                    <!-- Pestañas de filtrado -->
+                    <div id="filter-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
+                        <button class="qa-btn active" onclick="setFilter('Todas', this)">Todos los elementos</button>
+                        <button class="qa-btn" onclick="setFilter('Pendiente', this)">Pendientes</button>
+                        <button class="qa-btn" onclick="setFilter('Boleta Confirmada', this)">Boletas Confirmadas</button>
+                        <button class="qa-btn" onclick="setFilter('Boleta rechazada', this)">Boletas Rechazadas</button>
+                    </div>
+
+                    <!-- Contenedor dinámico de tarjetas -->
+                    <div id="dashboard-container">
+                        <!-- Las tarjetas o el botón de login se generan vía JavaScript -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SCRIPT: CONEXIÓN DIRECTA AZURE AD -> GRAPH API -> SHAREPOINT
+         ════════════════════════════════════════════════════════════════════ -->
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','"SF Pro Display"','"SF Pro Text"','"Helvetica Neue"','Arial','sans-serif'] },
-                    colors: {
-                        apple: {
-                            bg:'#F5F5F7', card:'#FFFFFF', text:'#1D1D1F', textMuted:'#86868B',
-                            blue:'#007AFF', blueHover:'#0066CC', blueLight:'#E5F0FF',
-                            green:'#34C759', greenLight:'#E8F8F0',
-                            red:'#FF3B30', redLight:'#FFEBEB',
-                            orange:'#FF9500', border:'#E5E5EA'
-                        }
-                    },
-                    boxShadow: {
-                        'apple-soft':'0 4px 24px rgba(0,0,0,0.04)',
-                        'apple-floating':'0 10px 40px rgba(0,0,0,0.08)',
-                    }
+        // 1. CONFIGURACIÓN DE AZURE AD (Extraída de tu captura de Azure)
+        const msalConfig = {
+            auth: {
+                clientId: "b20040c9-f017-4d32-8d9f-b2914465bf1a",
+                authority: "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
+                // ¡IMPORTANTE! 
+                // En Azure registraste "https://tecnologiadeinformacionimade-hub.github.io/system_imade/depositos.html"
+                // El login SÓLO funcionará si subes este archivo a Github Pages con ese mismo nombre (depositos.html).
+                redirectUri: window.location.href.split('?')[0] 
+            },
+            cache: {
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: false,
+            }
+        };
+
+        // Permisos requeridos (Los mismos que aceptaste en tu captura de "Permisos de API")
+        const tokenRequest = {
+            scopes: ["User.Read", "Sites.ReadWrite.All"]
+        };
+
+        // Instancia de Microsoft Authentication Library
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        // Variables de sesión
+        let accessToken = "";
+        let submissions = []; 
+        let currentFilter = 'Todas';
+        
+        // Detalles de tu SharePoint (Extraídos de la URL en tu captura)
+        const GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0";
+        const SP_HOSTNAME = "grupoimade.sharepoint.com";
+        const SP_SITE_PATH = "/sites/ConfirmacindeDepositosBancarios";
+        const SP_LIST_NAME = "Confirmación de Depositos Bancarios";
+
+        let siteId = "";
+        let listId = "";
+
+        // ════════════════════════════════════════
+        // INICIALIZACIÓN Y LOGIN
+        // ════════════════════════════════════════
+        async function init() {
+            try {
+                // MSAL procesa la respuesta si venimos redirigidos del login de Microsoft
+                const response = await msalInstance.handleRedirectPromise();
+                const accounts = msalInstance.getAllAccounts();
+
+                if (accounts.length > 0) {
+                    // El usuario ya inició sesión
+                    document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Descargando datos de SharePoint...</span>";
+                    msalInstance.setActiveAccount(accounts[0]);
+                    await acquireTokenAndFetchData();
+                } else {
+                    // El usuario NO ha iniciado sesión
+                    showLoginScreen();
+                }
+            } catch (error) {
+                console.error("Error en MSAL:", error);
+                showLoginScreen(true);
+            }
+        }
+
+        function showLoginScreen(hasError = false) {
+            removeLoader();
+            const container = document.getElementById('dashboard-container');
+            container.innerHTML = `
+                <div class="empty-state" style="padding: 80px 20px;">
+                    <div style="width: 64px; height: 64px; background: #0A84FF; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 25px rgba(10,132,255,0.3);">
+                        <i class="ph-bold ph-microsoft-logo" style="font-size: 32px; color: white;"></i>
+                    </div>
+                    <h3 style="font-size: 22px;">Conexión Segura con Microsoft 365</h3>
+                    <p style="max-width: 400px; margin-bottom: 24px;">Debes autenticarte con tu cuenta corporativa para leer y aprobar los depósitos directamente en SharePoint.</p>
+                    ${hasError ? `<p style="color: var(--red); font-size: 12px; margin-bottom: 15px;">Asegúrate de ejecutar esta página desde la URL registrada en Azure (GitHub Pages).</p>` : ''}
+                    <button onclick="loginMicrosoft()" class="btn-primary" style="padding: 14px 32px; font-size: 16px;">
+                        Iniciar Sesión
+                    </button>
+                </div>
+            `;
+        }
+
+        function loginMicrosoft() {
+            msalInstance.loginRedirect(tokenRequest);
+        }
+
+        async function acquireTokenAndFetchData() {
+            try {
+                const tokenResponse = await msalInstance.acquireTokenSilent(tokenRequest);
+                accessToken = tokenResponse.accessToken;
+                await loadSharePointData();
+            } catch (error) {
+                if (error instanceof msal.InteractionRequiredAuthError) {
+                    // Si el token expiró, pide login otra vez
+                    msalInstance.loginRedirect(tokenRequest);
+                } else {
+                    console.error("Error obteniendo token:", error);
+                    showToast("Error de permisos en Azure", "error");
+                    removeLoader();
                 }
             }
         }
+
+        // ════════════════════════════════════════
+        // LLAMADAS A MICROSOFT GRAPH API
+        // ════════════════════════════════════════
+        async function loadSharePointData() {
+            try {
+                // 1. Obtener el ID del Sitio de SharePoint
+                let res = await fetch(`${GRAPH_ENDPOINT}/sites/${SP_HOSTNAME}:${SP_SITE_PATH}`, {
+                    headers: { "Authorization": `Bearer ${accessToken}` }
+                });
+                let siteData = await res.json();
+                siteId = siteData.id;
+
+                if (!siteId) throw new Error("No se encontró el sitio");
+
+                // 2. Obtener el ID de la Lista
+                res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists`, {
+                    headers: { "Authorization": `Bearer ${accessToken}` }
+                });
+                let listsData = await res.json();
+                
+                // Buscamos la lista por nombre (A veces tiene espacios URL-encoded)
+                let list = listsData.value.find(l => l.displayName === SP_LIST_NAME || l.name.includes("Confirmacin"));
+                if (!list) list = listsData.value[0]; // Fallback a la primera lista que encuentre
+                listId = list.id;
+
+                // 3. Descargar los Items de la lista
+                // Se usa expand=fields para traer el contenido de las columnas personalizadas
+                res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items?expand=fields`, {
+                    headers: { 
+                        "Authorization": `Bearer ${accessToken}`,
+                        "Prefer": "HonorNonIndexedQueriesWarningMayFailRandomly"
+                    }
+                });
+                let itemsData = await res.json();
+
+                // 4. Mapear los datos de Microsoft al Dashboard
+                submissions = itemsData.value.map(item => {
+                    const fields = item.fields;
+                    
+                    // Buscar imagen (Graph devuelve nombres internos de columna)
+                    let adjuntos = [];
+                    if (fields.Link_x0020_de_x0020_imagen) {
+                        adjuntos = [{ name: 'Ver Imagen Adjunta', url: fields.Link_x0020_de_x0020_imagen }];
+                    }
+
+                    return {
+                        id: item.id,
+                        date: fields.Fecha_x0020_y_x0020_Hora || fields.Created || 'Fecha desconocida',
+                        status: fields.Estado || 'Pendiente',
+                        user: fields.Correo_x0020_Electronico || fields.Author || 'Usuario del Form',
+                        observaciones: fields.Observaciones || 'Sin observaciones.',
+                        files: adjuntos
+                    };
+                });
+
+            } catch (e) {
+                console.error("Error Graph API:", e);
+                showToast('Error conectando con la Base de Datos de SharePoint', 'error');
+            } finally {
+                removeLoader();
+                renderDashboard();
+            }
+        }
+
+        // ════════════════════════════════════════
+        // FILTROS Y RENDERIZADO
+        // ════════════════════════════════════════
+        function setFilter(status, btnElement) {
+            currentFilter = status;
+            const tabs = document.getElementById('filter-tabs').querySelectorAll('.qa-btn');
+            tabs.forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('dashboard-container');
+            
+            const filteredSubmissions = submissions.filter(sub => {
+                if (currentFilter === 'Todas') return true;
+                if (currentFilter === 'Pendiente' && (!sub.status || sub.status === 'Pendiente')) return true;
+                return sub.status === currentFilter;
+            });
+
+            if (filteredSubmissions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="ph ph-tray"></i>
+                        <h3>Bandeja Vacía</h3>
+                        <p>No hay boletas que coincidan con los filtros en tu SharePoint.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredSubmissions.map(sub => `
+                <div class="card" id="card-${sub.id}">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border-mid); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow-sm);">
+                                <i class="ph-fill ph-receipt text-gray-500" style="color: var(--text-muted);"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px;">
+                                    Registro SP-${sub.id}
+                                    ${getBadgeHTML(sub.status)}
+                                </h3>
+                                <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 3px;">
+                                    Enviado por <strong style="color: var(--text-2);">${sub.user}</strong> el ${sub.date.replace('T', ' ').substring(0, 16)}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="card-actions" style="display:flex; align-items:center; gap:8px;">
+                            ${(!sub.status || sub.status === 'Pendiente') ? `
+                                <button onclick="changeStatus('${sub.id}', 'Boleta Confirmada')" class="qa-btn" style="color:var(--green); border-color:var(--green-soft);" title="Confirmar Boleta">
+                                    <i class="ph-bold ph-check" style="font-size:16px;"></i> Confirmar
+                                </button>
+                                <button onclick="changeStatus('${sub.id}', 'Boleta rechazada')" class="qa-btn" style="color:var(--red); border-color:var(--red-soft);" title="Rechazar Boleta">
+                                    <i class="ph-bold ph-x" style="font-size:16px;"></i> Rechazar
+                                </button>
+                            ` : `
+                                <button onclick="changeStatus('${sub.id}', 'Pendiente')" class="qa-btn" style="font-size: 12px; padding: 6px 12px;" title="Revertir a Pendiente">
+                                    <i class="ph ph-arrow-u-up-left" style="font-size:14px;"></i> Deshacer
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="obs-box">
+                            <span class="obs-label">Observaciones del Usuario</span>
+                            <p class="obs-text">${sub.observaciones}</p>
+                        </div>
+
+                        <span class="obs-label" style="color: var(--text-2);">Enlaces / Archivos (${sub.files ? sub.files.length : 0})</span>
+                        <div class="files-grid">
+                            ${(sub.files || []).map(file => `
+                                <a href="${file.url || '#'}" target="_blank" class="file-item">
+                                    <div class="fi-icon" style="color: var(--blue-soft);">
+                                        <img src="${file.url}" alt="Adjunto" onerror="this.src=''; this.parentNode.innerHTML='<i class=\\'ph-fill ph-link\\'></i>'" style="border-radius:8px">
+                                    </div>
+                                    <div class="fi-body">
+                                        <div class="fi-name" title="${file.name}">${file.name}</div>
+                                    </div>
+                                    <div class="fi-link-icon">
+                                        <i class="ph-bold ph-arrow-square-out" style="font-size:16px"></i>
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ════════════════════════════════════════
+        // ACTUALIZAR ESTADO EN SHAREPOINT DIRECTO
+        // ════════════════════════════════════════
+        async function changeStatus(id, newStatus) {
+            const index = submissions.findIndex(s => s.id === id);
+            if (index === -1) return;
+
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                card.style.opacity = '0.5';
+                card.style.pointerEvents = 'none'; 
+            }
+
+            try {
+                // Hacer petición PATCH directamente a Microsoft Graph
+                const res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${id}/fields`, { 
+                    method: 'PATCH', 
+                    headers: { 
+                        "Authorization": `Bearer ${accessToken}`,
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({ 
+                        "Estado": newStatus 
+                    }) 
+                });
+
+                if (res.ok) {
+                    submissions[index].status = newStatus;
+                    renderDashboard(); 
+                    
+                    if (newStatus === 'Boleta Confirmada') showToast(`Actualizado en SharePoint: Confirmada`, 'success');
+                    else if (newStatus === 'Boleta rechazada') showToast(`Actualizado en SharePoint: Rechazada`, 'error');
+                    else showToast(`Revertido a Pendiente`, 'info');
+                } else {
+                    const errData = await res.json();
+                    console.error("Error PATCH Graph API:", errData);
+                    showToast('No tienes permisos de escritura o error en SharePoint', 'error');
+                    if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Error de conexión con Microsoft 365', 'error');
+                if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
+            }
+        }
+
+        function getBadgeHTML(status) {
+            if (status === 'Boleta Confirmada') return `<span class="status-pill approved">Confirmada</span>`;
+            if (status === 'Boleta rechazada') return `<span class="status-pill rejected">Rechazada</span>`;
+            return `<span class="status-pill pending">Pendiente</span>`;
+        }
+
+        function removeLoader() {
+            const el = document.getElementById('globalLoader');
+            if (el) { 
+                el.classList.add('fade-out'); 
+                setTimeout(() => el.remove(), 650); 
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const cont = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            const iconChar = type === 'error' ? '✕' : (type === 'info' ? '→' : '✓');
+            t.innerHTML = `<div class="toast-icon ${type}">${iconChar}</div><span>${msg}</span>`;
+            cont.appendChild(t);
+            requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+            setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        // Arrancar el proceso de MSAL al cargar la página
+        window.onload = init;
+
     </script>
-    <style>
-        body { background-color:#F5F5F7; color:#1D1D1F; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-        .apple-navbar { background-color:rgba(255,255,255,0.85); backdrop-filter:saturate(180%) blur(20px); border-bottom:0.5px solid rgba(0,0,0,0.1); }
-        .apple-input { background-color:#F2F2F7; border:1.5px solid transparent; transition:all 0.2s; border-radius:10px; padding:10px 14px; width:100%; outline:none; font-size:14px; }
-        .apple-input:focus { background-color:#FFFFFF; border-color:#007AFF; box-shadow:0 0 0 3px rgba(0,122,255,0.15); }
-        .apple-search { background-color:rgba(118,118,128,0.12); border:none; outline:none; }
-        .apple-active:active { transform:scale(0.96); opacity:0.8; }
-        .segmented-control { background-color:rgba(118,118,128,0.12); padding:2px; border-radius:8px; display:inline-flex; }
-        .segmented-btn { padding:5px 16px; font-size:13px; font-weight:500; border-radius:6px; transition:all 0.2s ease; cursor:pointer; border:none; background:transparent; }
-        .segmented-btn.active { background-color:#FFFFFF; box-shadow:0 3px 8px rgba(0,0,0,0.12); font-weight:600; }
-        .skeleton { background:linear-gradient(90deg,#E5E5EA 25%,#F2F2F7 37%,#E5E5EA 63%); background-size:400% 100%; animation:skeleton-loading 1.4s ease infinite; }
-        @keyframes skeleton-loading { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
-        .apple-spinner { width:36px; height:36px; border:3px solid rgba(118,118,128,0.2); border-top-color:#007AFF; border-radius:50%; animation:spin 0.8s linear infinite; }
-        @keyframes spin { 100%{transform:rotate(360deg)} }
-        ::-webkit-scrollbar { width:5px; height:5px; }
-        ::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.15); border-radius:10px; }
-        .modal-open { overflow:hidden; }
-        tr.hover-row:hover { background-color:#F9F9FB; }
-    </style>
-</head>
-<body class="text-apple-text min-h-screen flex flex-col">
-
-<!-- ═══════════════════════════════════════
-     LOADER GLOBAL
-═══════════════════════════════════════ -->
-<div id="globalLoader" class="fixed inset-0 bg-white/70 backdrop-blur-xl z-[9999] hidden items-center justify-center flex-col">
-    <div class="apple-spinner mb-4"></div>
-    <p class="text-[15px] font-semibold text-apple-text">Sincronizando con SharePoint...</p>
-</div>
-
-<!-- ═══════════════════════════════════════
-     TOASTS
-═══════════════════════════════════════ -->
-<div id="toastContainer" class="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none items-center w-full max-w-md px-4"></div>
-
-<!-- ═══════════════════════════════════════
-     NAVBAR
-═══════════════════════════════════════ -->
-<nav class="apple-navbar sticky top-0 z-50 w-full">
-    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-14 items-center gap-4">
-            <div class="flex items-center gap-3 shrink-0">
-                <div class="w-8 h-8 rounded-[10px] bg-apple-orange flex items-center justify-center text-white font-bold text-base shadow-sm">Q</div>
-                <div>
-                    <h1 class="text-[15px] font-semibold tracking-tight leading-tight">Grupo Imade</h1>
-                    <span class="text-[11px] text-apple-textMuted font-medium leading-tight">Módulo de Depósitos</span>
-                </div>
-            </div>
-            <div class="hidden md:flex flex-1 max-w-sm relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="globalSearch" placeholder="Buscar por correo, estado o ID..." class="apple-search w-full pl-9 pr-4 py-1.5 rounded-[10px] text-[13px] placeholder-gray-400">
-            </div>
-            <div class="flex items-center gap-3 shrink-0">
-                <a href="inicio.html" class="apple-active flex items-center gap-1.5 text-apple-blue font-medium text-[13px]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-                    <span class="hidden sm:inline">Inicio</span>
-                </a>
-                <button onclick="openSettingsModal()" class="apple-active w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 flex items-center justify-center text-white font-semibold text-xs shadow-sm" id="userAvatar">?</button>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<!-- ═══════════════════════════════════════
-     PANTALLA DE CARGA AUTH
-═══════════════════════════════════════ -->
-<div id="authLoadingScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
-    <div class="apple-spinner mb-6"></div>
-    <h2 class="text-[22px] font-semibold tracking-tight mb-2">Conectando con Microsoft</h2>
-    <p class="text-[13px] text-apple-textMuted max-w-xs" id="authStatusText">Verificando acceso a SharePoint...</p>
-    <button onclick="retryAuth()" id="retryBtn" class="hidden mt-6 px-5 py-2.5 bg-apple-blue text-white rounded-full text-[13px] font-semibold">Reintentar</button>
-</div>
-
-<!-- ═══════════════════════════════════════
-     DASHBOARD
-═══════════════════════════════════════ -->
-<main id="dashboardScreen" class="hidden flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <!-- Encabezado -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-        <div>
-            <h2 class="text-[32px] font-bold tracking-tight leading-none">Depósitos Bancarios</h2>
-            <p class="text-[15px] text-apple-textMuted mt-1.5">Validación de boletas y transferencias</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="loadData()" class="apple-active flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-apple-border shadow-sm text-[13px] font-semibold hover:bg-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                Actualizar
-            </button>
-            <button onclick="exportToCSV()" class="apple-active flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-apple-border shadow-sm text-[13px] font-semibold hover:bg-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Exportar CSV
-            </button>
-        </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
-            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
-            </div>
-            <h3 id="statTotal" class="text-[28px] font-bold text-apple-text leading-none">--</h3>
-            <p class="text-[12px] font-medium text-apple-textMuted mt-1">Total Registros</p>
-        </div>
-        <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
-            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <h3 id="statPendiente" class="text-[28px] font-bold text-apple-text leading-none">--</h3>
-            <p class="text-[12px] font-medium text-apple-textMuted mt-1">Pendientes</p>
-        </div>
-        <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
-            <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-apple-green mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <h3 id="statFinalizado" class="text-[28px] font-bold text-apple-text leading-none">--</h3>
-            <p class="text-[12px] font-medium text-apple-textMuted mt-1">Confirmados</p>
-        </div>
-        <div class="bg-white rounded-[20px] p-5 shadow-apple-soft border border-apple-border/50">
-            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-apple-red mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>
-            </div>
-            <h3 id="statRechazado" class="text-[28px] font-bold text-apple-text leading-none">--</h3>
-            <p class="text-[12px] font-medium text-apple-textMuted mt-1">Rechazados</p>
-        </div>
-    </div>
-
-    <!-- Tabla -->
-    <div class="bg-white rounded-[24px] shadow-apple-soft border border-apple-border overflow-hidden" style="min-height:480px;">
-        <!-- Filtros -->
-        <div class="px-5 py-4 border-b border-apple-border flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="segmented-control overflow-x-auto w-full sm:w-auto">
-                <button onclick="changeTab('Pendiente')" id="tab-Pendiente" class="segmented-btn active whitespace-nowrap">⏳ Pendientes</button>
-                <button onclick="changeTab('Confirmada')" id="tab-Confirmada" class="segmented-btn whitespace-nowrap">✅ Confirmados</button>
-                <button onclick="changeTab('Rechazada')" id="tab-Rechazada" class="segmented-btn whitespace-nowrap">❌ Rechazados</button>
-                <button onclick="changeTab('Todos')" id="tab-Todos" class="segmented-btn whitespace-nowrap">Todos</button>
-            </div>
-            <span id="listaBadge" class="text-[11px] text-apple-textMuted font-medium bg-gray-100 px-3 py-1 rounded-full whitespace-nowrap hidden"></span>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-apple-border bg-gray-50/70">
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortData('Id')">ID <span id="sort-Id"></span></th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortData('Fecha')">Fecha <span id="sort-Fecha"></span></th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider">Correo Electrónico</th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider">Observaciones</th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider text-center">Boleta</th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider text-center">Estado</th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider text-center">Lista</th>
-                        <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider text-right">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-gray-100">
-                    <tr><td colspan="8" class="px-6 py-4"><div class="h-5 skeleton rounded w-full"></div></td></tr>
-                    <tr><td colspan="8" class="px-6 py-4"><div class="h-5 skeleton rounded w-4/5"></div></td></tr>
-                    <tr><td colspan="8" class="px-6 py-4"><div class="h-5 skeleton rounded w-3/5"></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Paginación -->
-        <div class="px-5 py-3 border-t border-apple-border bg-gray-50/50 flex items-center justify-between gap-4">
-            <span class="text-[12px] text-apple-textMuted" id="paginationInfo">—</span>
-            <div class="flex items-center gap-1.5">
-                <button onclick="changePage(-1)" id="btnPrevPage" class="apple-active w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:border-apple-blue hover:text-apple-blue transition-colors disabled:opacity-30 disabled:pointer-events-none">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <div id="pageNumbers" class="flex gap-1"></div>
-                <button onclick="changePage(1)" id="btnNextPage" class="apple-active w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:border-apple-blue hover:text-apple-blue transition-colors disabled:opacity-30 disabled:pointer-events-none">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-</main>
-
-<!-- ═══════════════════════════════════════
-     MODAL EDICIÓN
-═══════════════════════════════════════ -->
-<div id="editModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal()"></div>
-    <div class="bg-white rounded-[28px] shadow-apple-floating w-full max-w-3xl relative flex flex-col max-h-[90vh] z-10 overflow-hidden">
-
-        <!-- Header modal -->
-        <div class="px-7 py-5 border-b border-apple-border flex justify-between items-center shrink-0">
-            <div>
-                <p class="text-[12px] text-apple-textMuted font-medium uppercase tracking-wider mb-0.5">Revisión de Depósito</p>
-                <h3 class="text-[20px] font-bold text-apple-text leading-none">Registro #<span id="modalId">--</span></h3>
-            </div>
-            <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>
-            </button>
-        </div>
-
-        <!-- Body modal -->
-        <div class="overflow-y-auto flex-1 p-7">
-            <!-- Info básica -->
-            <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-2xl">
-                <div>
-                    <p class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider mb-1">Correo</p>
-                    <p class="text-[14px] font-semibold text-apple-blue" id="modalCorreo">—</p>
-                </div>
-                <div>
-                    <p class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider mb-1">Fecha</p>
-                    <p class="text-[14px] font-medium text-apple-text" id="modalFecha">—</p>
-                </div>
-            </div>
-
-            <!-- Boleta / Adjunto -->
-            <div class="mb-6">
-                <p class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider mb-2">Boleta / Imagen</p>
-                <div id="modalAdjuntos" class="flex flex-col gap-2"></div>
-            </div>
-
-            <!-- Estado -->
-            <div class="mb-4">
-                <label class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider block mb-2">Estado</label>
-                <select id="inputEstado" class="apple-input">
-                    <option value="Pendiente">⏳ Pendiente</option>
-                    <option value="Boleta Confirmada">✅ Boleta Confirmada</option>
-                    <option value="Boleta rechazada">❌ Boleta Rechazada</option>
-                </select>
-            </div>
-
-            <!-- Observaciones -->
-            <div class="mb-4">
-                <label class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider block mb-2">Observaciones</label>
-                <textarea id="inputObservaciones" rows="2" class="apple-input resize-none" placeholder="Observaciones sobre el depósito..."></textarea>
-            </div>
-
-            <!-- Comentarios internos -->
-            <div class="mb-2">
-                <label class="text-[11px] font-semibold text-apple-textMuted uppercase tracking-wider block mb-2">Comentarios Internos</label>
-                <textarea id="inputComentarios" rows="2" class="apple-input resize-none" placeholder="Notas internas del revisor..."></textarea>
-            </div>
-        </div>
-
-        <!-- Footer modal -->
-        <div class="px-7 py-4 border-t border-apple-border bg-gray-50/60 flex justify-end gap-3 shrink-0">
-            <button onclick="closeModal()" class="apple-active px-5 py-2.5 rounded-full bg-gray-100 text-apple-text text-[13px] font-semibold hover:bg-gray-200 transition-colors">Cancelar</button>
-            <button id="btnSave" onclick="saveItemChanges()" class="apple-active px-6 py-2.5 rounded-full bg-apple-blue text-white text-[13px] font-semibold flex items-center gap-2 hover:bg-apple-blueHover transition-colors disabled:opacity-50">
-                <svg id="btnSaveSpinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full" style="animation:spin 0.7s linear infinite"></svg>
-                Guardar Cambios
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════
-     MODAL CONFIGURACIÓN
-═══════════════════════════════════════ -->
-<div id="settingsModal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeSettingsModal()"></div>
-    <div class="bg-white rounded-3xl shadow-apple-floating w-full max-w-sm p-6 relative z-10">
-        <div class="flex justify-between items-center mb-5">
-            <h3 class="text-[17px] font-semibold">Ajustes</h3>
-            <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>
-            </button>
-        </div>
-        <div class="p-4 bg-gray-50 rounded-2xl mb-5">
-            <p class="text-[12px] font-semibold text-apple-textMuted uppercase tracking-wider mb-1">Usuario</p>
-            <p class="text-[14px] font-semibold text-apple-text" id="settingsUser">—</p>
-            <p class="text-[12px] text-apple-textMuted mt-0.5" id="settingsEmail">—</p>
-        </div>
-        <p class="text-[13px] text-gray-500 mb-5">Conectado a SharePoint mediante Microsoft 365. Los datos se cargan en tiempo real.</p>
-        <button onclick="signOut()" class="w-full py-3 rounded-xl text-apple-red bg-apple-redLight font-semibold text-[14px] hover:bg-red-100 transition-colors">Cerrar Sesión</button>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════
-     SCRIPT PRINCIPAL
-═══════════════════════════════════════ -->
-<script>
-// ── ESTADO ──────────────────────────────────────────────────────
-const state = {
-    items: [],
-    filteredItems: [],
-    currentTab: 'Pendiente',
-    currentEditingId: null,
-    currentEditingList: null,
-    searchQuery: '',
-    sortCol: 'Fecha',
-    sortAsc: false,
-    page: 1,
-    itemsPerPage: 15
-};
-
-// ── CONFIGURACIÓN MSAL ───────────────────────────────────────────
-const msalConfig = {
-    auth: {
-        clientId: "b20040c9-f017-4d32-8d9f-b2914465bf1a",
-        authority: "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
-        redirectUri: window.location.href.split('?')[0].split('#')[0]
-    },
-    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
-};
-
-// CAMBIO CRÍTICO: Usar el scope ".default" obliga a Azure a entregar TODOS los permisos (AllSites) que ya aprobaste.
-const tokenRequest = { scopes: ["https://grupoimade.sharepoint.com/.default"] };
-
-// ── URLs SharePoint (ACTUALIZADO CON TUS LINKS EXACTOS) ──────────
-const SITE_URLS = [
-    "https://grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios"
-];
-const BASE_DOMAIN = "https://grupoimade.sharepoint.com";
-
-// Nombres exactos de las listas
-const SP_LIST_NAMES = [
-    'Confirmacin de Depositos Bancarios',
-    'Boletas Confirmadas',
-    'Boletas Rechazadas'
-];
-
-let msalInstance;
-let activeSiteUrl = SITE_URLS[0]; 
-
-// ── INIT ─────────────────────────────────────────────────────────
-window.onload = async () => {
-    document.getElementById('globalSearch').addEventListener('input', e => {
-        state.searchQuery = e.target.value;
-        state.page = 1;
-        processData();
-    });
-
-    try {
-        msalInstance = new msal.PublicClientApplication(msalConfig);
-        await initializeAuth();
-    } catch (e) {
-        setAuthError("Error MSAL: " + e.message);
-    }
-};
-
-// ── AUTH ─────────────────────────────────────────────────────────
-async function initializeAuth() {
-    try {
-        const res = await msalInstance.handleRedirectPromise();
-        if (res) {
-            showDashboard();
-            updateUserUI(res.account);
-            await loadData();
-        } else {
-            const accounts = msalInstance.getAllAccounts();
-            if (!accounts.length) {
-                setAuthStatus("Redirigiendo a Microsoft para autenticación...");
-                await msalInstance.loginRedirect(tokenRequest);
-            } else {
-                showDashboard();
-                updateUserUI(accounts[0]);
-                await loadData();
-            }
-        }
-    } catch (e) {
-        setAuthError("Error de autenticación: " + e.message);
-    }
-}
-
-function updateUserUI(account) {
-    if (!account) return;
-    const initials = (account.name || account.username || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    const avatar = document.getElementById('userAvatar');
-    if (avatar) avatar.textContent = initials;
-    document.getElementById('settingsUser').textContent = account.name || 'Usuario';
-    document.getElementById('settingsEmail').textContent = account.username || '';
-}
-
-function showDashboard() {
-    document.getElementById('authLoadingScreen').classList.add('hidden');
-    document.getElementById('dashboardScreen').classList.remove('hidden');
-}
-
-function setAuthStatus(msg) {
-    document.getElementById('authStatusText').textContent = msg;
-}
-
-function setAuthError(msg) {
-    document.getElementById('authStatusText').innerHTML = `<span class="text-red-500 font-semibold">${msg}</span>`;
-    document.getElementById('retryBtn').classList.remove('hidden');
-}
-
-async function retryAuth() {
-    document.getElementById('retryBtn').classList.add('hidden');
-    setAuthStatus("Reintentando...");
-    await initializeAuth();
-}
-
-function signOut() {
-    sessionStorage.clear();
-    msalInstance.logoutRedirect();
-}
-
-// ── TOKEN ────────────────────────────────────────────────────────
-async function getToken() {
-    const accounts = msalInstance.getAllAccounts();
-    if (!accounts.length) throw new Error("No hay sesión activa.");
-    try {
-        const res = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: accounts[0] });
-        return res.accessToken;
-    } catch (e) {
-        const res = await msalInstance.acquireTokenPopup({ ...tokenRequest, account: accounts[0] });
-        return res.accessToken;
-    }
-}
-
-// ── DETECTAR URL DEL SITIO ───────────────────────────────────────
-async function detectSiteUrl(headers) {
-    const url = SITE_URLS[0];
-    const res = await fetch(`${url}/_api/web/title`, { headers });
-    if (res.ok) {
-        console.log(`✅ Sitio verificado: ${url}`);
-        return url;
-    } else {
-        // CAMBIO: Ahora extraemos el mensaje exacto que Microsoft nos devuelve para saber por qué nos bloquea
-        let errStr = await res.text();
-        try { 
-            const j = JSON.parse(errStr); 
-            errStr = (j.error && j.error.message && j.error.message.value) ? j.error.message.value : errStr; 
-        } catch(e) {}
-        throw new Error(`HTTP ${res.status}: ${errStr} (Asegúrate de que tu usuario tenga permisos sobre este sitio)`);
-    }
-}
-
-// ── LEER UNA LISTA ───────────────────────────────────────────────
-async function fetchList(listName, headers) {
-    try {
-        const checkRes = await fetch(
-            `${activeSiteUrl}/_api/web/lists/getByTitle('${encodeURIComponent(listName)}')/Fields?$select=Title,InternalName,TypeAsString`,
-            { headers }
-        );
-        if (!checkRes.ok) {
-            console.warn(`⚠️ Lista "${listName}" no encontrada (${checkRes.status})`);
-            return [];
-        }
-
-        const fieldsData = await checkRes.json();
-        const fields = fieldsData.value;
-        console.log(`📊 Lista "${listName}" encontrada.`);
-
-        const findField = (...keywords) => {
-            for (const kw of keywords) {
-                const f = fields.find(x =>
-                    x.Title.toLowerCase().includes(kw.toLowerCase()) ||
-                    x.InternalName.toLowerCase().includes(kw.toLowerCase())
-                );
-                if (f) return f.InternalName;
-            }
-            return null;
-        };
-
-        const fCorreo   = findField('correo', 'email', 'mail');
-        const fObs      = findField('observaci', 'observacion');
-        const fEstado   = findField('estado', 'status', 'estado0');
-        const fLink     = findField('link', 'imagen', 'image', 'url', 'foto');
-        const fCom      = findField('comentario', 'comment', 'nota', 'note');
-        const fFecha    = findField('fecha', 'date', 'created0');
-
-        const expandFields = ['Author', 'AttachmentFiles'];
-        const fvtFields = [fCorreo, fObs, fEstado, fLink, fCom, fFecha].filter(Boolean);
-        if (fvtFields.length) expandFields.push('FieldValuesAsText');
-
-        const selectFields = ['*', 'Author/Title'];
-        fvtFields.forEach(f => selectFields.push(`FieldValuesAsText/${f}`));
-
-        const url = `${activeSiteUrl}/_api/web/lists/getByTitle('${encodeURIComponent(listName)}')/items?$top=5000&$select=${selectFields.join(',')}&$expand=${expandFields.join(',')}`;
-
-        const itemsRes = await fetch(url, { headers });
-        if (!itemsRes.ok) {
-            let errText = await itemsRes.text();
-            try { const j = JSON.parse(errText); errText = j.error?.message?.value || errText; } catch(e){}
-            console.error(`❌ Error leyendo items de "${listName}":`, errText);
-            return [];
-        }
-
-        const data = await itemsRes.json();
-        console.log(`✅ "${listName}" → ${data.value.length} registros`);
-
-        return data.value.map(item => {
-            const fvt = item.FieldValuesAsText || {};
-            const getVal = (internalName) => {
-                if (!internalName) return '';
-                return fvt[internalName] || item[internalName] || '';
-            };
-
-            return {
-                Id:                  item.Id,
-                Fecha:               getVal(fFecha) || item.Created || '',
-                _parsedCorreo:       getVal(fCorreo) || 'Sin correo',
-                _parsedObservaciones:getVal(fObs) || '',
-                _parsedEstado:       getVal(fEstado) || 'Pendiente',
-                _parsedLink:         getVal(fLink) || '',
-                _parsedComentarios:  getVal(fCom) || '',
-                AttachmentFiles:     item.AttachmentFiles || [],
-                _intEstado:          fEstado || 'Estado',
-                _intObservaciones:   fObs || 'Observaciones',
-                _intComentarios:     fCom || 'Comentarios',
-                _listName:           listName
-            };
-        });
-
-    } catch (e) {
-        console.error(`❌ Excepción en lista "${listName}":`, e);
-        return [];
-    }
-}
-
-// ── CARGA PRINCIPAL ──────────────────────────────────────────────
-async function loadData() {
-    showLoader(true);
-    try {
-        const token = await getToken();
-        const headers = {
-            "Authorization": `Bearer ${token}`,
-            "Accept": "application/json;odata=nometadata"
-        };
-
-        // 1. Detectar URL del sitio exacta
-        activeSiteUrl = await detectSiteUrl(headers);
-
-        document.getElementById('listaBadge').textContent = `Conectado al sitio`;
-        document.getElementById('listaBadge').classList.remove('hidden');
-
-        // 2. Leer cada lista hardcodeada
-        let allItems = [];
-        for (const name of SP_LIST_NAMES) {
-            const items = await fetchList(name, headers);
-            allItems = allItems.concat(items);
-        }
-
-        state.items = allItems;
-        processData();
-
-        if (allItems.length === 0) {
-            showToast("⚠️ Conectado, pero no se encontraron registros en las listas.", "warn");
-        } else {
-            showToast(`✅ ${allItems.length} registros cargados correctamente`);
-        }
-
-    } catch (error) {
-        console.error("❌ Error crítico:", error);
-        showToast("Error: " + error.message, "error");
-        state.items = [];
-        processData();
-    } finally {
-        showLoader(false);
-    }
-}
-
-// ── PROCESAR Y RENDERIZAR ────────────────────────────────────────
-function processData() {
-    let res = [...state.items];
-
-    if (state.currentTab !== 'Todos') {
-        res = res.filter(i => i._parsedEstado.toLowerCase().includes(state.currentTab.toLowerCase()));
-    }
-
-    const q = state.searchQuery.toLowerCase().trim();
-    if (q) {
-        res = res.filter(i =>
-            String(i.Id).includes(q) ||
-            i._parsedCorreo.toLowerCase().includes(q) ||
-            i._parsedEstado.toLowerCase().includes(q) ||
-            i._parsedObservaciones.toLowerCase().includes(q) ||
-            i._listName.toLowerCase().includes(q)
-        );
-    }
-
-    res.sort((a, b) => {
-        const vA = a[state.sortCol] ?? a[`_parsed${state.sortCol}`] ?? '';
-        const vB = b[state.sortCol] ?? b[`_parsed${state.sortCol}`] ?? '';
-        if (vA < vB) return state.sortAsc ? -1 : 1;
-        if (vA > vB) return state.sortAsc ? 1 : -1;
-        return 0;
-    });
-
-    state.filteredItems = res;
-    updateStats();
-    renderTable();
-}
-
-function updateStats() {
-    document.getElementById('statTotal').textContent = state.items.length;
-    document.getElementById('statPendiente').textContent = state.items.filter(i => i._parsedEstado.toLowerCase().includes('pendiente')).length;
-    document.getElementById('statFinalizado').textContent = state.items.filter(i => i._parsedEstado.toLowerCase().includes('confirmad')).length;
-    document.getElementById('statRechazado').textContent = state.items.filter(i => i._parsedEstado.toLowerCase().includes('rechazad')).length;
-}
-
-function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-
-    if (state.items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-20 text-center">
-            <div class="flex flex-col items-center gap-3 text-apple-textMuted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 10h8M8 14h4"/></svg>
-                <p class="font-medium text-[15px]">Sin registros disponibles</p>
-                <p class="text-[13px]">No se encontraron datos en las listas de SharePoint</p>
-            </div>
-        </td></tr>`;
-        document.getElementById('paginationInfo').textContent = '—';
-        document.getElementById('pageNumbers').innerHTML = '';
-        return;
-    }
-
-    if (state.filteredItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-apple-textMuted text-[14px]">Sin resultados para este filtro</td></tr>`;
-        document.getElementById('paginationInfo').textContent = '0 resultados';
-        return;
-    }
-
-    const totalPages = Math.ceil(state.filteredItems.length / state.itemsPerPage);
-    if (state.page > totalPages) state.page = totalPages;
-
-    const start = (state.page - 1) * state.itemsPerPage;
-    const end = Math.min(start + state.itemsPerPage, state.filteredItems.length);
-    const paged = state.filteredItems.slice(start, end);
-
-    document.getElementById('paginationInfo').textContent = `${start + 1}–${end} de ${state.filteredItems.length}`;
-
-    // Números de página
-    const pgDiv = document.getElementById('pageNumbers');
-    pgDiv.innerHTML = '';
-    for (let p = 1; p <= totalPages; p++) {
-        if (totalPages > 7 && p > 3 && p < totalPages - 1 && Math.abs(p - state.page) > 1) {
-            if (p === 4) pgDiv.innerHTML += `<span class="text-gray-400 px-1">…</span>`;
-            continue;
-        }
-        const btn = document.createElement('button');
-        btn.textContent = p;
-        btn.className = `w-8 h-8 rounded-full text-[12px] font-semibold transition-colors ${p === state.page ? 'bg-apple-blue text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-apple-blue hover:text-apple-blue'}`;
-        btn.onclick = () => { state.page = p; renderTable(); };
-        pgDiv.appendChild(btn);
-    }
-
-    paged.forEach(i => {
-        const date = (() => {
-            const d = new Date(i.Fecha);
-            return isNaN(d) ? (i.Fecha || '—') : d.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-        })();
-
-        let attHtml = '<span class="text-gray-300 text-[12px]">—</span>';
-        if (i.AttachmentFiles?.length > 0) {
-            attHtml = `<span class="inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-2 py-1 rounded-lg text-[11px] font-semibold cursor-pointer hover:bg-gray-200" onclick="openModal(${i.Id},'${escapeAttr(i._listName)}')">📎 ${i.AttachmentFiles.length} adj.</span>`;
-        } else if (i._parsedLink?.trim()) {
-            attHtml = `<span class="inline-flex items-center gap-1 bg-blue-50 text-apple-blue px-2 py-1 rounded-lg text-[11px] font-semibold cursor-pointer hover:bg-blue-100" onclick="openModal(${i.Id},'${escapeAttr(i._listName)}')">🔗 Link</span>`;
-        }
-
-        const estado = i._parsedEstado || '';
-        let badge = `<span class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-gray-100 text-gray-600">${estado}</span>`;
-        if (estado.toLowerCase().includes('confirmad')) badge = `<span class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-green-50 text-green-600">${estado}</span>`;
-        else if (estado.toLowerCase().includes('pendiente')) badge = `<span class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-blue-50 text-blue-600">${estado}</span>`;
-        else if (estado.toLowerCase().includes('rechazad')) badge = `<span class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-red-50 text-red-500">${estado}</span>`;
-
-        const listShort = i._listName.length > 14 ? i._listName.substring(0, 14) + '…' : i._listName;
-
-        const tr = document.createElement('tr');
-        tr.className = 'hover-row transition-colors cursor-default';
-        tr.innerHTML = `
-            <td class="px-4 py-3 text-[12px] font-mono text-gray-400">#${i.Id}</td>
-            <td class="px-4 py-3 text-[13px] text-gray-600 whitespace-nowrap">${date}</td>
-            <td class="px-4 py-3 text-[13px] font-semibold text-apple-blue max-w-[200px] truncate">${escapeHtml(i._parsedCorreo)}</td>
-            <td class="px-4 py-3 text-[13px] text-gray-500 max-w-[180px] truncate">${escapeHtml(i._parsedObservaciones)}</td>
-            <td class="px-4 py-3 text-center">${attHtml}</td>
-            <td class="px-4 py-3 text-center">${badge}</td>
-            <td class="px-4 py-3 text-center"><span class="text-[11px] text-gray-400 font-medium" title="${escapeHtml(i._listName)}">${escapeHtml(listShort)}</span></td>
-            <td class="px-4 py-3 text-right">
-                <button onclick="openModal(${i.Id},'${escapeAttr(i._listName)}')" class="apple-active px-3 py-1.5 bg-gray-100 hover:bg-apple-blue hover:text-white text-gray-600 rounded-full text-[12px] font-semibold transition-colors">Revisar</button>
-            </td>`;
-        tbody.appendChild(tr);
-    });
-}
-
-// ── MODAL EDICIÓN ────────────────────────────────────────────────
-function openModal(id, lName) {
-    const item = state.items.find(i => i.Id === id && i._listName === lName);
-    if (!item) { showToast("No se encontró el registro.", "error"); return; }
-
-    state.currentEditingId = id;
-    state.currentEditingList = lName;
-
-    document.getElementById('modalId').textContent = item.Id;
-    document.getElementById('modalCorreo').textContent = item._parsedCorreo;
-
-    const d = new Date(item.Fecha);
-    document.getElementById('modalFecha').textContent = isNaN(d) ? (item.Fecha || '—') : d.toLocaleString('es-ES');
-
-    // Estado
-    const sel = document.getElementById('inputEstado');
-    const est = item._parsedEstado.toLowerCase();
-    if (est.includes('confirmad')) sel.value = 'Boleta Confirmada';
-    else if (est.includes('rechazad')) sel.value = 'Boleta rechazada';
-    else sel.value = 'Pendiente';
-
-    document.getElementById('inputObservaciones').value = item._parsedObservaciones || '';
-    document.getElementById('inputComentarios').value = item._parsedComentarios || '';
-
-    // Adjuntos
-    const attC = document.getElementById('modalAdjuntos');
-    attC.innerHTML = '';
-    let hasMedia = false;
-
-    if (item.AttachmentFiles?.length > 0) {
-        item.AttachmentFiles.forEach(f => {
-            const url = `${BASE_DOMAIN}${f.ServerRelativeUrl}`;
-            const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(f.FileName);
-            if (isImage) {
-                attC.innerHTML += `
-                    <div class="rounded-xl overflow-hidden border border-apple-border">
-                        <img src="${url}" alt="${f.FileName}" class="w-full max-h-60 object-contain bg-gray-50" onerror="this.style.display='none'">
-                        <a href="${url}" target="_blank" class="flex items-center gap-2 px-3 py-2 bg-gray-50 text-apple-blue text-[12px] font-medium hover:bg-gray-100">📎 ${escapeHtml(f.FileName)}</a>
-                    </div>`;
-            } else {
-                attC.innerHTML += `<a href="${url}" target="_blank" class="flex items-center gap-2 p-3 rounded-xl bg-gray-100 text-apple-blue font-medium text-[13px] hover:bg-gray-200 transition-colors">📎 ${escapeHtml(f.FileName)}</a>`;
-            }
-        });
-        hasMedia = true;
-    }
-
-    if (item._parsedLink?.trim()) {
-        attC.innerHTML += `<a href="${item._parsedLink}" target="_blank" class="flex items-center gap-2 p-3 rounded-xl bg-blue-50 text-apple-blue font-medium text-[13px] hover:bg-blue-100 transition-colors break-all">🔗 Abrir link de boleta</a>`;
-        hasMedia = true;
-    }
-
-    if (!hasMedia) {
-        attC.innerHTML = `<div class="flex items-center justify-center gap-2 p-5 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-[13px]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            Sin archivos adjuntos ni links
-        </div>`;
-    }
-
-    const modal = document.getElementById('editModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.classList.add('modal-open');
-}
-
-function closeModal() {
-    const modal = document.getElementById('editModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.classList.remove('modal-open');
-    state.currentEditingId = null;
-    state.currentEditingList = null;
-}
-
-// ── GUARDAR CAMBIOS ──────────────────────────────────────────────
-async function saveItemChanges() {
-    if (!state.currentEditingId) return;
-    const btn = document.getElementById('btnSave');
-    const sp = document.getElementById('btnSaveSpinner');
-    btn.disabled = true;
-    sp.classList.remove('hidden');
-
-    try {
-        const token = await getToken();
-        const item = state.items.find(i => i.Id === state.currentEditingId && i._listName === state.currentEditingList);
-        if (!item) throw new Error("Registro no encontrado en memoria.");
-
-        const payload = {};
-        payload[item._intEstado]        = document.getElementById('inputEstado').value;
-        payload[item._intObservaciones] = document.getElementById('inputObservaciones').value;
-        payload[item._intComentarios]   = document.getElementById('inputComentarios').value;
-
-        const res = await fetch(
-            `${activeSiteUrl}/_api/web/lists/getByTitle('${encodeURIComponent(item._listName)}')/items(${item.Id})`,
-            {
-                method: 'PATCH',
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Accept": "application/json;odata=nometadata",
-                    "Content-Type": "application/json;odata=nometadata",
-                    "IF-MATCH": "*",
-                    "X-HTTP-Method": "MERGE"
-                },
-                body: JSON.stringify(payload)
-            }
-        );
-
-        if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(`SharePoint devolvió error ${res.status}: ${errText}`);
-        }
-
-        showToast("✅ Cambios guardados en SharePoint");
-        closeModal();
-        await loadData();
-
-    } catch (e) {
-        console.error("Error guardando:", e);
-        showToast("Error al guardar: " + e.message, "error");
-    } finally {
-        btn.disabled = false;
-        sp.classList.add('hidden');
-    }
-}
-
-// ── MODALES SETTINGS ─────────────────────────────────────────────
-function openSettingsModal() {
-    const m = document.getElementById('settingsModal');
-    m.classList.remove('hidden');
-    m.classList.add('flex');
-}
-function closeSettingsModal() {
-    const m = document.getElementById('settingsModal');
-    m.classList.add('hidden');
-    m.classList.remove('flex');
-}
-
-// ── TABS / SORT / PAGINACIÓN ─────────────────────────────────────
-function changeTab(t) {
-    state.currentTab = t;
-    state.page = 1;
-    document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`tab-${t}`).classList.add('active');
-    processData();
-}
-
-function sortData(col) {
-    if (state.sortCol === col) state.sortAsc = !state.sortAsc;
-    else { state.sortCol = col; state.sortAsc = true; }
-    processData();
-}
-
-function changePage(d) {
-    const total = Math.ceil(state.filteredItems.length / state.itemsPerPage);
-    const next = state.page + d;
-    if (next >= 1 && next <= total) { state.page = next; renderTable(); }
-}
-
-// ── EXPORT CSV ───────────────────────────────────────────────────
-function exportToCSV() {
-    if (!state.filteredItems.length) { showToast("Sin datos para exportar", "error"); return; }
-    const rows = [['ID','Fecha','Correo','Observaciones','Estado','Lista']];
-    state.filteredItems.forEach(i => rows.push([
-        i.Id, i.Fecha, `"${i._parsedCorreo}"`, `"${(i._parsedObservaciones||'').replace(/"/g,'""')}"`, i._parsedEstado, i._listName
-    ]));
-    const csv = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = encodeURI(csv);
-    a.download = `Depositos_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    showToast(`✅ CSV exportado (${state.filteredItems.length} registros)`);
-}
-
-// ── UI HELPERS ───────────────────────────────────────────────────
-function showLoader(visible) {
-    const el = document.getElementById('globalLoader');
-    if (visible) { el.classList.remove('hidden'); el.classList.add('flex'); }
-    else { el.classList.add('hidden'); el.classList.remove('flex'); }
-}
-
-function showToast(msg, type = 'success') {
-    const c = document.getElementById('toastContainer');
-    const d = document.createElement('div');
-    const isErr = type === 'error';
-    const isWarn = type === 'warn';
-    d.className = `px-4 py-3 rounded-2xl shadow-apple-floating text-[13px] font-medium pointer-events-auto transition-all duration-300 border ${
-        isErr ? 'bg-red-50 text-red-700 border-red-200' :
-        isWarn ? 'bg-amber-50 text-amber-700 border-amber-200' :
-        'bg-white text-gray-800 border-gray-200'
-    }`;
-    d.textContent = msg;
-    c.appendChild(d);
-    setTimeout(() => { d.style.opacity = '0'; setTimeout(() => d.remove(), 300); }, isErr ? 7000 : 4000);
-}
-
-function escapeHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function escapeAttr(str) {
-    return String(str || '').replace(/'/g,"\\'");
-}
-</script>
 </body>
 </html>
