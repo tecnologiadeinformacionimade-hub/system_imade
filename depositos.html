@@ -10,14 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <!-- LIBRERÍA OFICIAL DE MICROSOFT PARA AUTENTICACIÓN (MSAL) -->
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
 
     <style>
-        /* ==========================================
-           CSS BASE (Grupo Imade)
-        ========================================== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -40,6 +35,8 @@
             --orange: #FF9F0A;
             --orange-soft: rgba(255, 159, 10, 0.10);
             --blue-soft: rgba(10, 132, 255, 0.10);
+            --yellow: #FFD60A;
+            --yellow-soft: rgba(255, 214, 10, 0.12);
             
             --header-h: 56px;
             --radius-xs: 8px;
@@ -47,148 +44,126 @@
             --radius-md: 18px;
             --radius-lg: 24px;
             --radius-xl: 32px;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-            --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
             --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --mono: 'DM Mono', monospace;
         }
 
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
-        }
-
+        html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
 
         #shell { display: flex; height: 100vh; overflow: hidden; }
         #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-        /* ==========================================
-           LOADER GLOBAL
-        ========================================== */
-        #globalLoader { position: fixed; inset: 0; z-index: 9999; background: rgba(242, 242, 247, 0.85); backdrop-filter: blur(32px) saturate(180%); -webkit-backdrop-filter: blur(32px) saturate(180%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, transform 0.6s ease; }
+        /* LOADER */
+        #globalLoader { position: fixed; inset: 0; z-index: 9999; background: rgba(242,242,247,0.85); backdrop-filter: blur(32px) saturate(180%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, transform 0.6s ease; }
         #globalLoader.fade-out { opacity: 0; pointer-events: none; transform: scale(1.02); }
-        .loader-card { background: var(--surface-glass); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: var(--radius-xl); padding: 36px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: var(--shadow-float); }
-        .loader-ring { width: 44px; height: 44px; border: 3px solid rgba(10, 132, 255, 0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
+        .loader-card { background: var(--surface-glass); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.6); border-radius: var(--radius-xl); padding: 36px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: var(--shadow-float); }
+        .loader-ring { width: 44px; height: 44px; border: 3px solid rgba(10,132,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loader-text { text-align: center; }
         .loader-text strong { display: block; font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
         .loader-text span { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: block; }
 
-        /* Header */
-        #appHeader {
-            height: var(--header-h);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            background: rgba(242, 242, 247, 0.80);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-            z-index: 40;
-            position: sticky;
-            top: 0;
-        }
-
+        /* HEADER */
+        #appHeader { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(242,242,247,0.80); backdrop-filter: blur(20px) saturate(160%); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0; }
         .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
         .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
         .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
         .breadcrumb .current { color: var(--text); font-weight: 600; }
 
-        /* Page Content */
         #pageContent { flex: 1; overflow-y: auto; padding: 32px 28px 60px; }
-        .page-header { margin-bottom: 32px; text-align: left; }
+        .page-header { margin-bottom: 32px; }
         .page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.8px; color: var(--text); line-height: 1.1; margin-bottom: 8px; }
-        .page-sub { font-size: 15px; color: var(--text-muted); font-weight: 400; max-width: 100%; line-height: 1.5; }
+        .page-sub { font-size: 15px; color: var(--text-muted); font-weight: 400; line-height: 1.5; }
 
-        /* Buttons */
-        .btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: white; border: none; border-radius: 100px; padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(10, 132, 255, 0.25); letter-spacing: -0.2px; text-decoration: none; }
-        .btn-pill:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(10, 132, 255, 0.35); color: white; }
-        .btn-pill:active { transform: scale(0.98); }
-
-        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 11px 22px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s, transform 0.1s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25); }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(10, 132, 255, 0.30); }
-
-        .qa-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.15s ease; box-shadow: var(--shadow-sm); }
+        /* BUTTONS */
+        .btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: white; border: none; border-radius: 100px; padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: all 0.2s; box-shadow: 0 4px 12px rgba(10,132,255,0.25); letter-spacing: -0.2px; text-decoration: none; }
+        .btn-pill:hover { background: var(--accent-hover); transform: translateY(-1px); color: white; }
+        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 11px 22px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s, transform 0.1s; box-shadow: 0 2px 8px rgba(10,132,255,0.25); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .qa-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.15s ease; box-shadow: var(--shadow-sm); font-family: var(--font); }
         .qa-btn:hover { background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
         .qa-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 
-        /* Cards */
+        /* CARDS */
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow 0.3s, opacity 0.3s; margin-bottom: 20px; }
         .card:hover { box-shadow: var(--shadow-md); }
         .card-header { padding: 20px 28px; border-bottom: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; }
         .card-header-left { display: flex; align-items: center; gap: 14px; }
         .card-body { padding: 24px 28px; }
-        
-        /* Elements */
+
+        /* STATUS */
         .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
         .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .status-pill.pending { background: var(--orange-soft); color: var(--orange); border: 1px solid rgba(255, 159, 10, 0.2); }
-        .status-pill.approved { background: var(--green-soft); color: var(--green); border: 1px solid rgba(48, 209, 88, 0.2); }
-        .status-pill.rejected { background: var(--red-soft); color: var(--red); border: 1px solid rgba(255, 69, 58, 0.2); }
+        .status-pill.pending { background: var(--orange-soft); color: var(--orange); border: 1px solid rgba(255,159,10,0.2); }
+        .status-pill.approved { background: var(--green-soft); color: var(--green); border: 1px solid rgba(48,209,88,0.2); }
+        .status-pill.rejected { background: var(--red-soft); color: var(--red); border: 1px solid rgba(255,69,58,0.2); }
 
-        .obs-box { background: linear-gradient(135deg, rgba(10, 132, 255, 0.03), rgba(10, 132, 255, 0.01)); border: 1px solid rgba(10, 132, 255, 0.12); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; }
+        .obs-box { background: linear-gradient(135deg, rgba(10,132,255,0.03), rgba(10,132,255,0.01)); border: 1px solid rgba(10,132,255,0.12); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; }
         .obs-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: block; }
         .obs-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
 
-        /* Files Grid */
         .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
-        .file-item { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; }
-        .file-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(10, 132, 255, 0.1); transform: translateY(-2px); }
+        .file-item { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; transition: all 0.2s; text-decoration: none; }
+        .file-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(10,132,255,0.1); transform: translateY(-2px); }
         .file-item .fi-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; font-size: 24px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--border-mid); }
-        .file-item .fi-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .file-item .fi-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
         .file-item .fi-body { flex: 1; min-width: 0; }
         .file-item .fi-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
         .file-item .fi-link-icon { color: var(--text-muted); margin-left: 10px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; transition: all 0.2s; }
         .file-item:hover .fi-link-icon { background: var(--accent-soft); color: var(--accent); }
 
-        /* Empty State */
         .empty-state { padding: 64px 24px; text-align: center; background: var(--surface); border: 2px dashed var(--border-mid); border-radius: var(--radius-xl); margin-top: 20px; }
-        .empty-state i { font-size: 56px; color: var(--text-muted); margin-bottom: 16px; opacity: 0.5; }
+        .empty-state i { font-size: 56px; color: var(--text-muted); margin-bottom: 16px; opacity: 0.5; display: block; }
         .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
         .empty-state p { font-size: 14px; color: var(--text-muted); max-width: 320px; margin: 0 auto; line-height: 1.5; }
 
-        /* Toasts */
+        /* TOASTS */
         #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
-        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: 100px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; color: var(--text); pointer-events: auto; transform: translateY(-12px); opacity: 0; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(255,255,255,0.96); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: 100px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; color: var(--text); pointer-events: auto; transform: translateY(-12px); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.hide { transform: translateY(-8px); opacity: 0; transition: all 0.25s ease; }
         .toast-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
         .toast-icon.success { background: var(--green); color: white; }
         .toast-icon.error { background: var(--red); color: white; }
         .toast-icon.info { background: var(--accent); color: white; }
-        
+        .toast-icon.warn { background: var(--orange); color: white; }
+
         .hidden { display: none !important; }
         .opacity-0 { opacity: 0; transform: scale(0.95) translateY(-4px); pointer-events: none; }
 
-        /* Layout */
         .dashboard-container { max-width: 1000px; margin: 0 auto; }
 
-        /* Responsividad */
+        /* ── PANEL DE DIAGNÓSTICO ── */
+        #debugPanel { background: #0A0A0F; color: #30D158; border-radius: var(--radius-xl); padding: 20px 24px; margin-bottom: 24px; font-family: var(--mono); font-size: 12px; line-height: 1.8; border: 1px solid rgba(48,209,88,0.2); overflow: auto; max-height: 340px; }
+        #debugPanel .d-title { color: #FFD60A; font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        #debugPanel .d-ok { color: #30D158; }
+        #debugPanel .d-err { color: #FF453A; }
+        #debugPanel .d-warn { color: #FF9F0A; }
+        #debugPanel .d-info { color: #64D2FF; }
+        .debug-toggle-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+        /* FIELD MAP TABLE */
+        #fieldMapTable { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); margin-top: 8px; }
+        #fieldMapTable th { text-align: left; color: #FFD60A; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #fieldMapTable td { padding: 3px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        #fieldMapTable tr:hover td { background: rgba(255,255,255,0.04); }
+
+        /* RESPONSIVE */
         @media (max-width: 768px) {
             #appHeader { padding: 0 16px; }
-            .breadcrumb { font-size: 13px; }
-            .breadcrumb .root { display: none; }
-            .breadcrumb .sep { display: none; }
+            .breadcrumb .root, .breadcrumb .sep { display: none; }
             .btn-pill { padding: 8px 16px; font-size: 13px; gap: 6px; }
-            .btn-pill i { font-size: 16px !important; }
-            
             #pageContent { padding: 24px 16px 40px; }
-            .page-title { font-size: 24px; margin-bottom: 6px; }
+            .page-title { font-size: 24px; }
             .page-sub { font-size: 13.5px; }
-            
             .card-header { padding: 16px; flex-direction: column; align-items: flex-start; gap: 16px; }
             .card-body { padding: 16px; }
-            .obs-box { padding: 16px; margin-bottom: 16px; }
             .files-grid { grid-template-columns: 1fr; }
             .card-actions { width: 100%; display: flex; gap: 8px; }
             .card-actions .qa-btn { flex: 1; justify-content: center; }
@@ -198,7 +173,6 @@
 
 <body>
 
-    <!-- GLOBAL LOADER -->
     <div id="globalLoader">
         <div class="loader-card">
             <div class="loader-ring"></div>
@@ -209,39 +183,35 @@
         </div>
     </div>
 
-    <!-- TOAST CONTAINER -->
     <div id="toastContainer"></div>
 
     <div id="shell">
         <div id="main">
-            
-            <!-- HEADER -->
+
             <header id="appHeader">
                 <div class="breadcrumb">
                     <span class="root">Portal ERP</span>
                     <span class="sep">›</span>
                     <span class="current">Dashboard de Revisión</span>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    
+                <div style="display:flex;gap:10px;align-items:center;">
                     <a href="inicio.html" class="btn-pill">
-                        <i class="ph-bold ph-arrow-left" style="font-size: 18px;"></i> Volver a Inicio
+                        <i class="ph-bold ph-arrow-left" style="font-size:18px;"></i> Volver a Inicio
                     </a>
-
-                    <!-- Engranaje de configuraciones (Visible para todos) -->
-                    <div style="position: relative;">
-                        <button class="qa-btn" onclick="toggleConfigMenu()" title="Configuraciones" style="padding: 10px;">
-                            <i class="ph-bold ph-gear" style="font-size: 18px;"></i>
+                    <div style="position:relative;">
+                        <button class="qa-btn" onclick="toggleConfigMenu()" title="Configuraciones" style="padding:10px;">
+                            <i class="ph-bold ph-gear" style="font-size:18px;"></i>
                         </button>
-                        
-                        <!-- Menú desplegable -->
-                        <div id="configMenu" class="hidden opacity-0" style="position: absolute; top: 100%; right: 0; margin-top: 8px; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); box-shadow: var(--shadow-float); min-width: 240px; z-index: 50; transition: opacity 0.2s, transform 0.2s; transform-origin: top right;">
-                            <div style="padding: 6px;">
-                                <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); margin-bottom: 6px;">
-                                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Configuración</span>
+                        <div id="configMenu" class="hidden opacity-0" style="position:absolute;top:100%;right:0;margin-top:8px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:var(--shadow-float);min-width:240px;z-index:50;transition:opacity 0.2s,transform 0.2s;transform-origin:top right;">
+                            <div style="padding:6px;">
+                                <div style="padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:6px;">
+                                    <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Configuración</span>
                                 </div>
-                                <button onclick="attemptLogout()" class="qa-btn" style="width: 100%; justify-content: flex-start; color: var(--red); border: none; box-shadow: none; background: transparent; padding: 10px 12px;">
-                                    <i class="ph-bold ph-sign-out" style="font-size: 16px;"></i> Cerrar sesión de Microsoft
+                                <button onclick="toggleDebugPanel()" class="qa-btn" style="width:100%;justify-content:flex-start;border:none;box-shadow:none;background:transparent;padding:10px 12px;">
+                                    <i class="ph-bold ph-terminal" style="font-size:16px;"></i> Panel de Diagnóstico
+                                </button>
+                                <button onclick="attemptLogout()" class="qa-btn" style="width:100%;justify-content:flex-start;color:var(--red);border:none;box-shadow:none;background:transparent;padding:10px 12px;">
+                                    <i class="ph-bold ph-sign-out" style="font-size:16px;"></i> Cerrar sesión de Microsoft
                                 </button>
                             </div>
                         </div>
@@ -249,356 +219,458 @@
                 </div>
             </header>
 
-            <!-- PAGE CONTENT -->
             <div id="pageContent">
                 <div class="dashboard-container">
-                    
+
                     <div class="page-header">
                         <h1 class="page-title">Dashboard de Revisión</h1>
                         <p class="page-sub">Audita, confirma o rechaza las boletas de depósito enviadas. Conectado directamente con SharePoint vía Azure AD.</p>
                     </div>
 
+                    <!-- PANEL DE DIAGNÓSTICO (oculto por defecto) -->
+                    <div id="debugPanelWrapper" class="hidden">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text);">🔍 Panel de Diagnóstico</span>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="copyDebugLog()" class="qa-btn" style="font-size:11px;padding:5px 10px;">
+                                    <i class="ph-bold ph-copy" style="font-size:13px;"></i> Copiar log
+                                </button>
+                                <button onclick="toggleDebugPanel()" class="qa-btn" style="font-size:11px;padding:5px 10px;color:var(--red);">
+                                    <i class="ph-bold ph-x" style="font-size:13px;"></i> Cerrar
+                                </button>
+                            </div>
+                        </div>
+                        <div id="debugPanel">
+                            <span class="d-title">▶ Log de Conexión SharePoint</span>
+                            <div id="debugLog"></div>
+                        </div>
+                    </div>
+
                     <!-- Pestañas de filtrado -->
-                    <div id="filter-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
+                    <div id="filter-tabs" style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
                         <button class="qa-btn active" onclick="setFilter('Todas', this)">Todos los elementos</button>
                         <button class="qa-btn" onclick="setFilter('Pendiente', this)">Pendientes</button>
                         <button class="qa-btn" onclick="setFilter('Boleta Confirmada', this)">Boletas Confirmadas</button>
                         <button class="qa-btn" onclick="setFilter('Boleta rechazada', this)">Boletas Rechazadas</button>
                     </div>
 
-                    <!-- Contenedor dinámico de tarjetas -->
-                    <div id="dashboard-container">
-                        <!-- Las tarjetas o el botón de login se generan vía JavaScript -->
-                    </div>
+                    <div id="dashboard-container"></div>
 
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════════════════
-         SCRIPT: CONEXIÓN DIRECTA AZURE AD -> GRAPH API -> SHAREPOINT
-         ════════════════════════════════════════════════════════════════════ -->
     <script>
-        // 1. CONFIGURACIÓN DE AZURE AD
-        const msalConfig = {
-            auth: {
-                clientId: "b20040c9-f017-4d32-8d9f-b2914465bf1a",
-                authority: "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
-                redirectUri: window.location.href.split('?')[0] 
-            },
-            cache: {
-                cacheLocation: "sessionStorage",
-                storeAuthStateInCookie: false,
-            }
-        };
+    // ════════════════════════════════════════════════════
+    // DIAGNÓSTICO
+    // ════════════════════════════════════════════════════
+    let debugLines = [];
 
-        // Permisos requeridos
-        const tokenRequest = {
-            scopes: ["User.Read", "Sites.ReadWrite.All"]
-        };
-
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-        let accessToken = "";
-        let submissions = []; 
-        let currentFilter = 'Todas';
-        
-        // Detalles de SharePoint y Base de datos Google Sheets
-        const GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0";
-        const SP_HOSTNAME = "grupoimade.sharepoint.com";
-        const SP_SITE_PATH = "/sites/ConfirmacindeDepositosBancarios";
-        const SP_LIST_NAME = "Confirmación de Depositos Bancarios";
-        
-        // Conexión con tu App Script para validar roles
-        const GS_API_URL = "https://script.google.com/macros/s/AKfycbzvJayZSV2axjevlHhl-Qiycp55VaTcMuB-3ZTMo0TaL85Ueq4a3mz4Gw6jm-tOHg0Vxg/exec";
-
-        let siteId = "";
-        let listId = "";
-        let isCurrentUserAdmin = false;
-
-        // ════════════════════════════════════════
-        // INICIALIZACIÓN Y LOGIN
-        // ════════════════════════════════════════
-        async function init() {
-            try {
-                const response = await msalInstance.handleRedirectPromise();
-                const accounts = msalInstance.getAllAccounts();
-
-                if (accounts.length > 0) {
-                    msalInstance.setActiveAccount(accounts[0]);
-                    await checkPermissionsAndLoad(accounts[0].username);
-                } else {
-                    showLoginScreen();
-                }
-            } catch (error) {
-                console.error("Error en MSAL:", error);
-                showLoginScreen(true);
-            }
+    function dlog(msg, type = 'info') {
+        const cls = { ok: 'd-ok', err: 'd-err', warn: 'd-warn', info: 'd-info' }[type] || 'd-info';
+        const prefix = { ok: '✓', err: '✗', warn: '⚠', info: '→' }[type] || '→';
+        const ts = new Date().toLocaleTimeString('es', { hour12: false });
+        const line = `[${ts}] ${prefix} ${msg}`;
+        debugLines.push(line);
+        const el = document.getElementById('debugLog');
+        if (el) {
+            const span = document.createElement('div');
+            span.className = cls;
+            span.textContent = line;
+            el.appendChild(span);
+            el.parentElement.scrollTop = el.parentElement.scrollHeight;
         }
-        
-        // FUNCIÓN NUEVA: Valida contra Google Sheets el rol del usuario de Microsoft
-        async function checkPermissionsAndLoad(email) {
-            document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Verificando permisos en la Base de Datos...</span>";
-            
-            try {
-                const res = await fetch(GS_API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ accion: 'obtener_usuarios' })
-                }).then(r => r.json());
-                
-                if (res.success) {
-                    const dbUser = res.usuarios.find(u => u.correo.toLowerCase() === email.toLowerCase());
-                    
-                    if (!dbUser) {
-                        showLoginScreen(false, `Tu correo de Microsoft (${email}) no está registrado en el ERP.`);
-                        return;
-                    }
-                    
-                    // Almacenar globalmente si este usuario es administrador (se usará al intentar cerrar sesión)
-                    isCurrentUserAdmin = dbUser.permisos.admin === true;
-                    
-                    // Prevenir acceso si el usuario no tiene rol de depósitos ni de admin
-                    if (dbUser.permisos.depositos !== true && dbUser.permisos.admin !== true) {
-                        showLoginScreen(false, "No tienes permisos asignados para entrar al módulo de Depósitos.");
-                        return;
-                    }
-                    
-                    document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Descargando datos de SharePoint...</span>";
-                    await acquireTokenAndFetchData();
-                } else {
-                    showToast('Error al leer usuarios desde la Base de Datos', 'error');
-                    removeLoader();
+        console.log(`[IMADE-DEBUG] ${line}`);
+    }
+
+    function dlogTable(label, data) {
+        dlog(label, 'warn');
+        const el = document.getElementById('debugLog');
+        if (!el || !Array.isArray(data)) return;
+        const table = document.createElement('table');
+        table.id = 'fieldMapTable';
+        const header = document.createElement('tr');
+        ['Campo Interno (API)', 'Valor de ejemplo'].forEach(h => {
+            const th = document.createElement('th');
+            th.textContent = h;
+            header.appendChild(th);
+        });
+        table.appendChild(header);
+        data.forEach(([k, v]) => {
+            const tr = document.createElement('tr');
+            [k, String(v ?? '—').substring(0, 80)].forEach(t => {
+                const td = document.createElement('td');
+                td.textContent = t;
+                tr.appendChild(td);
+            });
+            table.appendChild(tr);
+        });
+        el.appendChild(table);
+        el.parentElement.scrollTop = el.parentElement.scrollHeight;
+    }
+
+    function copyDebugLog() {
+        navigator.clipboard.writeText(debugLines.join('\n')).then(() => showToast('Log copiado al portapapeles', 'success'));
+    }
+
+    function toggleDebugPanel() {
+        const wrapper = document.getElementById('debugPanelWrapper');
+        wrapper.classList.toggle('hidden');
+        // Cerrar menú si está abierto
+        const menu = document.getElementById('configMenu');
+        if (menu) { menu.classList.add('opacity-0'); setTimeout(() => menu.classList.add('hidden'), 200); }
+    }
+
+    // ════════════════════════════════════════════════════
+    // CONFIGURACIÓN MSAL
+    // ════════════════════════════════════════════════════
+    const msalConfig = {
+        auth: {
+            clientId:   "b20040c9-f017-4d32-8d9f-b2914465bf1a",
+            authority:  "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
+            redirectUri: window.location.href.split('?')[0]
+        },
+        cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+    };
+
+    const tokenRequest = { scopes: ["User.Read", "Sites.ReadWrite.All"] };
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    let accessToken    = "";
+    let submissions    = [];
+    let currentFilter  = 'Todas';
+
+    const GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0";
+    const SP_HOSTNAME    = "grupoimade.sharepoint.com";
+    const SP_SITE_PATH   = "/sites/ConfirmacindeDepositosBancarios";
+
+    // ⚠️ NOMBRES ALTERNATIVOS DE LA LISTA — se probarán en orden hasta encontrar la correcta
+    const SP_LIST_CANDIDATES = [
+        "Confirmación de Depositos Bancarios",
+        "Confirmacion de Depositos Bancarios",
+        "ConfirmacióndepósitosBancarios",
+        "Depositos",
+    ];
+
+    const GS_API_URL = "https://script.google.com/macros/s/AKfycbzvJayZSV2axjevlHhl-Qiycp55VaTcMuB-3ZTMo0TaL85Ueq4a3mz4Gw6jm-tOHg0Vxg/exec";
+
+    let siteId = "";
+    let listId = "";
+    let isCurrentUserAdmin = false;
+
+    // ════════════════════════════════════════════════════
+    // INIT & AUTH
+    // ════════════════════════════════════════════════════
+    async function init() {
+        dlog(`URL actual: ${window.location.href.split('?')[0]}`, 'info');
+        dlog(`ClientId: ${msalConfig.auth.clientId}`, 'info');
+        try {
+            await msalInstance.handleRedirectPromise();
+            const accounts = msalInstance.getAllAccounts();
+            dlog(`Cuentas MSAL encontradas: ${accounts.length}`, accounts.length > 0 ? 'ok' : 'warn');
+            if (accounts.length > 0) {
+                msalInstance.setActiveAccount(accounts[0]);
+                dlog(`Usuario: ${accounts[0].username}`, 'ok');
+                await checkPermissionsAndLoad(accounts[0].username);
+            } else {
+                dlog('Sin sesión activa → mostrando pantalla de login', 'warn');
+                showLoginScreen();
+            }
+        } catch (error) {
+            dlog(`Error MSAL init: ${error.message}`, 'err');
+            showLoginScreen(true);
+        }
+    }
+
+    async function checkPermissionsAndLoad(email) {
+        setLoaderText("Verificando permisos en la Base de Datos...");
+        dlog(`Consultando Google Sheets para: ${email}`, 'info');
+        try {
+            const res = await fetch(GS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ accion: 'obtener_usuarios' })
+            }).then(r => r.json());
+
+            if (res.success) {
+                const dbUser = res.usuarios.find(u => u.correo.toLowerCase() === email.toLowerCase());
+                if (!dbUser) {
+                    dlog(`Correo ${email} NO encontrado en base de datos`, 'err');
+                    showLoginScreen(false, `Tu correo (${email}) no está registrado en el ERP.`);
+                    return;
                 }
-            } catch (error) {
-                console.error(error);
-                showToast('Error de conexión con Google Sheets', 'error');
+                dlog(`Usuario encontrado: ${dbUser.correo} | admin=${dbUser.permisos.admin} | depositos=${dbUser.permisos.depositos}`, 'ok');
+                isCurrentUserAdmin = dbUser.permisos.admin === true;
+                if (dbUser.permisos.depositos !== true && dbUser.permisos.admin !== true) {
+                    dlog('Sin permisos de depósitos', 'err');
+                    showLoginScreen(false, "No tienes permisos asignados para el módulo de Depósitos.");
+                    return;
+                }
+                setLoaderText("Descargando datos de SharePoint...");
+                await acquireTokenAndFetchData();
+            } else {
+                dlog('Error al leer usuarios desde Google Sheets', 'err');
+                showToast('Error al leer usuarios desde la Base de Datos', 'error');
+                removeLoader();
+            }
+        } catch (error) {
+            dlog(`Error de conexión con Google Sheets: ${error.message}`, 'err');
+            showToast('Error de conexión con Google Sheets', 'error');
+            removeLoader();
+        }
+    }
+
+    async function acquireTokenAndFetchData() {
+        try {
+            dlog('Solicitando token de acceso a Graph...', 'info');
+            const tokenResponse = await msalInstance.acquireTokenSilent(tokenRequest);
+            accessToken = tokenResponse.accessToken;
+            dlog('Token obtenido correctamente', 'ok');
+            await loadSharePointData();
+        } catch (error) {
+            dlog(`Error obteniendo token: ${error.message}`, 'err');
+            if (error instanceof msal.InteractionRequiredAuthError) {
+                dlog('Requiere interacción → redirigiendo a login', 'warn');
+                msalInstance.loginRedirect(tokenRequest);
+            } else {
+                showToast("Error de permisos en Azure", "error");
                 removeLoader();
             }
         }
+    }
 
-        function showLoginScreen(hasError = false, customMsg = "") {
-            removeLoader();
-            const container = document.getElementById('dashboard-container');
-            container.innerHTML = `
-                <div class="empty-state" style="padding: 80px 20px;">
-                    <div style="width: 64px; height: 64px; background: #0A84FF; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 25px rgba(10,132,255,0.3);">
-                        <i class="ph-bold ph-microsoft-logo" style="font-size: 32px; color: white;"></i>
-                    </div>
-                    <h3 style="font-size: 22px;">Conexión Segura con Microsoft 365</h3>
-                    <p style="max-width: 400px; margin-bottom: 24px;">Debes autenticarte con tu cuenta corporativa para leer y aprobar los depósitos directamente en SharePoint.</p>
-                    
-                    ${customMsg ? `<p style="color: var(--red); font-size: 13px; font-weight: 600; margin-bottom: 18px; padding: 10px; background: var(--red-soft); border-radius: 8px;">${customMsg}</p>` : ''}
-                    ${hasError ? `<p style="color: var(--red); font-size: 12px; margin-bottom: 15px;">Asegúrate de ejecutar esta página desde la URL registrada en Azure (GitHub Pages).</p>` : ''}
-                    
-                    <div style="display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 10px;">
-                        <button onclick="loginMicrosoft()" class="btn-primary" style="padding: 14px 32px; font-size: 16px;">
-                            Iniciar Sesión
-                        </button>
-                        ${customMsg ? `
-                        <button onclick="logoutMicrosoft()" class="qa-btn" style="color: var(--red); border-color: var(--red-soft); padding: 13px 20px;">
-                            Cerrar cuenta actual
-                        </button>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        function loginMicrosoft() {
-            msalInstance.loginRedirect(tokenRequest);
-        }
-        
-        function logoutMicrosoft() {
-            msalInstance.logoutRedirect({
-                postLogoutRedirectUri: window.location.href.split('?')[0]
-            });
-        }
-
-        // Mostrar/Ocultar el menú del engranaje
-        function toggleConfigMenu() {
-            const menu = document.getElementById('configMenu');
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('opacity-0'), 10);
-            } else {
-                menu.classList.add('opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
+    // ════════════════════════════════════════════════════
+    // GRAPH API — SHAREPOINT
+    // ════════════════════════════════════════════════════
+    async function loadSharePointData() {
+        try {
+            // 1. Obtener Site ID
+            dlog(`Buscando sitio: ${SP_HOSTNAME}${SP_SITE_PATH}`, 'info');
+            let res = await gFetch(`${GRAPH_ENDPOINT}/sites/${SP_HOSTNAME}:${SP_SITE_PATH}`);
+            if (!res.ok) {
+                const err = await res.json();
+                dlog(`Error al obtener sitio (${res.status}): ${JSON.stringify(err.error?.message)}`, 'err');
+                throw new Error(`Sitio no encontrado: ${res.status}`);
             }
-        }
+            let siteData = await res.json();
+            siteId = siteData.id;
+            dlog(`Sitio encontrado. ID: ${siteId}`, 'ok');
 
-        // Intento de cerrar sesión evaluando el Rol de Google Sheets
-        function attemptLogout() {
-            toggleConfigMenu(); // Ocultar el menú
+            // 2. Listar todas las listas disponibles
+            dlog('Obteniendo listas del sitio...', 'info');
+            res = await gFetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists?$select=id,displayName,name`);
+            let listsData = await res.json();
+            const allLists = listsData.value || [];
+            dlog(`Listas encontradas (${allLists.length}):`, 'ok');
+            allLists.forEach(l => dlog(`  · "${l.displayName}" (name: ${l.name}, id: ${l.id})`, 'info'));
 
-            if (isCurrentUserAdmin) {
-                // Si es admin, cerramos sesión
-                logoutMicrosoft();
-            } else {
-                // Si no es admin, denegamos el acceso
-                showToast("Acceso denegado: Autorización de Administrador requerida para cerrar sesión.", "error");
-            }
-        }
-
-        // Cerrar menú del engranaje si se hace clic afuera
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('configMenu');
-            const gearBtn = menu ? menu.previousElementSibling : null;
-            if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !gearBtn.contains(e.target)) {
-                menu.classList.add('opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
-            }
-        });
-
-        async function acquireTokenAndFetchData() {
-            try {
-                const tokenResponse = await msalInstance.acquireTokenSilent(tokenRequest);
-                accessToken = tokenResponse.accessToken;
-                await loadSharePointData();
-            } catch (error) {
-                if (error instanceof msal.InteractionRequiredAuthError) {
-                    msalInstance.loginRedirect(tokenRequest);
-                } else {
-                    console.error("Error obteniendo token:", error);
-                    showToast("Error de permisos en Azure", "error");
-                    removeLoader();
+            // 3. Intentar encontrar la lista por nombre
+            let foundList = null;
+            for (const candidate of SP_LIST_CANDIDATES) {
+                foundList = allLists.find(l =>
+                    l.displayName.toLowerCase() === candidate.toLowerCase() ||
+                    l.name.toLowerCase() === candidate.toLowerCase()
+                );
+                if (foundList) {
+                    dlog(`Lista encontrada con candidato "${candidate}"`, 'ok');
+                    break;
                 }
             }
-        }
 
-        // ════════════════════════════════════════
-        // LLAMADAS A MICROSOFT GRAPH API
-        // ════════════════════════════════════════
-        async function loadSharePointData() {
-            try {
-                let res = await fetch(`${GRAPH_ENDPOINT}/sites/${SP_HOSTNAME}:${SP_SITE_PATH}`, {
-                    headers: { "Authorization": `Bearer ${accessToken}` }
-                });
-                let siteData = await res.json();
-                siteId = siteData.id;
+            // 4. Fallback: primera lista que no sea del sistema
+            if (!foundList) {
+                const systemLists = ['Documents', 'Site Pages', 'Style Library', 'Form Templates', 'Site Assets', 'Composed Looks', 'Master Page Gallery', 'Solution Gallery', 'Theme Gallery', 'User Information List', 'Web Part Gallery'];
+                foundList = allLists.find(l => !systemLists.includes(l.displayName));
+                if (foundList) {
+                    dlog(`⚠ Lista no encontrada por nombre exacto. Usando fallback: "${foundList.displayName}"`, 'warn');
+                    showToast(`Usando lista: "${foundList.displayName}"`, 'warn');
+                } else {
+                    dlog('No se encontró ninguna lista válida. Revisa el nombre en la configuración.', 'err');
+                    throw new Error('No hay listas disponibles');
+                }
+            }
 
-                if (!siteId) throw new Error("No se encontró el sitio");
+            listId = foundList.id;
+            dlog(`Usando lista: "${foundList.displayName}" (ID: ${listId})`, 'ok');
 
-                res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists`, {
-                    headers: { "Authorization": `Bearer ${accessToken}` }
-                });
-                let listsData = await res.json();
+            // 5. Obtener ítems
+            dlog('Descargando ítems de la lista...', 'info');
+            res = await gFetch(
+                `${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items?expand=fields($select=*)&$top=100`,
+                { "Prefer": "HonorNonIndexedQueriesWarningMayFailRandomly" }
+            );
+            let itemsData = await res.json();
+            const rawItems = itemsData.value || [];
+            dlog(`Ítems obtenidos: ${rawItems.length}`, rawItems.length > 0 ? 'ok' : 'warn');
+
+            // 6. Mapear campos — mostrar todos los campos del primer ítem para diagnóstico
+            if (rawItems.length > 0) {
+                const firstFields = rawItems[0].fields;
+                const fieldEntries = Object.entries(firstFields).filter(([k]) => !k.startsWith('@'));
+                dlog(`Campos disponibles en el primer ítem:`, 'warn');
+                dlogTable('Campos del Item #1', fieldEntries.map(([k, v]) => [k, v]));
+
+                // Autodetección de campos relevantes
+                const allKeys = fieldEntries.map(([k]) => k.toLowerCase());
                 
-                let list = listsData.value.find(l => l.displayName === SP_LIST_NAME || l.name.includes("Confirmacin"));
-                if (!list) list = listsData.value[0]; 
-                listId = list.id;
-
-                res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items?expand=fields`, {
-                    headers: { 
-                        "Authorization": `Bearer ${accessToken}`,
-                        "Prefer": "HonorNonIndexedQueriesWarningMayFailRandomly"
+                const detectField = (...candidates) => {
+                    for (const c of candidates) {
+                        const match = fieldEntries.find(([k]) => k.toLowerCase().includes(c.toLowerCase()));
+                        if (match) return match[0];
                     }
-                });
-                let itemsData = await res.json();
+                    return null;
+                };
 
-                submissions = itemsData.value.map(item => {
-                    const fields = item.fields;
-                    
+                const F_FECHA       = detectField('fecha', 'date', 'hora', 'created');
+                const F_ESTADO      = detectField('estado', 'status', 'state');
+                const F_CORREO      = detectField('correo', 'email', 'mail', 'author');
+                const F_OBS         = detectField('observ', 'nota', 'comment', 'descripcion');
+                const F_IMAGEN      = detectField('link', 'imagen', 'adjunto', 'attach', 'url', 'photo');
+
+                dlog(`Campo Fecha detectado: ${F_FECHA ?? '❌ NO ENCONTRADO'}`, F_FECHA ? 'ok' : 'err');
+                dlog(`Campo Estado detectado: ${F_ESTADO ?? '❌ NO ENCONTRADO'}`, F_ESTADO ? 'ok' : 'err');
+                dlog(`Campo Correo detectado: ${F_CORREO ?? '❌ NO ENCONTRADO'}`, F_CORREO ? 'ok' : 'err');
+                dlog(`Campo Observaciones detectado: ${F_OBS ?? '❌ NO ENCONTRADO'}`, F_OBS ? 'ok' : 'err');
+                dlog(`Campo Imagen/Link detectado: ${F_IMAGEN ?? '⚠ NO ENCONTRADO (los archivos pueden estar como adjuntos)'}`, F_IMAGEN ? 'ok' : 'warn');
+
+                // Mapear ítems con campos autodetectados
+                submissions = await Promise.all(rawItems.map(async item => {
+                    const f = item.fields;
                     let adjuntos = [];
-                    if (fields.Link_x0020_de_x0020_imagen) {
-                        adjuntos = [{ name: 'Ver Imagen Adjunta', url: fields.Link_x0020_de_x0020_imagen }];
+
+                    // Intentar link de imagen desde campo detectado
+                    if (F_IMAGEN && f[F_IMAGEN]) {
+                        adjuntos = [{ name: 'Ver Imagen Adjunta', url: f[F_IMAGEN] }];
+                    }
+
+                    // Intentar obtener adjuntos reales del ítem si no hay link
+                    if (adjuntos.length === 0) {
+                        try {
+                            const attRes = await gFetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${item.id}/attachments`);
+                            if (attRes.ok) {
+                                const attData = await attRes.json();
+                                adjuntos = (attData.value || []).map(a => ({ name: a.name, url: a.contentUrl }));
+                                if (adjuntos.length > 0) dlog(`Ítem ${item.id}: ${adjuntos.length} adjunto(s) encontrado(s) via API`, 'ok');
+                            }
+                        } catch (_) {}
                     }
 
                     return {
-                        id: item.id,
-                        date: fields.Fecha_x0020_y_x0020_Hora || fields.Created || 'Fecha desconocida',
-                        status: fields.Estado || 'Pendiente',
-                        user: fields.Correo_x0020_Electronico || fields.Author || 'Usuario del Form',
-                        observaciones: fields.Observaciones || 'Sin observaciones.',
-                        files: adjuntos
+                        id:            item.id,
+                        date:          (F_FECHA ? f[F_FECHA] : null) || f.Created || 'Fecha desconocida',
+                        status:        (F_ESTADO ? f[F_ESTADO] : null) || 'Pendiente',
+                        user:          (F_CORREO ? f[F_CORREO] : null) || f.Author || 'Usuario',
+                        observaciones: (F_OBS    ? f[F_OBS]    : null) || 'Sin observaciones.',
+                        files:         adjuntos
                     };
-                });
+                }));
 
-            } catch (e) {
-                console.error("Error Graph API:", e);
-                showToast('Error conectando con la Base de Datos de SharePoint', 'error');
-            } finally {
-                removeLoader();
-                renderDashboard();
+                dlog(`Mapeo completado. ${submissions.length} registros listos para mostrar.`, 'ok');
+            } else {
+                dlog('La lista está vacía. No hay ítems para mostrar.', 'warn');
+                submissions = [];
             }
-        }
 
-        // ════════════════════════════════════════
-        // FILTROS Y RENDERIZADO
-        // ════════════════════════════════════════
-        function setFilter(status, btnElement) {
-            currentFilter = status;
-            const tabs = document.getElementById('filter-tabs').querySelectorAll('.qa-btn');
-            tabs.forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
+        } catch (e) {
+            dlog(`Error general: ${e.message}`, 'err');
+            showToast('Error conectando con SharePoint. Abre el Panel de Diagnóstico para más detalles.', 'error');
+            // Mostrar panel de diagnóstico automáticamente si hay error
+            document.getElementById('debugPanelWrapper').classList.remove('hidden');
+        } finally {
+            removeLoader();
             renderDashboard();
         }
+    }
 
-        function renderDashboard() {
-            const container = document.getElementById('dashboard-container');
-            
-            const filteredSubmissions = submissions.filter(sub => {
-                if (currentFilter === 'Todas') return true;
-                if (currentFilter === 'Pendiente' && (!sub.status || sub.status === 'Pendiente')) return true;
-                return sub.status === currentFilter;
-            });
-
-            if (filteredSubmissions.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="ph ph-tray"></i>
-                        <h3>Bandeja Vacía</h3>
-                        <p>No hay boletas que coincidan con los filtros en tu SharePoint.</p>
-                    </div>
-                `;
-                return;
+    // Helper: fetch con headers de autorización
+    async function gFetch(url, extraHeaders = {}) {
+        return fetch(url, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                ...extraHeaders
             }
+        });
+    }
 
-            container.innerHTML = filteredSubmissions.map(sub => `
-                <div class="card" id="card-${sub.id}">
-                    <div class="card-header">
-                        <div class="card-header-left">
-                            <div style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border-mid); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow-sm);">
-                                <i class="ph-fill ph-receipt text-gray-500" style="color: var(--text-muted);"></i>
-                            </div>
-                            <div>
-                                <h3 style="font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px;">
-                                    Registro SP-${sub.id}
-                                    ${getBadgeHTML(sub.status)}
-                                </h3>
-                                <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 3px;">
-                                    Enviado por <strong style="color: var(--text-2);">${sub.user}</strong> el ${sub.date.replace('T', ' ').substring(0, 16)}
-                                </p>
-                            </div>
+    // ════════════════════════════════════════════════════
+    // FILTROS Y RENDERIZADO
+    // ════════════════════════════════════════════════════
+    function setFilter(status, btnElement) {
+        currentFilter = status;
+        document.getElementById('filter-tabs').querySelectorAll('.qa-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        renderDashboard();
+    }
+
+    function renderDashboard() {
+        const container = document.getElementById('dashboard-container');
+
+        const filtered = submissions.filter(sub => {
+            if (currentFilter === 'Todas') return true;
+            if (currentFilter === 'Pendiente') return !sub.status || sub.status === 'Pendiente';
+            return sub.status === currentFilter;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="ph ph-tray"></i>
+                    <h3>Bandeja Vacía</h3>
+                    <p>No hay boletas que coincidan con el filtro seleccionado.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(sub => `
+            <div class="card" id="card-${sub.id}">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div style="width:48px;height:48px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:var(--shadow-sm);">
+                            <i class="ph-fill ph-receipt" style="color:var(--text-muted);"></i>
                         </div>
-                        
-                        <div class="card-actions" style="display:flex; align-items:center; gap:8px;">
-                            ${(!sub.status || sub.status === 'Pendiente') ? `
-                                <button onclick="changeStatus('${sub.id}', 'Boleta Confirmada')" class="qa-btn" style="color:var(--green); border-color:var(--green-soft);" title="Confirmar Boleta">
-                                    <i class="ph-bold ph-check" style="font-size:16px;"></i> Confirmar
-                                </button>
-                                <button onclick="changeStatus('${sub.id}', 'Boleta rechazada')" class="qa-btn" style="color:var(--red); border-color:var(--red-soft);" title="Rechazar Boleta">
-                                    <i class="ph-bold ph-x" style="font-size:16px;"></i> Rechazar
-                                </button>
-                            ` : `
-                                <button onclick="changeStatus('${sub.id}', 'Pendiente')" class="qa-btn" style="font-size: 12px; padding: 6px 12px;" title="Revertir a Pendiente">
-                                    <i class="ph ph-arrow-u-up-left" style="font-size:14px;"></i> Deshacer
-                                </button>
-                            `}
+                        <div>
+                            <h3 style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px;">
+                                Registro SP-${sub.id}
+                                ${getBadgeHTML(sub.status)}
+                            </h3>
+                            <p style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">
+                                Enviado por <strong style="color:var(--text-2);">${sub.user}</strong>
+                                el ${String(sub.date).replace('T', ' ').substring(0, 16)}
+                            </p>
                         </div>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="obs-box">
-                            <span class="obs-label">Observaciones del Usuario</span>
-                            <p class="obs-text">${sub.observaciones}</p>
-                        </div>
-
-                        <span class="obs-label" style="color: var(--text-2);">Enlaces / Archivos (${sub.files ? sub.files.length : 0})</span>
-                        <div class="files-grid">
-                            ${(sub.files || []).map(file => `
+                    <div class="card-actions" style="display:flex;align-items:center;gap:8px;">
+                        ${(!sub.status || sub.status === 'Pendiente') ? `
+                            <button onclick="changeStatus('${sub.id}', 'Boleta Confirmada')" class="qa-btn" style="color:var(--green);border-color:var(--green-soft);" title="Confirmar">
+                                <i class="ph-bold ph-check" style="font-size:16px;"></i> Confirmar
+                            </button>
+                            <button onclick="changeStatus('${sub.id}', 'Boleta rechazada')" class="qa-btn" style="color:var(--red);border-color:var(--red-soft);" title="Rechazar">
+                                <i class="ph-bold ph-x" style="font-size:16px;"></i> Rechazar
+                            </button>
+                        ` : `
+                            <button onclick="changeStatus('${sub.id}', 'Pendiente')" class="qa-btn" style="font-size:12px;padding:6px 12px;" title="Revertir">
+                                <i class="ph ph-arrow-u-up-left" style="font-size:14px;"></i> Deshacer
+                            </button>
+                        `}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="obs-box">
+                        <span class="obs-label">Observaciones del Usuario</span>
+                        <p class="obs-text">${sub.observaciones}</p>
+                    </div>
+                    <span class="obs-label" style="color:var(--text-2);">Archivos Adjuntos (${sub.files ? sub.files.length : 0})</span>
+                    <div class="files-grid" style="margin-top:10px;">
+                        ${(sub.files || []).length === 0
+                            ? `<p style="font-size:13px;color:var(--text-muted);">Sin archivos adjuntos detectados.</p>`
+                            : (sub.files || []).map(file => `
                                 <a href="${file.url || '#'}" target="_blank" class="file-item">
-                                    <div class="fi-icon" style="color: var(--blue-soft);">
-                                        <img src="${file.url}" alt="Adjunto" onerror="this.src=''; this.parentNode.innerHTML='<i class=\\'ph-fill ph-link\\'></i>'" style="border-radius:8px">
+                                    <div class="fi-icon">
+                                        <img src="${file.url}" alt="Adjunto"
+                                            onerror="this.src='';this.parentNode.innerHTML='<i class=\\'ph-fill ph-link\\'></i>'"
+                                            style="border-radius:8px">
                                     </div>
                                     <div class="fi-body">
                                         <div class="fi-name" title="${file.name}">${file.name}</div>
@@ -607,86 +679,140 @@
                                         <i class="ph-bold ph-arrow-square-out" style="font-size:16px"></i>
                                     </div>
                                 </a>
-                            `).join('')}
-                        </div>
+                            `).join('')
+                        }
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        // ════════════════════════════════════════
-        // ACTUALIZAR ESTADO EN SHAREPOINT DIRECTO
-        // ════════════════════════════════════════
-        async function changeStatus(id, newStatus) {
-            const index = submissions.findIndex(s => s.id === id);
-            if (index === -1) return;
+    // ════════════════════════════════════════════════════
+    // CAMBIAR ESTADO EN SHAREPOINT
+    // ════════════════════════════════════════════════════
+    // Campo Estado — si el campo real en SharePoint tiene otro nombre interno,
+    // este es el lugar donde cambiarlo. El diagnóstico te mostrará el nombre exacto.
+    const SP_FIELD_ESTADO = "Estado";
 
-            const card = document.getElementById(`card-${id}`);
-            if (card) {
-                card.style.opacity = '0.5';
-                card.style.pointerEvents = 'none'; 
-            }
+    async function changeStatus(id, newStatus) {
+        const index = submissions.findIndex(s => s.id === id);
+        if (index === -1) return;
 
-            try {
-                const res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${id}/fields`, { 
-                    method: 'PATCH', 
-                    headers: { 
+        const card = document.getElementById(`card-${id}`);
+        if (card) { card.style.opacity = '0.5'; card.style.pointerEvents = 'none'; }
+
+        try {
+            dlog(`PATCH ítem ${id} → ${SP_FIELD_ESTADO}: "${newStatus}"`, 'info');
+            const res = await fetch(
+                `${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${id}/fields`,
+                {
+                    method: 'PATCH',
+                    headers: {
                         "Authorization": `Bearer ${accessToken}`,
-                        "Content-Type": "application/json" 
+                        "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ 
-                        "Estado": newStatus 
-                    }) 
-                });
-
-                if (res.ok) {
-                    submissions[index].status = newStatus;
-                    renderDashboard(); 
-                    
-                    if (newStatus === 'Boleta Confirmada') showToast(`Actualizado en SharePoint: Confirmada`, 'success');
-                    else if (newStatus === 'Boleta rechazada') showToast(`Actualizado en SharePoint: Rechazada`, 'error');
-                    else showToast(`Revertido a Pendiente`, 'info');
-                } else {
-                    const errData = await res.json();
-                    console.error("Error PATCH Graph API:", errData);
-                    showToast('No tienes permisos de escritura o error en SharePoint', 'error');
-                    if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
+                    body: JSON.stringify({ [SP_FIELD_ESTADO]: newStatus })
                 }
-            } catch (e) {
-                console.error(e);
-                showToast('Error de conexión con Microsoft 365', 'error');
+            );
+
+            if (res.ok) {
+                submissions[index].status = newStatus;
+                renderDashboard();
+                dlog(`Estado actualizado correctamente`, 'ok');
+                if (newStatus === 'Boleta Confirmada') showToast('Actualizado en SharePoint: Confirmada', 'success');
+                else if (newStatus === 'Boleta rechazada') showToast('Actualizado en SharePoint: Rechazada', 'error');
+                else showToast('Revertido a Pendiente', 'info');
+            } else {
+                const errData = await res.json();
+                dlog(`Error PATCH (${res.status}): ${JSON.stringify(errData.error?.message)}`, 'err');
+                showToast('No tienes permisos de escritura o error en SharePoint', 'error');
                 if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
             }
+        } catch (e) {
+            dlog(`Error de conexión en PATCH: ${e.message}`, 'err');
+            showToast('Error de conexión con Microsoft 365', 'error');
+            if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
         }
+    }
 
-        function getBadgeHTML(status) {
-            if (status === 'Boleta Confirmada') return `<span class="status-pill approved">Confirmada</span>`;
-            if (status === 'Boleta rechazada') return `<span class="status-pill rejected">Rechazada</span>`;
-            return `<span class="status-pill pending">Pendiente</span>`;
+    // ════════════════════════════════════════════════════
+    // HELPERS UI
+    // ════════════════════════════════════════════════════
+    function getBadgeHTML(status) {
+        if (status === 'Boleta Confirmada') return `<span class="status-pill approved">Confirmada</span>`;
+        if (status === 'Boleta rechazada')  return `<span class="status-pill rejected">Rechazada</span>`;
+        return `<span class="status-pill pending">Pendiente</span>`;
+    }
+
+    function showLoginScreen(hasError = false, customMsg = "") {
+        removeLoader();
+        document.getElementById('dashboard-container').innerHTML = `
+            <div class="empty-state" style="padding:80px 20px;">
+                <div style="width:64px;height:64px;background:#0A84FF;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 10px 25px rgba(10,132,255,0.3);">
+                    <i class="ph-bold ph-microsoft-logo" style="font-size:32px;color:white;"></i>
+                </div>
+                <h3 style="font-size:22px;">Conexión Segura con Microsoft 365</h3>
+                <p style="max-width:400px;margin-bottom:24px;">Autentícate con tu cuenta corporativa para revisar los depósitos en SharePoint.</p>
+                ${customMsg ? `<p style="color:var(--red);font-size:13px;font-weight:600;margin-bottom:18px;padding:10px;background:var(--red-soft);border-radius:8px;">${customMsg}</p>` : ''}
+                ${hasError ? `<p style="color:var(--red);font-size:12px;margin-bottom:15px;">Asegúrate de ejecutar esta página desde la URI de redirección registrada en Azure.</p>` : ''}
+                <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:10px;">
+                    <button onclick="loginMicrosoft()" class="btn-primary" style="padding:14px 32px;font-size:16px;">Iniciar Sesión</button>
+                    ${customMsg ? `<button onclick="logoutMicrosoft()" class="qa-btn" style="color:var(--red);border-color:var(--red-soft);padding:13px 20px;">Cerrar cuenta actual</button>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function loginMicrosoft()  { msalInstance.loginRedirect(tokenRequest); }
+    function logoutMicrosoft() { msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.href.split('?')[0] }); }
+
+    function toggleConfigMenu() {
+        const menu = document.getElementById('configMenu');
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            setTimeout(() => menu.classList.remove('opacity-0'), 10);
+        } else {
+            menu.classList.add('opacity-0');
+            setTimeout(() => menu.classList.add('hidden'), 200);
         }
+    }
 
-        function removeLoader() {
-            const el = document.getElementById('globalLoader');
-            if (el) { 
-                el.classList.add('fade-out'); 
-                setTimeout(() => el.remove(), 650); 
-            }
+    function attemptLogout() {
+        toggleConfigMenu();
+        if (isCurrentUserAdmin) logoutMicrosoft();
+        else showToast("Acceso denegado: se requiere rol de Administrador.", "error");
+    }
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('configMenu');
+        const gearBtn = menu?.previousElementSibling;
+        if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !gearBtn?.contains(e.target)) {
+            menu.classList.add('opacity-0');
+            setTimeout(() => menu.classList.add('hidden'), 200);
         }
+    });
 
-        function showToast(msg, type = 'success') {
-            const cont = document.getElementById('toastContainer');
-            const t = document.createElement('div');
-            t.className = 'toast';
-            const iconChar = type === 'error' ? '✕' : (type === 'info' ? '→' : '✓');
-            t.innerHTML = `<div class="toast-icon ${type}">${iconChar}</div><span>${msg}</span>`;
-            cont.appendChild(t);
-            requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
-            setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3000);
-        }
+    function setLoaderText(subtitle) {
+        document.getElementById('loaderText').innerHTML = `<strong>Portal Grupo Imade</strong><span>${subtitle}</span>`;
+    }
 
-        // Arrancar el proceso de MSAL al cargar la página
-        window.onload = init;
+    function removeLoader() {
+        const el = document.getElementById('globalLoader');
+        if (el) { el.classList.add('fade-out'); setTimeout(() => el.remove(), 650); }
+    }
 
+    function showToast(msg, type = 'success') {
+        const cont = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        t.className = 'toast';
+        const iconChar = type === 'error' ? '✕' : type === 'info' ? '→' : type === 'warn' ? '!' : '✓';
+        t.innerHTML = `<div class="toast-icon ${type}">${iconChar}</div><span>${msg}</span>`;
+        cont.appendChild(t);
+        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+        setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3500);
+    }
+
+    window.onload = init;
     </script>
 </body>
 </html>
