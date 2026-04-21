@@ -117,8 +117,7 @@
     <div id="authLoadingScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in relative z-10">
         <div class="apple-spinner mb-6"></div>
         <h2 class="text-[22px] font-semibold tracking-tight mb-2">Conectando con Microsoft</h2>
-        <p class="text-[13px] text-apple-textMuted max-w-sm mx-auto">Verificando acceso a SharePoint.</p>
-        <p id="authFallbackMsg" class="text-[11px] text-apple-textMuted mt-8 hidden">Iniciando Modo Demostración...</p>
+        <p class="text-[13px] text-apple-textMuted max-w-sm mx-auto" id="authStatusText">Verificando acceso a SharePoint...</p>
     </div>
 
     <!-- Dashboard Principal -->
@@ -189,12 +188,13 @@
                             <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase cursor-pointer hover:bg-gray-50" onclick="sortData('Observaciones')">Observaciones</th>
                             <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-center">Boleta / Imagen</th>
                             <th class="px-4 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-center cursor-pointer" onclick="sortData('Estado')">Estado</th>
+                            <th class="px-6 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-right">Lista Origen</th>
                             <th class="px-6 py-3 text-[11px] font-semibold text-apple-textMuted uppercase text-right">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-100 bg-white">
-                        <tr><td colspan="7" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
-                        <tr><td colspan="7" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
+                        <tr><td colspan="8" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
+                        <tr><td colspan="8" class="px-6 py-4"><div class="h-6 skeleton rounded-md w-full"></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -219,62 +219,7 @@
             <div class="px-8 py-5 border-b border-apple-border flex justify-between items-center bg-white z-10 sticky top-0">
                 <h3 class="text-[22px] font-bold text-apple-text">Revisión de Depósito #<span id="modalId">--</span></h3>
                 <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg></button>
-            </div>
-
-            <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <!-- Columna Detalles de lectura -->
-                <div class="w-full md:w-1/2 p-8 border-r border-apple-border overflow-y-auto bg-[#F5F5F7]/50 flex flex-col gap-6">
-                    <div>
-                        <p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Correo Electrónico</p>
-                        <p id="modalCorreo" class="text-[15px] font-semibold text-apple-blue break-all">--</p>
-                    </div>
-                    <div>
-                        <p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-1">Fecha Reportada</p>
-                        <p id="modalFecha" class="text-[15px] font-medium text-gray-700">--</p>
-                    </div>
-                    
-                    <div>
-                        <p class="text-[11px] font-semibold text-apple-textMuted uppercase mb-2">Imágenes / Adjuntos</p>
-                        <div id="modalAdjuntos" class="flex flex-col gap-2"></div>
-                    </div>
-                </div>
-
-                <!-- Columna Edición -->
-                <div class="w-full md:w-1/2 p-8 overflow-y-auto bg-white flex flex-col gap-6">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[13px] font-semibold text-apple-text">Estado del Depósito</label>
-                        <!-- Opciones que coinciden con tus etiquetas -->
-                        <select id="inputEstado" class="apple-input w-full rounded-xl py-3 px-4 text-[15px] cursor-pointer appearance-none">
-                            <option value="Pendiente">⏳ Pendiente</option>
-                            <option value="Boleta Confirmada">✅ Boleta Confirmada</option>
-                            <option value="Boleta rechazada">❌ Boleta Rechazada</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[13px] font-semibold text-apple-text">Observaciones (Cliente / Sistema)</label>
-                        <textarea id="inputObservaciones" rows="3" class="w-full apple-input rounded-xl px-4 py-3 text-[14px] resize-none" placeholder="Observaciones del registro..."></textarea>
-                    </div>
-
-                    <div class="flex flex-col gap-2 flex-1">
-                        <label class="text-[13px] font-semibold text-apple-text">Comentarios Internos</label>
-                        <textarea id="inputComentarios" rows="3" class="w-full apple-input rounded-xl px-4 py-3 text-[14px] resize-none flex-1 min-h-[100px]" placeholder="Comentarios de validación de tesorería..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer Modal -->
-            <div class="px-8 py-5 border-t border-apple-border bg-gray-50 flex justify-end gap-3 z-10">
-                <button onclick="closeModal()" class="px-6 py-2.5 text-[14px] font-semibold text-apple-blue bg-apple-blueLight rounded-full">Cancelar</button>
-                <button onclick="saveItemChanges()" id="btnSave" class="px-6 py-2.5 text-[14px] font-semibold text-white bg-apple-blue rounded-full shadow-apple-btn flex items-center gap-2">
-                    <span id="btnSaveText">Guardar Cambios</span>
-                    <svg id="btnSaveSpinner" class="animate-spin h-4 w-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle class="opacity-25" cx="12" cy="12" r="10"/><path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CONFIGURACIÓN / DEMO -->
+    <!-- MODAL CONFIGURACIÓN -->
     <div id="settingsModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeSettingsModal()"></div>
         <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden relative flex flex-col p-6" id="settingsModalContent">
@@ -282,13 +227,8 @@
                 <h3 class="text-[17px] font-semibold">Ajustes</h3>
                 <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex justify-center items-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg></button>
             </div>
-            <div class="bg-gray-50 rounded-2xl p-2 mb-6">
-                <div class="flex items-center justify-between p-3">
-                    <span class="text-[14px] font-medium">Modo Pruebas (Demo)</span>
-                    <input type="checkbox" id="demoModeToggle" class="apple-checkbox" onchange="toggleDemoMode()">
-                </div>
-            </div>
-            <button onclick="signOut()" class="w-full py-3 rounded-xl text-apple-red bg-apple-redLight font-semibold">Desconectar Microsoft</button>
+            <p class="text-[13px] text-gray-500 mb-6">Estás conectado usando tu cuenta de Microsoft 365 y viendo datos reales en vivo desde SharePoint.</p>
+            <button onclick="signOut()" class="w-full py-3 rounded-xl text-apple-red bg-apple-redLight font-semibold">Cerrar Sesión de Microsoft</button>
         </div>
     </div>
 
@@ -296,7 +236,7 @@
     <script>
         const state = {
             items: [], filteredItems: [], currentTab: 'Pendiente', currentEditingId: null, currentEditingList: null,
-            searchQuery: '', sortCol: 'Fecha', sortAsc: false, page: 1, itemsPerPage: 10, isDemoMode: false
+            searchQuery: '', sortCol: 'Fecha', sortAsc: false, page: 1, itemsPerPage: 10
         };
 
         const msalConfig = {
@@ -315,8 +255,8 @@
 
         // Aquí agregamos los nombres exactos de tus listas mostradas en la interfaz
         const SP_LIST_NAMES = [
-            'Confirmacin de Depositos Bancarios', // Nombre interno (visto en URL)
-            'Confirmación de Depositos Bancarios', // Por si acaso
+            'Confirmacin de Depositos Bancarios', 
+            'Confirmación de Depositos Bancarios', // Respaldo con tilde
             'Boletas Confirmadas',
             'Boletas Rechazadas'
         ];
@@ -328,48 +268,55 @@
             try {
                 msalInstance = new msal.PublicClientApplication(msalConfig);
                 await initializeAuth();
-            } catch (e) { enableDemoMode(); }
+            } catch (e) { 
+                document.getElementById('authStatusText').innerHTML = `<span class="text-apple-red font-bold">Error de MSAL:</span> ${e.message}`;
+                console.error("MSAL Init Error:", e);
+            }
         };
 
         function showLoader() { document.getElementById('globalLoader').classList.remove('hidden', 'opacity-0'); }
         function hideLoader() { document.getElementById('globalLoader').classList.add('opacity-0'); setTimeout(() => document.getElementById('globalLoader').classList.add('hidden'), 300); }
-        function showToast(m, t='success') { const c=document.getElementById('toastContainer'), d=document.createElement('div'); d.className=`flex items-center gap-3 px-4 py-3 rounded-full shadow-apple-floating bg-white/90 backdrop-blur-xl border border-gray-100 translate-y-4 opacity-100 z-[9999] transition-all`; d.innerHTML=`<span class="text-[14px] font-medium px-2">${m}</span>`; c.appendChild(d); setTimeout(()=>{d.classList.add('opacity-0'); setTimeout(()=>d.remove(),300)},3000); }
+        function showToast(m, t='success') { 
+            const c=document.getElementById('toastContainer'), d=document.createElement('div'); 
+            const isErr = t==='error';
+            d.className=`flex items-center gap-3 px-4 py-3 rounded-full shadow-apple-floating ${isErr ? 'bg-red-50 text-red-700 border-red-200' : 'bg-white/90 text-gray-800'} backdrop-blur-xl border translate-y-4 opacity-100 z-[9999] transition-all`; 
+            d.innerHTML=`<span class="text-[14px] font-medium px-2">${m}</span>`; 
+            c.appendChild(d); 
+            setTimeout(()=>{d.classList.add('opacity-0'); setTimeout(()=>d.remove(),300)}, isErr ? 6000 : 3000); 
+        }
 
         async function initializeAuth() {
             try {
                 const res = await msalInstance.handleRedirectPromise();
-                if (res) { document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); loadData(); } 
-                else {
+                if (res) { 
+                    document.getElementById('authLoadingScreen').classList.add('hidden'); 
+                    document.getElementById('dashboardScreen').classList.remove('hidden'); 
+                    loadData(); 
+                } else {
                     const acc = msalInstance.getAllAccounts();
-                    if (!acc.length) { document.getElementById('authFallbackMsg').classList.remove('hidden'); msalInstance.loginRedirect(tokenRequest); } 
-                    else { document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); loadData(); }
+                    if (!acc.length) { 
+                        msalInstance.loginRedirect(tokenRequest); 
+                    } else { 
+                        document.getElementById('authLoadingScreen').classList.add('hidden'); 
+                        document.getElementById('dashboardScreen').classList.remove('hidden'); 
+                        loadData(); 
+                    }
                 }
-            } catch (e) { enableDemoMode(); }
+            } catch (e) { 
+                document.getElementById('authStatusText').innerHTML = `<span class="text-apple-red font-bold">Error de Autenticación:</span> ${e.message}`;
+                console.error("Auth Error:", e);
+            }
         }
 
-        function signOut() { if(state.isDemoMode){location.reload();return;} sessionStorage.clear(); msalInstance.logoutRedirect(); }
-
-        function enableDemoMode() {
-            state.isDemoMode = true; document.getElementById('demoModeToggle').checked = true;
-            document.getElementById('authLoadingScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden');
-            state.items = Array.from({length: 20}, (_,i) => ({
-                Id: 2000+i, Fecha: new Date().toISOString(), 
-                _parsedCorreo: ['d.figueroa@grupoimade.com', 'k.matz@sayercolor.com', 'a.contreras@grupoimade.com'][i%3],
-                _parsedObservaciones: ['Gracias por el apoyo', 'POR FAVOR VERIFICAR', 'pago de matiz centro'][i%3],
-                _parsedEstado: ['Pendiente', 'Boleta Confirmada', 'Boleta rechazada'][Math.floor(Math.random()*3)],
-                _parsedComentarios: 'Todo ok',
-                _parsedLink: 'https://grupoimade...',
-                AttachmentFiles: [{FileName:'boleta.jpg', ServerRelativeUrl:'#'}], 
-                _listName: 'Demo'
-            }));
-            processData();
-        }
-        function toggleDemoMode() { document.getElementById('demoModeToggle').checked ? enableDemoMode() : location.reload(); }
+        function signOut() { sessionStorage.clear(); msalInstance.logoutRedirect(); }
 
         async function fetchList(listName, headers) {
             try {
                 const fieldsRes = await fetch(`${siteUrl}/_api/web/lists/getByTitle('${listName}')/Fields?$select=Title,InternalName`, { headers });
-                if (!fieldsRes.ok) return [];
+                if (!fieldsRes.ok) {
+                    console.warn(`La lista "${listName}" devolvió status ${fieldsRes.status}. Probablemente no existe o el nombre no coincide exactamente.`);
+                    return [];
+                }
                 const fieldsData = await fieldsRes.json();
                 
                 // Búsqueda inteligente de nombres internos de columnas (según tus capturas reales)
@@ -394,7 +341,11 @@
                 const sel = `*,Author/Title${fvt.length>0?','+fvt.join(','):''}`;
                 
                 const res = await fetch(`${siteUrl}/_api/web/lists/getByTitle('${listName}')/items?$top=5000&$select=${sel}&$expand=${exp}`, { headers });
-                if (!res.ok) return [];
+                
+                if (!res.ok) {
+                    const errTxt = await res.text();
+                    throw new Error(`Error en API SharePoint al leer los items: ${errTxt}`);
+                }
                 
                 const data = await res.json();
                 return data.value.map(item => {
@@ -416,29 +367,48 @@
                         _listName: listName
                     };
                 });
-            } catch (e) { return []; }
+            } catch (e) { 
+                console.error(`Excepción al intentar leer la lista "${listName}":`, e);
+                return []; 
+            }
         }
 
         async function loadData() {
             showLoader();
             try {
                 const acc = msalInstance.getAllAccounts();
+                if(acc.length === 0) throw new Error("No hay cuenta activa en Microsoft 365.");
+                
                 const token = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: acc[0] });
                 const head = { "Authorization": `Bearer ${token.accessToken}`, "Accept": "application/json;odata=nometadata" };
                 
                 let allItems = [];
                 for(let name of SP_LIST_NAMES) {
                     const items = await fetchList(name, head);
-                    if(items.length > 0) allItems = allItems.concat(items);
+                    if(items && items.length > 0) {
+                        allItems = allItems.concat(items);
+                    }
                 }
                 
-                if (!allItems.length) throw new Error("No data");
                 state.items = allItems;
                 processData();
+                
+                if(allItems.length === 0) {
+                    showToast("Conexión exitosa, pero no se encontraron datos en las listas de SharePoint.", "info");
+                } else {
+                    showToast(`Conectado con éxito. Se leyeron ${allItems.length} registros.`, "success");
+                }
+                
             } catch (error) { 
-                console.error("Error cargando SP:", error);
-                enableDemoMode(); 
-            } finally { hideLoader(); }
+                console.error("Error crítico cargando SP:", error);
+                showToast(`Falló la lectura a SharePoint: ${error.message}`, "error");
+                
+                // Si la tabla está vacía y hubo error, limpiamos la vista
+                state.items = [];
+                processData();
+            } finally { 
+                hideLoader(); 
+            }
         }
 
         function processData() {
@@ -469,8 +439,24 @@
 
         function renderTable() {
             const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            
+            if (state.items.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-gray-500 font-medium">No hay registros reales en SharePoint aún o la lista está vacía.</td></tr>`; 
+                document.getElementById('paginationInfo').innerText = "Mostrando 0 a 0 de 0";
+                document.getElementById('pageNumbers').innerHTML = "";
+                return; 
+            }
+
             const paged = state.filteredItems.slice((state.page-1)*state.itemsPerPage, state.page*state.itemsPerPage);
-            if (!paged.length) { tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400">Sin datos que mostrar</td></tr>`; return; }
+            if (!paged.length && state.filteredItems.length > 0) { 
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-gray-400">Sin datos en esta página/filtro</td></tr>`; 
+                return; 
+            }
+            
+            // Actualizar texto de paginación
+            const start = (state.page - 1) * state.itemsPerPage + 1;
+            const end = Math.min(state.page * state.itemsPerPage, state.filteredItems.length);
+            document.getElementById('paginationInfo').innerText = `Mostrando ${start} a ${end} de ${state.filteredItems.length}`;
             
             paged.forEach(i => {
                 const date = isNaN(new Date(i.Fecha)) ? i.Fecha : new Date(i.Fecha).toLocaleDateString('es-ES');
@@ -497,6 +483,7 @@
                         <td class="px-4 py-3 text-[13px] text-gray-600 max-w-[200px] truncate">${i._parsedObservaciones}</td>
                         <td class="px-4 py-3 text-center cursor-pointer" onclick="openModal(${i.Id}, '${i._listName}')">${attHtml}</td>
                         <td class="px-4 py-3 text-center">${estBadge}</td>
+                        <td class="px-6 py-3 text-right text-[11px] text-gray-400 font-medium">${i._listName.substring(0,10)}...</td>
                         <td class="px-6 py-3 text-right">
                             <button onclick="openModal(${i.Id}, '${i._listName}')" class="px-3 py-1 bg-gray-100 text-gray-600 hover:bg-apple-blue hover:text-white rounded-full text-[12px] font-semibold transition-colors">Revisar</button>
                         </td>
@@ -516,7 +503,11 @@
             processData(); 
         }
         
-        function changePage(d) { state.page += d; renderTable(); }
+        function changePage(d) { 
+            if (state.page + d > 0 && state.page + d <= Math.ceil(state.filteredItems.length / state.itemsPerPage)) {
+                state.page += d; renderTable(); 
+            }
+        }
 
         function openModal(id, lName) {
             const item = state.items.find(i => i.Id === id && i._listName === lName);
@@ -542,7 +533,7 @@
             
             if(item.AttachmentFiles?.length > 0) {
                 item.AttachmentFiles.forEach(f => {
-                    const url = state.isDemoMode ? '#' : `${baseDomainUrl}${f.ServerRelativeUrl}`;
+                    const url = `${baseDomainUrl}${f.ServerRelativeUrl}`;
                     attC.innerHTML += `<a href="${url}" target="_blank" class="flex items-center gap-2 p-3 rounded-lg bg-gray-100 text-apple-blue font-medium text-[13px] hover:bg-gray-200">📎 Adjunto: ${f.FileName}</a>`;
                 });
                 hasMedia = true;
@@ -577,37 +568,46 @@
             btn.disabled = true; sp.classList.remove('hidden');
 
             try {
-                if(state.isDemoMode) {
-                    await new Promise(r => setTimeout(r, 600));
-                    const i = state.items.find(x => x.Id === state.currentEditingId);
-                    i._parsedEstado = nEst; 
-                    i._parsedObservaciones = nObs;
-                    i._parsedComentarios = nCom;
-                } else {
-                    const acc = msalInstance.getAllAccounts();
-                    const tok = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: acc[0] });
-                    const item = state.items.find(i => i.Id === state.currentEditingId && i._listName === state.currentEditingList);
-                    
-                    const pay = {};
-                    if(item._intEstado) pay[item._intEstado] = nEst;
-                    if(item._intObservaciones) pay[item._intObservaciones] = nObs;
-                    if(item._intComentarios) pay[item._intComentarios] = nCom;
-                    
-                    await fetch(`${siteUrl}/_api/web/lists/getByTitle('${state.currentEditingList}')/items(${state.currentEditingId})`, {
-                        method: 'PATCH', headers: { "Authorization": `Bearer ${tok.accessToken}`, "Accept": "application/json", "Content-Type": "application/json", "IF-MATCH": "*", "X-HTTP-Method": "MERGE" },
-                        body: JSON.stringify(pay)
-                    });
-                    await loadData(); // Recargamos para traer los cambios recientes
+                const acc = msalInstance.getAllAccounts();
+                const tok = await msalInstance.acquireTokenSilent({ ...tokenRequest, account: acc[0] });
+                const item = state.items.find(i => i.Id === state.currentEditingId && i._listName === state.currentEditingList);
+                
+                const pay = {};
+                if(item._intEstado) pay[item._intEstado] = nEst;
+                if(item._intObservaciones) pay[item._intObservaciones] = nObs;
+                if(item._intComentarios) pay[item._intComentarios] = nCom;
+                
+                const res = await fetch(`${siteUrl}/_api/web/lists/getByTitle('${state.currentEditingList}')/items(${state.currentEditingId})`, {
+                    method: 'PATCH', 
+                    headers: { 
+                        "Authorization": `Bearer ${tok.accessToken}`, 
+                        "Accept": "application/json", 
+                        "Content-Type": "application/json", 
+                        "IF-MATCH": "*", 
+                        "X-HTTP-Method": "MERGE" 
+                    },
+                    body: JSON.stringify(pay)
+                });
+
+                if(!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err);
                 }
-                showToast("Cambios guardados con éxito"); 
+
+                await loadData(); // Recargamos para traer los cambios recientes
+                showToast("Cambios guardados con éxito en SharePoint"); 
                 closeModal(); 
-                if(state.isDemoMode) processData();
-            } catch(e) { showToast("Error al guardar cambios", "error"); } 
-            finally { btn.disabled = false; sp.classList.add('hidden'); }
+            } catch(e) { 
+                console.error("Error al guardar:", e);
+                showToast("Error al guardar: " + e.message, "error"); 
+            } finally { 
+                btn.disabled = false; sp.classList.add('hidden'); 
+            }
         }
 
         function exportToCSV() {
-            const csv = "data:text/csv;charset=utf-8,ID,Fecha,Correo,Observaciones,Estado\n" + state.filteredItems.map(i => `${i.Id},${i.Fecha},"${i._parsedCorreo}","${i._parsedObservaciones}",${i._parsedEstado}`).join("\n");
+            if(state.filteredItems.length === 0) return showToast("No hay datos para exportar", "error");
+            const csv = "data:text/csv;charset=utf-8,ID,Fecha,Correo,Observaciones,Estado,Lista Origen\n" + state.filteredItems.map(i => `${i.Id},${i.Fecha},"${i._parsedCorreo}","${i._parsedObservaciones}",${i._parsedEstado},${i._listName}`).join("\n");
             const a = document.createElement("a"); a.href = encodeURI(csv); a.download = "Depositos.csv"; a.click();
         }
     </script>
