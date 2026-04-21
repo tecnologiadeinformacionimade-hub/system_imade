@@ -166,6 +166,9 @@
         .toast-icon.success { background: var(--green); color: white; }
         .toast-icon.error { background: var(--red); color: white; }
         .toast-icon.info { background: var(--accent); color: white; }
+        
+        .hidden { display: none !important; }
+        .opacity-0 { opacity: 0; transform: scale(0.95) translateY(-4px); pointer-events: none; }
 
         /* Layout */
         .dashboard-container { max-width: 1000px; margin: 0 auto; }
@@ -219,10 +222,30 @@
                     <span class="sep">›</span>
                     <span class="current">Dashboard de Revisión</span>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    
                     <a href="inicio.html" class="btn-pill">
                         <i class="ph-bold ph-arrow-left" style="font-size: 18px;"></i> Volver a Inicio
                     </a>
+
+                    <!-- Engranaje de configuraciones (Visible para todos) -->
+                    <div style="position: relative;">
+                        <button class="qa-btn" onclick="toggleConfigMenu()" title="Configuraciones" style="padding: 10px;">
+                            <i class="ph-bold ph-gear" style="font-size: 18px;"></i>
+                        </button>
+                        
+                        <!-- Menú desplegable -->
+                        <div id="configMenu" class="hidden opacity-0" style="position: absolute; top: 100%; right: 0; margin-top: 8px; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); box-shadow: var(--shadow-float); min-width: 240px; z-index: 50; transition: opacity 0.2s, transform 0.2s; transform-origin: top right;">
+                            <div style="padding: 6px;">
+                                <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); margin-bottom: 6px;">
+                                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Configuración</span>
+                                </div>
+                                <button onclick="attemptLogout()" class="qa-btn" style="width: 100%; justify-content: flex-start; color: var(--red); border: none; box-shadow: none; background: transparent; padding: 10px 12px;">
+                                    <i class="ph-bold ph-sign-out" style="font-size: 16px;"></i> Cerrar sesión de Microsoft
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -257,14 +280,11 @@
          SCRIPT: CONEXIÓN DIRECTA AZURE AD -> GRAPH API -> SHAREPOINT
          ════════════════════════════════════════════════════════════════════ -->
     <script>
-        // 1. CONFIGURACIÓN DE AZURE AD (Extraída de tu captura de Azure)
+        // 1. CONFIGURACIÓN DE AZURE AD
         const msalConfig = {
             auth: {
                 clientId: "b20040c9-f017-4d32-8d9f-b2914465bf1a",
                 authority: "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
-                // ¡IMPORTANTE! 
-                // En Azure registraste "https://tecnologiadeinformacionimade-hub.github.io/system_imade/depositos.html"
-                // El login SÓLO funcionará si subes este archivo a Github Pages con ese mismo nombre (depositos.html).
                 redirectUri: window.location.href.split('?')[0] 
             },
             cache: {
@@ -273,44 +293,42 @@
             }
         };
 
-        // Permisos requeridos (Los mismos que aceptaste en tu captura de "Permisos de API")
+        // Permisos requeridos
         const tokenRequest = {
             scopes: ["User.Read", "Sites.ReadWrite.All"]
         };
 
-        // Instancia de Microsoft Authentication Library
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        // Variables de sesión
         let accessToken = "";
         let submissions = []; 
         let currentFilter = 'Todas';
         
-        // Detalles de tu SharePoint (Extraídos de la URL en tu captura)
+        // Detalles de SharePoint y Base de datos Google Sheets
         const GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0";
         const SP_HOSTNAME = "grupoimade.sharepoint.com";
         const SP_SITE_PATH = "/sites/ConfirmacindeDepositosBancarios";
         const SP_LIST_NAME = "Confirmación de Depositos Bancarios";
+        
+        // Conexión con tu App Script para validar roles
+        const GS_API_URL = "https://script.google.com/macros/s/AKfycbzvJayZSV2axjevlHhl-Qiycp55VaTcMuB-3ZTMo0TaL85Ueq4a3mz4Gw6jm-tOHg0Vxg/exec";
 
         let siteId = "";
         let listId = "";
+        let isCurrentUserAdmin = false;
 
         // ════════════════════════════════════════
         // INICIALIZACIÓN Y LOGIN
         // ════════════════════════════════════════
         async function init() {
             try {
-                // MSAL procesa la respuesta si venimos redirigidos del login de Microsoft
                 const response = await msalInstance.handleRedirectPromise();
                 const accounts = msalInstance.getAllAccounts();
 
                 if (accounts.length > 0) {
-                    // El usuario ya inició sesión
-                    document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Descargando datos de SharePoint...</span>";
                     msalInstance.setActiveAccount(accounts[0]);
-                    await acquireTokenAndFetchData();
+                    await checkPermissionsAndLoad(accounts[0].username);
                 } else {
-                    // El usuario NO ha iniciado sesión
                     showLoginScreen();
                 }
             } catch (error) {
@@ -318,8 +336,48 @@
                 showLoginScreen(true);
             }
         }
+        
+        // FUNCIÓN NUEVA: Valida contra Google Sheets el rol del usuario de Microsoft
+        async function checkPermissionsAndLoad(email) {
+            document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Verificando permisos en la Base de Datos...</span>";
+            
+            try {
+                const res = await fetch(GS_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ accion: 'obtener_usuarios' })
+                }).then(r => r.json());
+                
+                if (res.success) {
+                    const dbUser = res.usuarios.find(u => u.correo.toLowerCase() === email.toLowerCase());
+                    
+                    if (!dbUser) {
+                        showLoginScreen(false, `Tu correo de Microsoft (${email}) no está registrado en el ERP.`);
+                        return;
+                    }
+                    
+                    // Almacenar globalmente si este usuario es administrador (se usará al intentar cerrar sesión)
+                    isCurrentUserAdmin = dbUser.permisos.admin === true;
+                    
+                    // Prevenir acceso si el usuario no tiene rol de depósitos ni de admin
+                    if (dbUser.permisos.depositos !== true && dbUser.permisos.admin !== true) {
+                        showLoginScreen(false, "No tienes permisos asignados para entrar al módulo de Depósitos.");
+                        return;
+                    }
+                    
+                    document.getElementById('loaderText').innerHTML = "<strong>Portal Grupo Imade</strong><span>Descargando datos de SharePoint...</span>";
+                    await acquireTokenAndFetchData();
+                } else {
+                    showToast('Error al leer usuarios desde la Base de Datos', 'error');
+                    removeLoader();
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Error de conexión con Google Sheets', 'error');
+                removeLoader();
+            }
+        }
 
-        function showLoginScreen(hasError = false) {
+        function showLoginScreen(hasError = false, customMsg = "") {
             removeLoader();
             const container = document.getElementById('dashboard-container');
             container.innerHTML = `
@@ -329,10 +387,19 @@
                     </div>
                     <h3 style="font-size: 22px;">Conexión Segura con Microsoft 365</h3>
                     <p style="max-width: 400px; margin-bottom: 24px;">Debes autenticarte con tu cuenta corporativa para leer y aprobar los depósitos directamente en SharePoint.</p>
+                    
+                    ${customMsg ? `<p style="color: var(--red); font-size: 13px; font-weight: 600; margin-bottom: 18px; padding: 10px; background: var(--red-soft); border-radius: 8px;">${customMsg}</p>` : ''}
                     ${hasError ? `<p style="color: var(--red); font-size: 12px; margin-bottom: 15px;">Asegúrate de ejecutar esta página desde la URL registrada en Azure (GitHub Pages).</p>` : ''}
-                    <button onclick="loginMicrosoft()" class="btn-primary" style="padding: 14px 32px; font-size: 16px;">
-                        Iniciar Sesión
-                    </button>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 10px;">
+                        <button onclick="loginMicrosoft()" class="btn-primary" style="padding: 14px 32px; font-size: 16px;">
+                            Iniciar Sesión
+                        </button>
+                        ${customMsg ? `
+                        <button onclick="logoutMicrosoft()" class="qa-btn" style="color: var(--red); border-color: var(--red-soft); padding: 13px 20px;">
+                            Cerrar cuenta actual
+                        </button>` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -340,6 +407,47 @@
         function loginMicrosoft() {
             msalInstance.loginRedirect(tokenRequest);
         }
+        
+        function logoutMicrosoft() {
+            msalInstance.logoutRedirect({
+                postLogoutRedirectUri: window.location.href.split('?')[0]
+            });
+        }
+
+        // Mostrar/Ocultar el menú del engranaje
+        function toggleConfigMenu() {
+            const menu = document.getElementById('configMenu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                setTimeout(() => menu.classList.remove('opacity-0'), 10);
+            } else {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        }
+
+        // Intento de cerrar sesión evaluando el Rol de Google Sheets
+        function attemptLogout() {
+            toggleConfigMenu(); // Ocultar el menú
+
+            if (isCurrentUserAdmin) {
+                // Si es admin, cerramos sesión
+                logoutMicrosoft();
+            } else {
+                // Si no es admin, denegamos el acceso
+                showToast("Acceso denegado: Autorización de Administrador requerida para cerrar sesión.", "error");
+            }
+        }
+
+        // Cerrar menú del engranaje si se hace clic afuera
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('configMenu');
+            const gearBtn = menu ? menu.previousElementSibling : null;
+            if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !gearBtn.contains(e.target)) {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+            }
+        });
 
         async function acquireTokenAndFetchData() {
             try {
@@ -348,7 +456,6 @@
                 await loadSharePointData();
             } catch (error) {
                 if (error instanceof msal.InteractionRequiredAuthError) {
-                    // Si el token expiró, pide login otra vez
                     msalInstance.loginRedirect(tokenRequest);
                 } else {
                     console.error("Error obteniendo token:", error);
@@ -363,7 +470,6 @@
         // ════════════════════════════════════════
         async function loadSharePointData() {
             try {
-                // 1. Obtener el ID del Sitio de SharePoint
                 let res = await fetch(`${GRAPH_ENDPOINT}/sites/${SP_HOSTNAME}:${SP_SITE_PATH}`, {
                     headers: { "Authorization": `Bearer ${accessToken}` }
                 });
@@ -372,19 +478,15 @@
 
                 if (!siteId) throw new Error("No se encontró el sitio");
 
-                // 2. Obtener el ID de la Lista
                 res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists`, {
                     headers: { "Authorization": `Bearer ${accessToken}` }
                 });
                 let listsData = await res.json();
                 
-                // Buscamos la lista por nombre (A veces tiene espacios URL-encoded)
                 let list = listsData.value.find(l => l.displayName === SP_LIST_NAME || l.name.includes("Confirmacin"));
-                if (!list) list = listsData.value[0]; // Fallback a la primera lista que encuentre
+                if (!list) list = listsData.value[0]; 
                 listId = list.id;
 
-                // 3. Descargar los Items de la lista
-                // Se usa expand=fields para traer el contenido de las columnas personalizadas
                 res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items?expand=fields`, {
                     headers: { 
                         "Authorization": `Bearer ${accessToken}`,
@@ -393,11 +495,9 @@
                 });
                 let itemsData = await res.json();
 
-                // 4. Mapear los datos de Microsoft al Dashboard
                 submissions = itemsData.value.map(item => {
                     const fields = item.fields;
                     
-                    // Buscar imagen (Graph devuelve nombres internos de columna)
                     let adjuntos = [];
                     if (fields.Link_x0020_de_x0020_imagen) {
                         adjuntos = [{ name: 'Ver Imagen Adjunta', url: fields.Link_x0020_de_x0020_imagen }];
@@ -528,7 +628,6 @@
             }
 
             try {
-                // Hacer petición PATCH directamente a Microsoft Graph
                 const res = await fetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${id}/fields`, { 
                     method: 'PATCH', 
                     headers: { 
