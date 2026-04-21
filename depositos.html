@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" class="antialiased">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard de Documentos · Grupo Imade</title>
+    <title>Dashboard de Depósitos · Grupo Imade</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
 
@@ -16,803 +15,777 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #F2F2F7;
+            --bg: #F0F2F5;
             --surface: #FFFFFF;
-            --surface-2: #F9F9FB;
-            --surface-glass: rgba(255, 255, 255, 0.72);
-            --border: rgba(0, 0, 0, 0.07);
-            --border-mid: rgba(0, 0, 0, 0.10);
-            --text: #0A0A0F;
-            --text-2: #3C3C43;
-            --text-muted: #8E8E93;
+            --surface-2: #F7F8FA;
+            --surface-3: #EDEEF2;
+            --border: rgba(0,0,0,0.07);
+            --border-mid: rgba(0,0,0,0.11);
+            --text: #0D0D14;
+            --text-2: #3A3A44;
+            --text-muted: #8A8A94;
             --accent: #0A84FF;
-            --accent-hover: #0070E0;
-            --accent-soft: rgba(10, 132, 255, 0.08);
-            --green: #30D158;
-            --green-soft: rgba(48, 209, 88, 0.10);
-            --red: #FF453A;
-            --red-soft: rgba(255, 69, 58, 0.10);
-            --orange: #FF9F0A;
-            --orange-soft: rgba(255, 159, 10, 0.10);
-            --blue-soft: rgba(10, 132, 255, 0.10);
-            --yellow: #FFD60A;
-            --yellow-soft: rgba(255, 214, 10, 0.12);
-            
-            --header-h: 56px;
-            --radius-xs: 8px;
-            --radius-sm: 12px;
-            --radius-md: 18px;
-            --radius-lg: 24px;
-            --radius-xl: 32px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+            --accent-hover: #006FD6;
+            --accent-soft: rgba(10,132,255,0.09);
+            --green: #27C25A;
+            --green-soft: rgba(39,194,90,0.10);
+            --green-border: rgba(39,194,90,0.22);
+            --red: #FF3B30;
+            --red-soft: rgba(255,59,48,0.09);
+            --red-border: rgba(255,59,48,0.22);
+            --orange: #FF9500;
+            --orange-soft: rgba(255,149,0,0.10);
+            --orange-border: rgba(255,149,0,0.22);
+            --header-h: 58px;
+            --r-sm: 10px;
+            --r-md: 16px;
+            --r-lg: 20px;
+            --r-xl: 28px;
+            --r-2xl: 36px;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 6px 24px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-float: 0 24px 64px rgba(0,0,0,0.13), 0 6px 20px rgba(0,0,0,0.07);
             --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --mono: 'DM Mono', monospace;
+            --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
         }
 
         html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.13); border-radius: 10px; }
 
         #shell { display: flex; height: 100vh; overflow: hidden; }
-        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        #main  { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
         /* LOADER */
-        #globalLoader { position: fixed; inset: 0; z-index: 9999; background: rgba(242,242,247,0.85); backdrop-filter: blur(32px) saturate(180%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, transform 0.6s ease; }
-        #globalLoader.fade-out { opacity: 0; pointer-events: none; transform: scale(1.02); }
-        .loader-card { background: var(--surface-glass); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.6); border-radius: var(--radius-xl); padding: 36px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: var(--shadow-float); }
-        .loader-ring { width: 44px; height: 44px; border: 3px solid rgba(10,132,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #globalLoader { position: fixed; inset: 0; z-index: 9999; background: rgba(240,242,245,0.88); backdrop-filter: blur(28px) saturate(180%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease, transform 0.5s ease; }
+        #globalLoader.fade-out { opacity: 0; pointer-events: none; transform: scale(1.015); }
+        .loader-card { background: rgba(255,255,255,0.80); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.7); border-radius: var(--r-2xl); padding: 40px 52px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: var(--shadow-float); }
+        .loader-logo { width: 52px; height: 52px; border-radius: 14px; background: var(--accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(10,132,255,0.3); }
+        .loader-ring { width: 36px; height: 36px; border: 3px solid rgba(10,132,255,0.14); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.72s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .loader-text { text-align: center; }
-        .loader-text strong { display: block; font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
-        .loader-text span { font-size: 12px; color: var(--text-muted); margin-top: 3px; display: block; }
+        .loader-text strong { display: block; font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+        .loader-text span { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; display: block; }
 
         /* HEADER */
-        #appHeader { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(242,242,247,0.80); backdrop-filter: blur(20px) saturate(160%); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0; }
-        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
-        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
-        .breadcrumb .current { color: var(--text); font-weight: 600; }
+        #appHeader { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; z-index: 40; background: rgba(240,242,245,0.82); backdrop-filter: blur(20px) saturate(160%); border-bottom: 1px solid var(--border); }
+        .logo-mark { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-dot { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+        .logo-dot i { font-size: 16px; color: white; }
+        .logo-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+        .logo-name span { color: var(--text-muted); font-weight: 400; }
 
-        #pageContent { flex: 1; overflow-y: auto; padding: 32px 28px 60px; }
-        .page-header { margin-bottom: 32px; }
-        .page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.8px; color: var(--text); line-height: 1.1; margin-bottom: 8px; }
-        .page-sub { font-size: 15px; color: var(--text-muted); font-weight: 400; line-height: 1.5; }
+        /* CONTENT */
+        #pageContent { flex: 1; overflow-y: auto; padding: 36px 32px 80px; }
+        .container { max-width: 980px; margin: 0 auto; }
+
+        .page-head { margin-bottom: 28px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.7px; color: var(--text); line-height: 1.15; }
+        .page-sub   { font-size: 13.5px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+
+        .stat-strip { display: flex; gap: 10px; }
+        .stat-chip  { display: flex; flex-direction: column; align-items: center; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--r-md); padding: 10px 18px; box-shadow: var(--shadow-xs); min-width: 72px; }
+        .stat-chip strong { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+        .stat-chip span   { font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+        .stat-chip.pending strong { color: var(--orange); }
+        .stat-chip.ok     strong  { color: var(--green); }
+        .stat-chip.bad    strong  { color: var(--red); }
+
+        /* TABS */
+        .tab-bar { display: flex; gap: 6px; margin-bottom: 22px; overflow-x: auto; padding-bottom: 2px; }
+        .tab-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; transition: var(--transition); white-space: nowrap; box-shadow: var(--shadow-xs); font-family: var(--font); }
+        .tab-btn:hover { background: var(--surface-2); box-shadow: var(--shadow-sm); }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 14px rgba(10,132,255,0.28); }
+        .tab-count { padding: 1px 7px; border-radius: 100px; font-size: 11px; font-weight: 700; }
+        .tab-btn.active .tab-count { background: rgba(255,255,255,0.22); }
+        .tab-btn:not(.active) .tab-count { background: var(--surface-3); color: var(--text-muted); }
 
         /* BUTTONS */
-        .btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: white; border: none; border-radius: 100px; padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: all 0.2s; box-shadow: 0 4px 12px rgba(10,132,255,0.25); letter-spacing: -0.2px; text-decoration: none; }
-        .btn-pill:hover { background: var(--accent-hover); transform: translateY(-1px); color: white; }
-        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 11px 22px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background 0.15s, transform 0.1s; box-shadow: 0 2px 8px rgba(10,132,255,0.25); }
-        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-        .qa-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.15s ease; box-shadow: var(--shadow-sm); font-family: var(--font); }
-        .qa-btn:hover { background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .qa-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+        .btn-pill { display: inline-flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: 100px; padding: 9px 20px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: var(--transition); box-shadow: var(--shadow-xs); color: var(--text-2); text-decoration: none; }
+        .btn-pill:hover { background: var(--surface-2); box-shadow: var(--shadow-sm); }
 
-        /* CARDS */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow 0.3s, opacity 0.3s; margin-bottom: 20px; }
+        /* CARD */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 16px; transition: box-shadow 0.25s ease, opacity 0.3s ease; animation: cardIn 0.32s ease both; }
+        @keyframes cardIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
         .card:hover { box-shadow: var(--shadow-md); }
-        .card-header { padding: 20px 28px; border-bottom: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; }
-        .card-header-left { display: flex; align-items: center; gap: 14px; }
-        .card-body { padding: 24px 28px; }
+        .card.loading { opacity: 0.4; pointer-events: none; }
 
-        /* STATUS */
-        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
-        .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .status-pill.pending { background: var(--orange-soft); color: var(--orange); border: 1px solid rgba(255,159,10,0.2); }
-        .status-pill.approved { background: var(--green-soft); color: var(--green); border: 1px solid rgba(48,209,88,0.2); }
-        .status-pill.rejected { background: var(--red-soft); color: var(--red); border: 1px solid rgba(255,69,58,0.2); }
+        .card-head { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .card-head-left { display: flex; align-items: center; gap: 14px; }
+        .card-avatar { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--surface-2); border: 1px solid var(--border-mid); }
+        .card-meta-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .card-meta-sub   { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .card-meta-sub strong { color: var(--text-2); font-weight: 600; }
 
-        .obs-box { background: linear-gradient(135deg, rgba(10,132,255,0.03), rgba(10,132,255,0.01)); border: 1px solid rgba(10,132,255,0.12); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; }
-        .obs-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: block; }
-        .obs-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+        .card-actions { display: flex; align-items: center; gap: 8px; }
+        .act-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: var(--r-sm); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: var(--transition); border: 1.5px solid; letter-spacing: -0.1px; }
+        .act-btn.confirm { color: var(--green); border-color: var(--green-border); background: var(--green-soft); }
+        .act-btn.confirm:hover { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 4px 14px rgba(39,194,90,0.28); transform: translateY(-1px); }
+        .act-btn.reject  { color: var(--red); border-color: var(--red-border); background: var(--red-soft); }
+        .act-btn.reject:hover  { background: var(--red); color: white; border-color: var(--red); box-shadow: 0 4px 14px rgba(255,59,48,0.26); transform: translateY(-1px); }
+        .act-btn.undo    { color: var(--text-2); border-color: var(--border-mid); background: var(--surface); font-size: 12px; padding: 7px 14px; }
+        .act-btn.undo:hover { background: var(--surface-2); }
 
-        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
-        .file-item { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 16px; transition: all 0.2s; text-decoration: none; }
-        .file-item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(10,132,255,0.1); transform: translateY(-2px); }
-        .file-item .fi-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; font-size: 24px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--border-mid); }
-        .file-item .fi-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-        .file-item .fi-body { flex: 1; min-width: 0; }
-        .file-item .fi-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-        .file-item .fi-link-icon { color: var(--text-muted); margin-left: 10px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; transition: all 0.2s; }
-        .file-item:hover .fi-link-icon { background: var(--accent-soft); color: var(--accent); }
+        .card-body { padding: 22px 24px; }
 
-        .empty-state { padding: 64px 24px; text-align: center; background: var(--surface); border: 2px dashed var(--border-mid); border-radius: var(--radius-xl); margin-top: 20px; }
-        .empty-state i { font-size: 56px; color: var(--text-muted); margin-bottom: 16px; opacity: 0.5; display: block; }
-        .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
-        .empty-state p { font-size: 14px; color: var(--text-muted); max-width: 320px; margin: 0 auto; line-height: 1.5; }
+        /* OBSERVACIONES — bloqueado */
+        .obs-block { background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .obs-block::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); opacity: 0.55; }
+        .field-label { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .obs-text { font-size: 14px; color: var(--text-2); line-height: 1.65; padding-left: 4px; }
+        .lock-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--surface-3); border: 1px solid var(--border-mid); border-radius: 100px; font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.3px; margin-left: auto; }
+
+        /* COMENTARIOS */
+        .comment-block { margin-bottom: 20px; }
+        .comment-input { width: 100%; padding: 12px 16px; background: var(--surface); border: 1.5px solid var(--border-mid); border-radius: var(--r-md); font-size: 13.5px; color: var(--text); font-family: var(--font); resize: none; transition: border-color 0.15s, box-shadow 0.15s; outline: none; line-height: 1.5; }
+        .comment-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .comment-input::placeholder { color: var(--text-muted); }
+
+        /* ARCHIVOS */
+        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-top: 10px; }
+        .file-chip { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--r-md); text-decoration: none; color: var(--text); transition: var(--transition); }
+        .file-chip:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .file-icon { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .file-icon.pdf { background: rgba(255,59,48,0.08); color: var(--red); border: 1px solid rgba(255,59,48,0.18); }
+        .file-icon.img { background: rgba(10,132,255,0.08); color: var(--accent); border: 1px solid rgba(10,132,255,0.18); }
+        .file-icon.doc { background: rgba(39,194,90,0.08); color: var(--green); border: 1px solid rgba(39,194,90,0.18); }
+        .file-icon.gen { background: var(--surface-3); color: var(--text-muted); border: 1px solid var(--border-mid); }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-size { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .file-arrow { color: var(--text-muted); flex-shrink: 0; transition: color 0.15s; }
+        .file-chip:hover .file-arrow { color: var(--accent); }
+        .no-files { font-size: 13px; color: var(--text-muted); padding: 14px 16px; background: var(--surface-2); border: 1px dashed var(--border-mid); border-radius: var(--r-md); margin-top: 8px; }
+
+        /* BADGES */
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; border: 1px solid; }
+        .badge::before { content:''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+        .badge.pending  { color: var(--orange); background: var(--orange-soft); border-color: var(--orange-border); }
+        .badge.approved { color: var(--green);  background: var(--green-soft);  border-color: var(--green-border); }
+        .badge.rejected { color: var(--red);    background: var(--red-soft);    border-color: var(--red-border); }
+
+        /* EMPTY STATE */
+        .empty { padding: 72px 24px; text-align: center; background: var(--surface); border: 2px dashed var(--border-mid); border-radius: var(--r-xl); }
+        .empty-icon { width: 64px; height: 64px; border-radius: 16px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid var(--border-mid); }
+        .empty-icon i { font-size: 28px; color: var(--text-muted); }
+        .empty h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .empty p  { font-size: 13.5px; color: var(--text-muted); max-width: 300px; margin: 0 auto; line-height: 1.55; }
 
         /* TOASTS */
-        #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
-        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; background: rgba(255,255,255,0.96); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: 100px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; color: var(--text); pointer-events: auto; transform: translateY(-12px); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+        #toastContainer { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9998; display: flex; flex-direction: column-reverse; align-items: center; gap: 8px; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: rgba(13,13,20,0.92); backdrop-filter: blur(20px); border-radius: 100px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; color: #fff; pointer-events: auto; transform: translateY(12px); opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
         .toast.show { transform: translateY(0); opacity: 1; }
-        .toast.hide { transform: translateY(-8px); opacity: 0; transition: all 0.25s ease; }
-        .toast-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
-        .toast-icon.success { background: var(--green); color: white; }
-        .toast-icon.error { background: var(--red); color: white; }
-        .toast-icon.info { background: var(--accent); color: white; }
-        .toast-icon.warn { background: var(--orange); color: white; }
+        .toast.hide { transform: translateY(8px); opacity: 0; transition: all 0.22s ease; }
+        .t-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .t-dot.success { background: var(--green); }
+        .t-dot.error   { background: var(--red); }
+        .t-dot.info    { background: var(--accent); }
+        .t-dot.warn    { background: var(--orange); }
+
+        /* LOGIN */
+        .login-wrap { max-width: 420px; margin: 60px auto 0; padding: 0 16px; }
+        .login-card { background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--r-2xl); padding: 48px 40px; box-shadow: var(--shadow-md); text-align: center; }
+        .ms-logo { width: 60px; height: 60px; border-radius: 16px; background: #0078D4; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 28px rgba(0,120,212,0.28); }
+        .ms-logo i { font-size: 30px; color: white; }
+        .login-card h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 10px; }
+        .login-card p  { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 28px; }
+        .login-btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: var(--r-md); font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: var(--transition); box-shadow: 0 4px 14px rgba(10,132,255,0.28); }
+        .login-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,132,255,0.35); }
+        .err-box { padding: 12px 16px; background: var(--red-soft); border: 1px solid var(--red-border); border-radius: var(--r-sm); font-size: 13px; color: var(--red); font-weight: 600; margin-bottom: 20px; text-align: left; line-height: 1.5; }
+        .change-account-btn { margin-top: 12px; width: 100%; padding: 11px; background: transparent; color: var(--red); border: 1px solid var(--red-border); border-radius: var(--r-md); font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font); transition: var(--transition); }
+        .change-account-btn:hover { background: var(--red-soft); }
+
+        /* GEAR MENU */
+        .gear-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: rgba(255,255,255,0.96); backdrop-filter: blur(20px); border: 1px solid var(--border-mid); border-radius: var(--r-lg); box-shadow: var(--shadow-float); z-index: 50; overflow: hidden; transition: opacity 0.18s, transform 0.18s; transform-origin: top right; }
+        .gear-menu-head { padding: 10px 14px 8px; border-bottom: 1px solid var(--border); }
+        .gear-menu-head span { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .gear-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-2); background: transparent; border: none; cursor: pointer; font-family: var(--font); transition: background 0.12s; }
+        .gear-item:hover { background: var(--surface-2); }
+        .gear-item.danger { color: var(--red); }
 
         .hidden { display: none !important; }
-        .opacity-0 { opacity: 0; transform: scale(0.95) translateY(-4px); pointer-events: none; }
+        .op-0 { opacity: 0; transform: scale(0.96) translateY(-4px); pointer-events: none; }
 
-        .dashboard-container { max-width: 1000px; margin: 0 auto; }
-
-        /* ── PANEL DE DIAGNÓSTICO ── */
-        #debugPanel { background: #0A0A0F; color: #30D158; border-radius: var(--radius-xl); padding: 20px 24px; margin-bottom: 24px; font-family: var(--mono); font-size: 12px; line-height: 1.8; border: 1px solid rgba(48,209,88,0.2); overflow: auto; max-height: 340px; }
-        #debugPanel .d-title { color: #FFD60A; font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        #debugPanel .d-ok { color: #30D158; }
-        #debugPanel .d-err { color: #FF453A; }
-        #debugPanel .d-warn { color: #FF9F0A; }
-        #debugPanel .d-info { color: #64D2FF; }
-        .debug-toggle-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-
-        /* FIELD MAP TABLE */
-        #fieldMapTable { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); margin-top: 8px; }
-        #fieldMapTable th { text-align: left; color: #FFD60A; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        #fieldMapTable td { padding: 3px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        #fieldMapTable tr:hover td { background: rgba(255,255,255,0.04); }
-
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             #appHeader { padding: 0 16px; }
-            .breadcrumb .root, .breadcrumb .sep { display: none; }
-            .btn-pill { padding: 8px 16px; font-size: 13px; gap: 6px; }
-            #pageContent { padding: 24px 16px 40px; }
-            .page-title { font-size: 24px; }
-            .page-sub { font-size: 13.5px; }
-            .card-header { padding: 16px; flex-direction: column; align-items: flex-start; gap: 16px; }
-            .card-body { padding: 16px; }
+            #pageContent { padding: 20px 14px 60px; }
+            .page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .page-title { font-size: 22px; }
+            .stat-strip { display: none; }
+            .card-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .card-actions { width: 100%; }
+            .act-btn { flex: 1; justify-content: center; }
             .files-grid { grid-template-columns: 1fr; }
-            .card-actions { width: 100%; display: flex; gap: 8px; }
-            .card-actions .qa-btn { flex: 1; justify-content: center; }
         }
     </style>
 </head>
-
 <body>
 
-    <div id="globalLoader">
-        <div class="loader-card">
-            <div class="loader-ring"></div>
-            <div class="loader-text" id="loaderText">
-                <strong>Portal Grupo Imade</strong>
-                <span>Verificando autenticación con Microsoft 365...</span>
-            </div>
+<!-- LOADER -->
+<div id="globalLoader">
+    <div class="loader-card">
+        <div class="loader-logo"><i class="ph-bold ph-bank" style="font-size:26px;color:white;"></i></div>
+        <div class="loader-ring"></div>
+        <div class="loader-text" id="loaderText">
+            <strong>Grupo Imade · Depósitos</strong>
+            <span>Verificando autenticación con Microsoft 365...</span>
         </div>
     </div>
+</div>
 
-    <div id="toastContainer"></div>
+<div id="toastContainer"></div>
 
-    <div id="shell">
-        <div id="main">
+<div id="shell"><div id="main">
 
-            <header id="appHeader">
-                <div class="breadcrumb">
-                    <span class="root">Portal ERP</span>
-                    <span class="sep">›</span>
-                    <span class="current">Dashboard de Revisión</span>
-                </div>
-                <div style="display:flex;gap:10px;align-items:center;">
-                    <a href="inicio.html" class="btn-pill">
-                        <i class="ph-bold ph-arrow-left" style="font-size:18px;"></i> Volver a Inicio
-                    </a>
-                    <div style="position:relative;">
-                        <button class="qa-btn" onclick="toggleConfigMenu()" title="Configuraciones" style="padding:10px;">
-                            <i class="ph-bold ph-gear" style="font-size:18px;"></i>
+    <!-- HEADER -->
+    <header id="appHeader">
+        <a href="inicio.html" class="logo-mark">
+            <div class="logo-dot"><i class="ph-bold ph-bank"></i></div>
+            <div class="logo-name">Grupo Imade <span>· Depósitos</span></div>
+        </a>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <a href="inicio.html" class="btn-pill">
+                <i class="ph-bold ph-arrow-left" style="font-size:15px;"></i> Inicio
+            </a>
+            <div style="position:relative;">
+                <button class="btn-pill" onclick="toggleGearMenu()" style="padding:9px 12px;">
+                    <i class="ph-bold ph-gear" style="font-size:16px;"></i>
+                </button>
+                <div id="gearMenu" class="gear-menu hidden op-0">
+                    <div class="gear-menu-head"><span>Mi cuenta</span></div>
+                    <div style="padding:6px 0;">
+                        <button onclick="attemptLogout()" class="gear-item danger">
+                            <i class="ph-bold ph-sign-out" style="font-size:15px;"></i> Cerrar sesión
                         </button>
-                        <div id="configMenu" class="hidden opacity-0" style="position:absolute;top:100%;right:0;margin-top:8px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:var(--shadow-float);min-width:240px;z-index:50;transition:opacity 0.2s,transform 0.2s;transform-origin:top right;">
-                            <div style="padding:6px;">
-                                <div style="padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:6px;">
-                                    <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Configuración</span>
-                                </div>
-                                <button onclick="toggleDebugPanel()" class="qa-btn" style="width:100%;justify-content:flex-start;border:none;box-shadow:none;background:transparent;padding:10px 12px;">
-                                    <i class="ph-bold ph-terminal" style="font-size:16px;"></i> Panel de Diagnóstico
-                                </button>
-                                <button onclick="attemptLogout()" class="qa-btn" style="width:100%;justify-content:flex-start;color:var(--red);border:none;box-shadow:none;background:transparent;padding:10px 12px;">
-                                    <i class="ph-bold ph-sign-out" style="font-size:16px;"></i> Cerrar sesión de Microsoft
-                                </button>
-                            </div>
-                        </div>
                     </div>
-                </div>
-            </header>
-
-            <div id="pageContent">
-                <div class="dashboard-container">
-
-                    <div class="page-header">
-                        <h1 class="page-title">Dashboard de Revisión</h1>
-                        <p class="page-sub">Audita, confirma o rechaza las boletas de depósito enviadas. Conectado directamente con SharePoint vía Azure AD.</p>
-                    </div>
-
-                    <!-- PANEL DE DIAGNÓSTICO (oculto por defecto) -->
-                    <div id="debugPanelWrapper" class="hidden">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                            <span style="font-size:13px;font-weight:700;color:var(--text);">🔍 Panel de Diagnóstico</span>
-                            <div style="display:flex;gap:8px;">
-                                <button onclick="copyDebugLog()" class="qa-btn" style="font-size:11px;padding:5px 10px;">
-                                    <i class="ph-bold ph-copy" style="font-size:13px;"></i> Copiar log
-                                </button>
-                                <button onclick="toggleDebugPanel()" class="qa-btn" style="font-size:11px;padding:5px 10px;color:var(--red);">
-                                    <i class="ph-bold ph-x" style="font-size:13px;"></i> Cerrar
-                                </button>
-                            </div>
-                        </div>
-                        <div id="debugPanel">
-                            <span class="d-title">▶ Log de Conexión SharePoint</span>
-                            <div id="debugLog"></div>
-                        </div>
-                    </div>
-
-                    <!-- Pestañas de filtrado -->
-                    <div id="filter-tabs" style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;">
-                        <button class="qa-btn active" onclick="setFilter('Todas', this)">Todos los elementos</button>
-                        <button class="qa-btn" onclick="setFilter('Pendiente', this)">Pendientes</button>
-                        <button class="qa-btn" onclick="setFilter('Boleta Confirmada', this)">Boletas Confirmadas</button>
-                        <button class="qa-btn" onclick="setFilter('Boleta rechazada', this)">Boletas Rechazadas</button>
-                    </div>
-
-                    <div id="dashboard-container"></div>
-
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 
-    <script>
-    // ════════════════════════════════════════════════════
-    // DIAGNÓSTICO
-    // ════════════════════════════════════════════════════
-    let debugLines = [];
+    <!-- PAGE -->
+    <div id="pageContent"><div class="container">
 
-    function dlog(msg, type = 'info') {
-        const cls = { ok: 'd-ok', err: 'd-err', warn: 'd-warn', info: 'd-info' }[type] || 'd-info';
-        const prefix = { ok: '✓', err: '✗', warn: '⚠', info: '→' }[type] || '→';
-        const ts = new Date().toLocaleTimeString('es', { hour12: false });
-        const line = `[${ts}] ${prefix} ${msg}`;
-        debugLines.push(line);
-        const el = document.getElementById('debugLog');
-        if (el) {
-            const span = document.createElement('div');
-            span.className = cls;
-            span.textContent = line;
-            el.appendChild(span);
-            el.parentElement.scrollTop = el.parentElement.scrollHeight;
-        }
-        console.log(`[IMADE-DEBUG] ${line}`);
-    }
-
-    function dlogTable(label, data) {
-        dlog(label, 'warn');
-        const el = document.getElementById('debugLog');
-        if (!el || !Array.isArray(data)) return;
-        const table = document.createElement('table');
-        table.id = 'fieldMapTable';
-        const header = document.createElement('tr');
-        ['Campo Interno (API)', 'Valor de ejemplo'].forEach(h => {
-            const th = document.createElement('th');
-            th.textContent = h;
-            header.appendChild(th);
-        });
-        table.appendChild(header);
-        data.forEach(([k, v]) => {
-            const tr = document.createElement('tr');
-            [k, String(v ?? '—').substring(0, 80)].forEach(t => {
-                const td = document.createElement('td');
-                td.textContent = t;
-                tr.appendChild(td);
-            });
-            table.appendChild(tr);
-        });
-        el.appendChild(table);
-        el.parentElement.scrollTop = el.parentElement.scrollHeight;
-    }
-
-    function copyDebugLog() {
-        navigator.clipboard.writeText(debugLines.join('\n')).then(() => showToast('Log copiado al portapapeles', 'success'));
-    }
-
-    function toggleDebugPanel() {
-        const wrapper = document.getElementById('debugPanelWrapper');
-        wrapper.classList.toggle('hidden');
-        // Cerrar menú si está abierto
-        const menu = document.getElementById('configMenu');
-        if (menu) { menu.classList.add('opacity-0'); setTimeout(() => menu.classList.add('hidden'), 200); }
-    }
-
-    // ════════════════════════════════════════════════════
-    // CONFIGURACIÓN MSAL
-    // ════════════════════════════════════════════════════
-    const msalConfig = {
-        auth: {
-            clientId:   "b20040c9-f017-4d32-8d9f-b2914465bf1a",
-            authority:  "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
-            redirectUri: window.location.href.split('?')[0]
-        },
-        cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
-    };
-
-    const tokenRequest = { scopes: ["User.Read", "Sites.ReadWrite.All"] };
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-    let accessToken    = "";
-    let submissions    = [];
-    let currentFilter  = 'Todas';
-
-    const GRAPH_ENDPOINT = "https://graph.microsoft.com/v1.0";
-    const SP_HOSTNAME    = "grupoimade.sharepoint.com";
-    const SP_SITE_PATH   = "/sites/ConfirmacindeDepositosBancarios";
-
-    // ⚠️ NOMBRES ALTERNATIVOS DE LA LISTA — se probarán en orden hasta encontrar la correcta
-    const SP_LIST_CANDIDATES = [
-        "Confirmación de Depositos Bancarios",
-        "Confirmacion de Depositos Bancarios",
-        "ConfirmacióndepósitosBancarios",
-        "Depositos",
-    ];
-
-    const GS_API_URL = "https://script.google.com/macros/s/AKfycbzvJayZSV2axjevlHhl-Qiycp55VaTcMuB-3ZTMo0TaL85Ueq4a3mz4Gw6jm-tOHg0Vxg/exec";
-
-    let siteId = "";
-    let listId = "";
-    let isCurrentUserAdmin = false;
-
-    // ════════════════════════════════════════════════════
-    // INIT & AUTH
-    // ════════════════════════════════════════════════════
-    async function init() {
-        dlog(`URL actual: ${window.location.href.split('?')[0]}`, 'info');
-        dlog(`ClientId: ${msalConfig.auth.clientId}`, 'info');
-        try {
-            await msalInstance.handleRedirectPromise();
-            const accounts = msalInstance.getAllAccounts();
-            dlog(`Cuentas MSAL encontradas: ${accounts.length}`, accounts.length > 0 ? 'ok' : 'warn');
-            if (accounts.length > 0) {
-                msalInstance.setActiveAccount(accounts[0]);
-                dlog(`Usuario: ${accounts[0].username}`, 'ok');
-                await checkPermissionsAndLoad(accounts[0].username);
-            } else {
-                dlog('Sin sesión activa → mostrando pantalla de login', 'warn');
-                showLoginScreen();
-            }
-        } catch (error) {
-            dlog(`Error MSAL init: ${error.message}`, 'err');
-            showLoginScreen(true);
-        }
-    }
-
-    async function checkPermissionsAndLoad(email) {
-        setLoaderText("Verificando permisos en la Base de Datos...");
-        dlog(`Consultando Google Sheets para: ${email}`, 'info');
-        try {
-            const res = await fetch(GS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ accion: 'obtener_usuarios' })
-            }).then(r => r.json());
-
-            if (res.success) {
-                const dbUser = res.usuarios.find(u => u.correo.toLowerCase() === email.toLowerCase());
-                if (!dbUser) {
-                    dlog(`Correo ${email} NO encontrado en base de datos`, 'err');
-                    showLoginScreen(false, `Tu correo (${email}) no está registrado en el ERP.`);
-                    return;
-                }
-                dlog(`Usuario encontrado: ${dbUser.correo} | admin=${dbUser.permisos.admin} | depositos=${dbUser.permisos.depositos}`, 'ok');
-                isCurrentUserAdmin = dbUser.permisos.admin === true;
-                if (dbUser.permisos.depositos !== true && dbUser.permisos.admin !== true) {
-                    dlog('Sin permisos de depósitos', 'err');
-                    showLoginScreen(false, "No tienes permisos asignados para el módulo de Depósitos.");
-                    return;
-                }
-                setLoaderText("Descargando datos de SharePoint...");
-                await acquireTokenAndFetchData();
-            } else {
-                dlog('Error al leer usuarios desde Google Sheets', 'err');
-                showToast('Error al leer usuarios desde la Base de Datos', 'error');
-                removeLoader();
-            }
-        } catch (error) {
-            dlog(`Error de conexión con Google Sheets: ${error.message}`, 'err');
-            showToast('Error de conexión con Google Sheets', 'error');
-            removeLoader();
-        }
-    }
-
-    async function acquireTokenAndFetchData() {
-        try {
-            dlog('Solicitando token de acceso a Graph...', 'info');
-            const tokenResponse = await msalInstance.acquireTokenSilent(tokenRequest);
-            accessToken = tokenResponse.accessToken;
-            dlog('Token obtenido correctamente', 'ok');
-            await loadSharePointData();
-        } catch (error) {
-            dlog(`Error obteniendo token: ${error.message}`, 'err');
-            if (error instanceof msal.InteractionRequiredAuthError) {
-                dlog('Requiere interacción → redirigiendo a login', 'warn');
-                msalInstance.loginRedirect(tokenRequest);
-            } else {
-                showToast("Error de permisos en Azure", "error");
-                removeLoader();
-            }
-        }
-    }
-
-    // ════════════════════════════════════════════════════
-    // GRAPH API — SHAREPOINT
-    // ════════════════════════════════════════════════════
-    async function loadSharePointData() {
-        try {
-            // 1. Obtener Site ID
-            dlog(`Buscando sitio: ${SP_HOSTNAME}${SP_SITE_PATH}`, 'info');
-            let res = await gFetch(`${GRAPH_ENDPOINT}/sites/${SP_HOSTNAME}:${SP_SITE_PATH}`);
-            if (!res.ok) {
-                const err = await res.json();
-                dlog(`Error al obtener sitio (${res.status}): ${JSON.stringify(err.error?.message)}`, 'err');
-                throw new Error(`Sitio no encontrado: ${res.status}`);
-            }
-            let siteData = await res.json();
-            siteId = siteData.id;
-            dlog(`Sitio encontrado. ID: ${siteId}`, 'ok');
-
-            // 2. Listar todas las listas disponibles
-            dlog('Obteniendo listas del sitio...', 'info');
-            res = await gFetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists?$select=id,displayName,name`);
-            let listsData = await res.json();
-            const allLists = listsData.value || [];
-            dlog(`Listas encontradas (${allLists.length}):`, 'ok');
-            allLists.forEach(l => dlog(`  · "${l.displayName}" (name: ${l.name}, id: ${l.id})`, 'info'));
-
-            // 3. Intentar encontrar la lista por nombre
-            let foundList = null;
-            for (const candidate of SP_LIST_CANDIDATES) {
-                foundList = allLists.find(l =>
-                    l.displayName.toLowerCase() === candidate.toLowerCase() ||
-                    l.name.toLowerCase() === candidate.toLowerCase()
-                );
-                if (foundList) {
-                    dlog(`Lista encontrada con candidato "${candidate}"`, 'ok');
-                    break;
-                }
-            }
-
-            // 4. Fallback: primera lista que no sea del sistema
-            if (!foundList) {
-                const systemLists = ['Documents', 'Site Pages', 'Style Library', 'Form Templates', 'Site Assets', 'Composed Looks', 'Master Page Gallery', 'Solution Gallery', 'Theme Gallery', 'User Information List', 'Web Part Gallery'];
-                foundList = allLists.find(l => !systemLists.includes(l.displayName));
-                if (foundList) {
-                    dlog(`⚠ Lista no encontrada por nombre exacto. Usando fallback: "${foundList.displayName}"`, 'warn');
-                    showToast(`Usando lista: "${foundList.displayName}"`, 'warn');
-                } else {
-                    dlog('No se encontró ninguna lista válida. Revisa el nombre en la configuración.', 'err');
-                    throw new Error('No hay listas disponibles');
-                }
-            }
-
-            listId = foundList.id;
-            dlog(`Usando lista: "${foundList.displayName}" (ID: ${listId})`, 'ok');
-
-            // 5. Obtener ítems
-            dlog('Descargando ítems de la lista...', 'info');
-            res = await gFetch(
-                `${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items?expand=fields($select=*)&$top=100`,
-                { "Prefer": "HonorNonIndexedQueriesWarningMayFailRandomly" }
-            );
-            let itemsData = await res.json();
-            const rawItems = itemsData.value || [];
-            dlog(`Ítems obtenidos: ${rawItems.length}`, rawItems.length > 0 ? 'ok' : 'warn');
-
-            // 6. Mapear campos — mostrar todos los campos del primer ítem para diagnóstico
-            if (rawItems.length > 0) {
-                const firstFields = rawItems[0].fields;
-                const fieldEntries = Object.entries(firstFields).filter(([k]) => !k.startsWith('@'));
-                dlog(`Campos disponibles en el primer ítem:`, 'warn');
-                dlogTable('Campos del Item #1', fieldEntries.map(([k, v]) => [k, v]));
-
-                // Autodetección de campos relevantes
-                const allKeys = fieldEntries.map(([k]) => k.toLowerCase());
-                
-                const detectField = (...candidates) => {
-                    for (const c of candidates) {
-                        const match = fieldEntries.find(([k]) => k.toLowerCase().includes(c.toLowerCase()));
-                        if (match) return match[0];
-                    }
-                    return null;
-                };
-
-                const F_FECHA       = detectField('fecha', 'date', 'hora', 'created');
-                const F_ESTADO      = detectField('estado', 'status', 'state');
-                const F_CORREO      = detectField('correo', 'email', 'mail', 'author');
-                const F_OBS         = detectField('observ', 'nota', 'comment', 'descripcion');
-                const F_IMAGEN      = detectField('link', 'imagen', 'adjunto', 'attach', 'url', 'photo');
-
-                dlog(`Campo Fecha detectado: ${F_FECHA ?? '❌ NO ENCONTRADO'}`, F_FECHA ? 'ok' : 'err');
-                dlog(`Campo Estado detectado: ${F_ESTADO ?? '❌ NO ENCONTRADO'}`, F_ESTADO ? 'ok' : 'err');
-                dlog(`Campo Correo detectado: ${F_CORREO ?? '❌ NO ENCONTRADO'}`, F_CORREO ? 'ok' : 'err');
-                dlog(`Campo Observaciones detectado: ${F_OBS ?? '❌ NO ENCONTRADO'}`, F_OBS ? 'ok' : 'err');
-                dlog(`Campo Imagen/Link detectado: ${F_IMAGEN ?? '⚠ NO ENCONTRADO (los archivos pueden estar como adjuntos)'}`, F_IMAGEN ? 'ok' : 'warn');
-
-                // Mapear ítems con campos autodetectados
-                submissions = await Promise.all(rawItems.map(async item => {
-                    const f = item.fields;
-                    let adjuntos = [];
-
-                    // Intentar link de imagen desde campo detectado
-                    if (F_IMAGEN && f[F_IMAGEN]) {
-                        adjuntos = [{ name: 'Ver Imagen Adjunta', url: f[F_IMAGEN] }];
-                    }
-
-                    // Intentar obtener adjuntos reales del ítem si no hay link
-                    if (adjuntos.length === 0) {
-                        try {
-                            const attRes = await gFetch(`${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${item.id}/attachments`);
-                            if (attRes.ok) {
-                                const attData = await attRes.json();
-                                adjuntos = (attData.value || []).map(a => ({ name: a.name, url: a.contentUrl }));
-                                if (adjuntos.length > 0) dlog(`Ítem ${item.id}: ${adjuntos.length} adjunto(s) encontrado(s) via API`, 'ok');
-                            }
-                        } catch (_) {}
-                    }
-
-                    return {
-                        id:            item.id,
-                        date:          (F_FECHA ? f[F_FECHA] : null) || f.Created || 'Fecha desconocida',
-                        status:        (F_ESTADO ? f[F_ESTADO] : null) || 'Pendiente',
-                        user:          (F_CORREO ? f[F_CORREO] : null) || f.Author || 'Usuario',
-                        observaciones: (F_OBS    ? f[F_OBS]    : null) || 'Sin observaciones.',
-                        files:         adjuntos
-                    };
-                }));
-
-                dlog(`Mapeo completado. ${submissions.length} registros listos para mostrar.`, 'ok');
-            } else {
-                dlog('La lista está vacía. No hay ítems para mostrar.', 'warn');
-                submissions = [];
-            }
-
-        } catch (e) {
-            dlog(`Error general: ${e.message}`, 'err');
-            showToast('Error conectando con SharePoint. Abre el Panel de Diagnóstico para más detalles.', 'error');
-            // Mostrar panel de diagnóstico automáticamente si hay error
-            document.getElementById('debugPanelWrapper').classList.remove('hidden');
-        } finally {
-            removeLoader();
-            renderDashboard();
-        }
-    }
-
-    // Helper: fetch con headers de autorización
-    async function gFetch(url, extraHeaders = {}) {
-        return fetch(url, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
-                ...extraHeaders
-            }
-        });
-    }
-
-    // ════════════════════════════════════════════════════
-    // FILTROS Y RENDERIZADO
-    // ════════════════════════════════════════════════════
-    function setFilter(status, btnElement) {
-        currentFilter = status;
-        document.getElementById('filter-tabs').querySelectorAll('.qa-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
-        renderDashboard();
-    }
-
-    function renderDashboard() {
-        const container = document.getElementById('dashboard-container');
-
-        const filtered = submissions.filter(sub => {
-            if (currentFilter === 'Todas') return true;
-            if (currentFilter === 'Pendiente') return !sub.status || sub.status === 'Pendiente';
-            return sub.status === currentFilter;
-        });
-
-        if (filtered.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="ph ph-tray"></i>
-                    <h3>Bandeja Vacía</h3>
-                    <p>No hay boletas que coincidan con el filtro seleccionado.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filtered.map(sub => `
-            <div class="card" id="card-${sub.id}">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <div style="width:48px;height:48px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:var(--shadow-sm);">
-                            <i class="ph-fill ph-receipt" style="color:var(--text-muted);"></i>
-                        </div>
-                        <div>
-                            <h3 style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px;">
-                                Registro SP-${sub.id}
-                                ${getBadgeHTML(sub.status)}
-                            </h3>
-                            <p style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">
-                                Enviado por <strong style="color:var(--text-2);">${sub.user}</strong>
-                                el ${String(sub.date).replace('T', ' ').substring(0, 16)}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="card-actions" style="display:flex;align-items:center;gap:8px;">
-                        ${(!sub.status || sub.status === 'Pendiente') ? `
-                            <button onclick="changeStatus('${sub.id}', 'Boleta Confirmada')" class="qa-btn" style="color:var(--green);border-color:var(--green-soft);" title="Confirmar">
-                                <i class="ph-bold ph-check" style="font-size:16px;"></i> Confirmar
-                            </button>
-                            <button onclick="changeStatus('${sub.id}', 'Boleta rechazada')" class="qa-btn" style="color:var(--red);border-color:var(--red-soft);" title="Rechazar">
-                                <i class="ph-bold ph-x" style="font-size:16px;"></i> Rechazar
-                            </button>
-                        ` : `
-                            <button onclick="changeStatus('${sub.id}', 'Pendiente')" class="qa-btn" style="font-size:12px;padding:6px 12px;" title="Revertir">
-                                <i class="ph ph-arrow-u-up-left" style="font-size:14px;"></i> Deshacer
-                            </button>
-                        `}
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="obs-box">
-                        <span class="obs-label">Observaciones del Usuario</span>
-                        <p class="obs-text">${sub.observaciones}</p>
-                    </div>
-                    <span class="obs-label" style="color:var(--text-2);">Archivos Adjuntos (${sub.files ? sub.files.length : 0})</span>
-                    <div class="files-grid" style="margin-top:10px;">
-                        ${(sub.files || []).length === 0
-                            ? `<p style="font-size:13px;color:var(--text-muted);">Sin archivos adjuntos detectados.</p>`
-                            : (sub.files || []).map(file => `
-                                <a href="${file.url || '#'}" target="_blank" class="file-item">
-                                    <div class="fi-icon">
-                                        <img src="${file.url}" alt="Adjunto"
-                                            onerror="this.src='';this.parentNode.innerHTML='<i class=\\'ph-fill ph-link\\'></i>'"
-                                            style="border-radius:8px">
-                                    </div>
-                                    <div class="fi-body">
-                                        <div class="fi-name" title="${file.name}">${file.name}</div>
-                                    </div>
-                                    <div class="fi-link-icon">
-                                        <i class="ph-bold ph-arrow-square-out" style="font-size:16px"></i>
-                                    </div>
-                                </a>
-                            `).join('')
-                        }
-                    </div>
-                </div>
+        <div class="page-head">
+            <div>
+                <h1 class="page-title">Revisión de Depósitos</h1>
+                <p class="page-sub">Confirma o rechaza las boletas enviadas a SharePoint.</p>
             </div>
-        `).join('');
-    }
-
-    // ════════════════════════════════════════════════════
-    // CAMBIAR ESTADO EN SHAREPOINT
-    // ════════════════════════════════════════════════════
-    // Campo Estado — si el campo real en SharePoint tiene otro nombre interno,
-    // este es el lugar donde cambiarlo. El diagnóstico te mostrará el nombre exacto.
-    const SP_FIELD_ESTADO = "Estado";
-
-    async function changeStatus(id, newStatus) {
-        const index = submissions.findIndex(s => s.id === id);
-        if (index === -1) return;
-
-        const card = document.getElementById(`card-${id}`);
-        if (card) { card.style.opacity = '0.5'; card.style.pointerEvents = 'none'; }
-
-        try {
-            dlog(`PATCH ítem ${id} → ${SP_FIELD_ESTADO}: "${newStatus}"`, 'info');
-            const res = await fetch(
-                `${GRAPH_ENDPOINT}/sites/${siteId}/lists/${listId}/items/${id}/fields`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        "Authorization": `Bearer ${accessToken}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ [SP_FIELD_ESTADO]: newStatus })
-                }
-            );
-
-            if (res.ok) {
-                submissions[index].status = newStatus;
-                renderDashboard();
-                dlog(`Estado actualizado correctamente`, 'ok');
-                if (newStatus === 'Boleta Confirmada') showToast('Actualizado en SharePoint: Confirmada', 'success');
-                else if (newStatus === 'Boleta rechazada') showToast('Actualizado en SharePoint: Rechazada', 'error');
-                else showToast('Revertido a Pendiente', 'info');
-            } else {
-                const errData = await res.json();
-                dlog(`Error PATCH (${res.status}): ${JSON.stringify(errData.error?.message)}`, 'err');
-                showToast('No tienes permisos de escritura o error en SharePoint', 'error');
-                if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
-            }
-        } catch (e) {
-            dlog(`Error de conexión en PATCH: ${e.message}`, 'err');
-            showToast('Error de conexión con Microsoft 365', 'error');
-            if (card) { card.style.opacity = '1'; card.style.pointerEvents = 'auto'; }
-        }
-    }
-
-    // ════════════════════════════════════════════════════
-    // HELPERS UI
-    // ════════════════════════════════════════════════════
-    function getBadgeHTML(status) {
-        if (status === 'Boleta Confirmada') return `<span class="status-pill approved">Confirmada</span>`;
-        if (status === 'Boleta rechazada')  return `<span class="status-pill rejected">Rechazada</span>`;
-        return `<span class="status-pill pending">Pendiente</span>`;
-    }
-
-    function showLoginScreen(hasError = false, customMsg = "") {
-        removeLoader();
-        document.getElementById('dashboard-container').innerHTML = `
-            <div class="empty-state" style="padding:80px 20px;">
-                <div style="width:64px;height:64px;background:#0A84FF;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 10px 25px rgba(10,132,255,0.3);">
-                    <i class="ph-bold ph-microsoft-logo" style="font-size:32px;color:white;"></i>
-                </div>
-                <h3 style="font-size:22px;">Conexión Segura con Microsoft 365</h3>
-                <p style="max-width:400px;margin-bottom:24px;">Autentícate con tu cuenta corporativa para revisar los depósitos en SharePoint.</p>
-                ${customMsg ? `<p style="color:var(--red);font-size:13px;font-weight:600;margin-bottom:18px;padding:10px;background:var(--red-soft);border-radius:8px;">${customMsg}</p>` : ''}
-                ${hasError ? `<p style="color:var(--red);font-size:12px;margin-bottom:15px;">Asegúrate de ejecutar esta página desde la URI de redirección registrada en Azure.</p>` : ''}
-                <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:10px;">
-                    <button onclick="loginMicrosoft()" class="btn-primary" style="padding:14px 32px;font-size:16px;">Iniciar Sesión</button>
-                    ${customMsg ? `<button onclick="logoutMicrosoft()" class="qa-btn" style="color:var(--red);border-color:var(--red-soft);padding:13px 20px;">Cerrar cuenta actual</button>` : ''}
-                </div>
+            <div class="stat-strip">
+                <div class="stat-chip pending"><strong id="statPending">—</strong><span>Pendientes</span></div>
+                <div class="stat-chip ok"><strong id="statOk">—</strong><span>Confirmadas</span></div>
+                <div class="stat-chip bad"><strong id="statBad">—</strong><span>Rechazadas</span></div>
             </div>
-        `;
-    }
+        </div>
 
-    function loginMicrosoft()  { msalInstance.loginRedirect(tokenRequest); }
-    function logoutMicrosoft() { msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.href.split('?')[0] }); }
+        <div class="tab-bar" id="tabBar">
+            <button class="tab-btn active" onclick="setFilter('Todas',this)">
+                Todas <span class="tab-count" id="tcAll">0</span>
+            </button>
+            <button class="tab-btn" onclick="setFilter('Pendiente',this)">
+                <i class="ph-bold ph-clock" style="font-size:13px;"></i> Pendientes <span class="tab-count" id="tcPend">0</span>
+            </button>
+            <button class="tab-btn" onclick="setFilter('Boleta Confirmada',this)">
+                <i class="ph-bold ph-check-circle" style="font-size:13px;"></i> Confirmadas <span class="tab-count" id="tcOk">0</span>
+            </button>
+            <button class="tab-btn" onclick="setFilter('Boleta rechazada',this)">
+                <i class="ph-bold ph-x-circle" style="font-size:13px;"></i> Rechazadas <span class="tab-count" id="tcBad">0</span>
+            </button>
+        </div>
 
-    function toggleConfigMenu() {
-        const menu = document.getElementById('configMenu');
-        if (menu.classList.contains('hidden')) {
-            menu.classList.remove('hidden');
-            setTimeout(() => menu.classList.remove('opacity-0'), 10);
+        <div id="dashContainer"></div>
+
+    </div></div>
+
+</div></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  MSAL CONFIG
+// ═══════════════════════════════════════════════════════
+const msalConfig = {
+    auth: {
+        clientId:    "b20040c9-f017-4d32-8d9f-b2914465bf1a",
+        authority:   "https://login.microsoftonline.com/f22a53bd-afee-40ff-ad90-859eb01980fb",
+        redirectUri: window.location.href.split('?')[0]
+    },
+    cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false }
+};
+const LOGIN_SCOPES = { scopes: ["User.Read", "Sites.ReadWrite.All"] };
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+// ═══════════════════════════════════════════════════════
+//  SHAREPOINT CONFIG
+// ═══════════════════════════════════════════════════════
+const GRAPH   = "https://graph.microsoft.com/v1.0";
+const SP_HOST = "grupoimade.sharepoint.com";
+const SP_PATH = "/sites/ConfirmacindeDepositosBancarios";
+
+// Candidatos de nombre de lista
+const SP_LIST_CANDIDATES = [
+    "Confirmaci\u00f3n de Depositos Bancarios",
+    "Confirmacion de Depositos Bancarios",
+    "Confirmaci\u00f3n de Dep\u00f3sitos Bancarios",
+    "Depositos Bancarios",
+    "Depositos",
+];
+
+// Nombres internos de campos (Graph usa codificación x0020 para espacios)
+// Los detectamos con pick() buscando el primero que tenga valor
+const FIELDS = {
+    estado:        ["Estado"],
+    correo:        ["Correo_x0020_Electronico","CorreoElectronico","Correo"],
+    observaciones: ["Observaciones"],
+    fechaHora:     ["Fecha_x0020_y_x0020_Hora","FechaHora","Fecha_x0020_Hora","Created"],
+    linkImagen:    ["Link_x0020_de_x0020_imagen","LinkImagen","Link_x0020_imagen"],
+    comentarios:   ["Comentarios"],
+};
+
+let accessToken   = "";
+let submissions   = [];
+let currentFilter = "Todas";
+let siteId = "", listId = "";
+let isAdmin = false;
+
+const GS_URL = "https://script.google.com/macros/s/AKfycbzvJayZSV2axjevlHhl-Qiycp55VaTcMuB-3ZTMo0TaL85Ueq4a3mz4Gw6jm-tOHg0Vxg/exec";
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+async function init() {
+    try {
+        await msalInstance.handleRedirectPromise();
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+            msalInstance.setActiveAccount(accounts[0]);
+            await checkPermsAndLoad(accounts[0].username);
         } else {
-            menu.classList.add('opacity-0');
-            setTimeout(() => menu.classList.add('hidden'), 200);
+            showLogin();
         }
+    } catch(e) {
+        console.error("Init error:", e);
+        showLogin(false, "Error de autenticación: " + e.message);
     }
+}
 
-    function attemptLogout() {
-        toggleConfigMenu();
-        if (isCurrentUserAdmin) logoutMicrosoft();
-        else showToast("Acceso denegado: se requiere rol de Administrador.", "error");
+async function checkPermsAndLoad(email) {
+    setLoader("Verificando permisos...");
+    try {
+        const res = await fetch(GS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ accion: 'obtener_usuarios' })
+        }).then(r => r.json());
+
+        if (!res.success) throw new Error("No se pudo leer la base de datos");
+        const dbUser = res.usuarios.find(u => u.correo.toLowerCase() === email.toLowerCase());
+        if (!dbUser) { showLogin(false, `El correo ${email} no está registrado en el ERP.`); return; }
+        isAdmin = dbUser.permisos.admin === true;
+        if (!dbUser.permisos.depositos && !isAdmin) { showLogin(false, "Sin permiso para el módulo de Depósitos."); return; }
+
+        setLoader("Conectando con SharePoint...");
+        await getToken();
+    } catch(e) {
+        toast("Error al verificar permisos: " + e.message, "error");
+        removeLoader();
     }
+}
 
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('configMenu');
-        const gearBtn = menu?.previousElementSibling;
-        if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !gearBtn?.contains(e.target)) {
-            menu.classList.add('opacity-0');
-            setTimeout(() => menu.classList.add('hidden'), 200);
+async function getToken() {
+    try {
+        const r = await msalInstance.acquireTokenSilent(LOGIN_SCOPES);
+        accessToken = r.accessToken;
+        await loadData();
+    } catch(e) {
+        if (e instanceof msal.InteractionRequiredAuthError) msalInstance.loginRedirect(LOGIN_SCOPES);
+        else { toast("Error de token: " + e.message, "error"); removeLoader(); }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CARGA DE DATOS SHAREPOINT
+// ═══════════════════════════════════════════════════════
+async function loadData() {
+    try {
+        // 1 – Sitio
+        setLoader("Localizando sitio SharePoint...");
+        const siteRes = await gFetch(`${GRAPH}/sites/${SP_HOST}:${SP_PATH}`);
+        if (!siteRes.ok) {
+            const err = await siteRes.json().catch(()=>({}));
+            throw new Error(`Sitio no encontrado (${siteRes.status}): ${err.error?.message || ''}`);
         }
+        siteId = (await siteRes.json()).id;
+
+        // 2 – Lista
+        setLoader("Buscando lista de depósitos...");
+        const listsRes = await gFetch(`${GRAPH}/sites/${siteId}/lists?$select=id,displayName,name`);
+        const allLists = (await listsRes.json()).value || [];
+        console.log("Listas disponibles:", allLists.map(l => `"${l.displayName}"`).join(", "));
+
+        let list = null;
+        for (const c of SP_LIST_CANDIDATES) {
+            list = allLists.find(l =>
+                l.displayName.toLowerCase() === c.toLowerCase() ||
+                l.name.toLowerCase()        === c.toLowerCase()
+            );
+            if (list) break;
+        }
+        if (!list) {
+            // Fallback: primera lista personalizada
+            const SYS = new Set(["Documents","Site Pages","Style Library","Form Templates","Site Assets","Composed Looks","Master Page Gallery","Solution Gallery","Theme Gallery","User Information List","Web Part Gallery","Reusable Content"]);
+            list = allLists.find(l => !SYS.has(l.displayName));
+        }
+        if (!list) throw new Error("No se encontró la lista de depósitos.");
+        listId = list.id;
+        console.log(`Lista: "${list.displayName}" (${list.id})`);
+
+        // 3 – Ítems con todos los campos
+        setLoader("Descargando registros...");
+        const itemsRes = await gFetch(
+            `${GRAPH}/sites/${siteId}/lists/${listId}/items?expand=fields($select=*)&$top=999`,
+            { "Prefer": "HonorNonIndexedQueriesWarningMayFailRandomly" }
+        );
+        const raw = (await itemsRes.json()).value || [];
+        console.log(`Ítems: ${raw.length}`);
+        if (raw.length > 0) console.log("Campos disponibles:", Object.keys(raw[0].fields).join(", "));
+
+        // pick: primer campo candidato con valor
+        const pick = (fields, candidates) => {
+            for (const c of candidates) {
+                if (fields[c] !== undefined && fields[c] !== null && fields[c] !== "") return fields[c];
+            }
+            return null;
+        };
+
+        // 4 – Mapear + adjuntos reales
+        setLoader("Procesando registros y adjuntos...");
+        submissions = await Promise.all(raw.map(async item => {
+            const f = item.fields;
+
+            // Adjuntos nativos de SharePoint
+            let adjuntos = [];
+            try {
+                const attRes = await gFetch(`${GRAPH}/sites/${siteId}/lists/${listId}/items/${item.id}/attachments`);
+                if (attRes.ok) {
+                    const attData = await attRes.json();
+                    adjuntos = (attData.value || []).map(a => ({
+                        name: a.name,
+                        url:  a.contentUrl,
+                        size: a.size || null,
+                    }));
+                }
+            } catch(_) { /* sin adjuntos */ }
+
+            // Campo "Link de imagen" como adjunto adicional
+            const linkImg = pick(f, FIELDS.linkImagen);
+            if (linkImg && !adjuntos.find(a => a.url === linkImg)) {
+                adjuntos.push({ name: "Imagen adjunta", url: linkImg, size: null });
+            }
+
+            return {
+                id:            item.id,
+                fecha:         pick(f, FIELDS.fechaHora)     || f.Created || "",
+                estado:        pick(f, FIELDS.estado)        || "Pendiente",
+                correo:        pick(f, FIELDS.correo)        || f.Author  || "—",
+                observaciones: pick(f, FIELDS.observaciones) || "Sin observaciones.",
+                comentarios:   pick(f, FIELDS.comentarios)   || "",
+                adjuntos,
+            };
+        }));
+
+        updateCounts();
+        renderDash();
+    } catch(e) {
+        console.error("Error cargando datos:", e);
+        toast("Error: " + e.message, "error");
+        document.getElementById('dashContainer').innerHTML = `
+            <div class="empty">
+                <div class="empty-icon"><i class="ph-bold ph-warning-circle"></i></div>
+                <h3>Error de conexión</h3>
+                <p>${esc(e.message)}.<br>Revisa la consola (F12) para más detalles.</p>
+            </div>`;
+    } finally {
+        removeLoader();
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+function updateCounts() {
+    const pend = submissions.filter(s => !s.estado || s.estado === "Pendiente").length;
+    const ok   = submissions.filter(s => s.estado === "Boleta Confirmada").length;
+    const bad  = submissions.filter(s => s.estado === "Boleta rechazada").length;
+    document.getElementById('statPending').textContent = pend;
+    document.getElementById('statOk').textContent      = ok;
+    document.getElementById('statBad').textContent     = bad;
+    document.getElementById('tcAll').textContent  = submissions.length;
+    document.getElementById('tcPend').textContent = pend;
+    document.getElementById('tcOk').textContent   = ok;
+    document.getElementById('tcBad').textContent  = bad;
+}
+
+function setFilter(f, btn) {
+    currentFilter = f;
+    document.getElementById('tabBar').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderDash();
+}
+
+function renderDash() {
+    const list = submissions.filter(s => {
+        if (currentFilter === 'Todas') return true;
+        if (currentFilter === 'Pendiente') return !s.estado || s.estado === 'Pendiente';
+        return s.estado === currentFilter;
     });
 
-    function setLoaderText(subtitle) {
-        document.getElementById('loaderText').innerHTML = `<strong>Portal Grupo Imade</strong><span>${subtitle}</span>`;
+    const c = document.getElementById('dashContainer');
+    if (list.length === 0) {
+        c.innerHTML = `
+            <div class="empty">
+                <div class="empty-icon"><i class="ph ph-tray"></i></div>
+                <h3>Sin registros</h3>
+                <p>No hay boletas que coincidan con el filtro seleccionado.</p>
+            </div>`;
+        return;
     }
 
-    function removeLoader() {
-        const el = document.getElementById('globalLoader');
-        if (el) { el.classList.add('fade-out'); setTimeout(() => el.remove(), 650); }
-    }
+    c.innerHTML = list.map((s, i) => {
+        const isPend = !s.estado || s.estado === 'Pendiente';
+        const fechaFmt = s.fecha
+            ? new Date(s.fecha).toLocaleString('es-GT', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12: true })
+            : '—';
 
-    function showToast(msg, type = 'success') {
-        const cont = document.getElementById('toastContainer');
-        const t = document.createElement('div');
-        t.className = 'toast';
-        const iconChar = type === 'error' ? '✕' : type === 'info' ? '→' : type === 'warn' ? '!' : '✓';
-        t.innerHTML = `<div class="toast-icon ${type}">${iconChar}</div><span>${msg}</span>`;
-        cont.appendChild(t);
-        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-        setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 3500);
-    }
+        return `
+        <div class="card" id="card-${s.id}" style="animation-delay:${i*0.04}s">
+            <div class="card-head">
+                <div class="card-head-left">
+                    <div class="card-avatar">
+                        <i class="ph-fill ph-receipt" style="color:var(--text-muted);"></i>
+                    </div>
+                    <div>
+                        <div class="card-meta-title">
+                            Depósito #${s.id}
+                            ${badge(s.estado)}
+                        </div>
+                        <div class="card-meta-sub">
+                            <strong>${esc(s.correo)}</strong>&nbsp;·&nbsp;${fechaFmt}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    ${isPend ? `
+                        <button class="act-btn confirm" onclick="changeStatus('${s.id}','Boleta Confirmada')">
+                            <i class="ph-bold ph-check" style="font-size:15px;"></i> Confirmar
+                        </button>
+                        <button class="act-btn reject" onclick="changeStatus('${s.id}','Boleta rechazada')">
+                            <i class="ph-bold ph-x" style="font-size:15px;"></i> Rechazar
+                        </button>
+                    ` : `
+                        <button class="act-btn undo" onclick="changeStatus('${s.id}','Pendiente')">
+                            <i class="ph ph-arrow-counter-clockwise" style="font-size:14px;"></i> Deshacer
+                        </button>
+                    `}
+                </div>
+            </div>
 
-    window.onload = init;
-    </script>
+            <div class="card-body">
+
+                <!-- Observaciones — solo lectura -->
+                <div class="obs-block">
+                    <div class="field-label">
+                        <i class="ph-bold ph-note-pencil"></i>
+                        Observaciones del remitente
+                        <div class="lock-badge">
+                            <i class="ph-bold ph-lock" style="font-size:9px;"></i> Solo lectura
+                        </div>
+                    </div>
+                    <p class="obs-text">${esc(s.observaciones)}</p>
+                </div>
+
+                <!-- Comentarios del revisor (editable) -->
+                <div class="comment-block">
+                    <div class="field-label">
+                        <i class="ph-bold ph-chat-text"></i>
+                        Comentarios del revisor
+                    </div>
+                    <textarea
+                        class="comment-input"
+                        id="comment-${s.id}"
+                        rows="2"
+                        placeholder="Añade una nota interna (se guarda en SharePoint al hacer clic fuera)..."
+                        onblur="saveComment('${s.id}')"
+                    >${esc(s.comentarios)}</textarea>
+                </div>
+
+                <!-- Archivos adjuntos -->
+                <div>
+                    <div class="field-label">
+                        <i class="ph-bold ph-paperclip"></i>
+                        Archivos adjuntos
+                        <span style="background:var(--surface-3);padding:1px 8px;border-radius:100px;font-size:10px;color:var(--text-muted);">${s.adjuntos.length}</span>
+                    </div>
+                    ${s.adjuntos.length === 0
+                        ? `<p class="no-files">Sin archivos adjuntos en este registro.</p>`
+                        : `<div class="files-grid">${s.adjuntos.map(fileChip).join('')}</div>`
+                    }
+                </div>
+
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function badge(estado) {
+    if (estado === 'Boleta Confirmada') return `<span class="badge approved">Confirmada</span>`;
+    if (estado === 'Boleta rechazada')  return `<span class="badge rejected">Rechazada</span>`;
+    return `<span class="badge pending">Pendiente</span>`;
+}
+
+function fileChip(file) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const cls = ext === 'pdf' ? 'pdf' : ['jpg','jpeg','png','gif','webp','svg'].includes(ext) ? 'img' : ['doc','docx','xls','xlsx'].includes(ext) ? 'doc' : 'gen';
+    const ico = cls === 'pdf' ? 'ph-file-pdf' : cls === 'img' ? 'ph-image' : cls === 'doc' ? 'ph-file-doc' : 'ph-file';
+    const sz  = file.size ? fmtSize(file.size) : '';
+    return `
+    <a href="${file.url}" target="_blank" rel="noopener" class="file-chip" title="${esc(file.name)}">
+        <div class="file-icon ${cls}"><i class="ph-fill ${ico}"></i></div>
+        <div class="file-info">
+            <div class="file-name">${esc(file.name)}</div>
+            ${sz ? `<div class="file-size">${sz}</div>` : ''}
+        </div>
+        <i class="ph-bold ph-arrow-square-out file-arrow" style="font-size:16px;"></i>
+    </a>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CAMBIAR ESTADO
+// ═══════════════════════════════════════════════════════
+async function changeStatus(id, newStatus) {
+    const idx = submissions.findIndex(s => s.id === id);
+    if (idx < 0) return;
+    const card = document.getElementById(`card-${id}`);
+    if (card) card.classList.add('loading');
+
+    try {
+        const res = await fetch(`${GRAPH}/sites/${siteId}/lists/${listId}/items/${id}/fields`, {
+            method: 'PATCH',
+            headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ "Estado": newStatus })
+        });
+
+        if (res.ok) {
+            submissions[idx].estado = newStatus;
+            updateCounts();
+            renderDash();
+            const msgs  = { 'Boleta Confirmada': 'Boleta confirmada en SharePoint', 'Boleta rechazada': 'Boleta rechazada en SharePoint', 'Pendiente': 'Revertido a Pendiente' };
+            const types = { 'Boleta Confirmada': 'success', 'Boleta rechazada': 'error', 'Pendiente': 'info' };
+            toast(msgs[newStatus], types[newStatus]);
+        } else {
+            const err = await res.json().catch(()=>({}));
+            console.error("PATCH error:", err);
+            toast("Error al actualizar estado (sin permisos de escritura)", "error");
+            if (card) card.classList.remove('loading');
+        }
+    } catch(e) {
+        toast("Error de conexión: " + e.message, "error");
+        if (card) card.classList.remove('loading');
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  GUARDAR COMENTARIO (onblur)
+// ═══════════════════════════════════════════════════════
+async function saveComment(id) {
+    const ta  = document.getElementById(`comment-${id}`);
+    if (!ta) return;
+    const val = ta.value.trim();
+    const idx = submissions.findIndex(s => s.id === id);
+    if (idx < 0 || submissions[idx].comentarios === val) return;
+
+    try {
+        const res = await fetch(`${GRAPH}/sites/${siteId}/lists/${listId}/items/${id}/fields`, {
+            method: 'PATCH',
+            headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ "Comentarios": val })
+        });
+        if (res.ok) { submissions[idx].comentarios = val; toast("Comentario guardado", "success"); }
+        else toast("No se pudo guardar el comentario", "error");
+    } catch(e) {
+        toast("Error al guardar: " + e.message, "error");
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTH & UI HELPERS
+// ═══════════════════════════════════════════════════════
+function showLogin(hasErr = false, msg = "") {
+    removeLoader();
+    document.getElementById('dashContainer').innerHTML = `
+        <div class="login-wrap">
+            <div class="login-card">
+                <div class="ms-logo"><i class="ph-bold ph-microsoft-teams-logo"></i></div>
+                <h2>Acceso con Microsoft 365</h2>
+                <p>Inicia sesión con tu cuenta corporativa de Grupo Imade para revisar los depósitos bancarios.</p>
+                ${msg ? `<div class="err-box"><i class="ph-bold ph-warning-circle"></i>&nbsp; ${msg}</div>` : ''}
+                <button class="login-btn" onclick="msalInstance.loginRedirect(LOGIN_SCOPES)">
+                    <i class="ph-bold ph-sign-in" style="font-size:17px;vertical-align:-3px;margin-right:6px;"></i>Iniciar sesión con Microsoft
+                </button>
+                ${msg ? `<button class="change-account-btn" onclick="msalInstance.logoutRedirect()">Cambiar de cuenta</button>` : ''}
+            </div>
+        </div>`;
+}
+
+function toggleGearMenu() {
+    const m = document.getElementById('gearMenu');
+    if (m.classList.contains('hidden')) {
+        m.classList.remove('hidden');
+        requestAnimationFrame(() => m.classList.remove('op-0'));
+    } else {
+        m.classList.add('op-0');
+        setTimeout(() => m.classList.add('hidden'), 180);
+    }
+}
+
+function attemptLogout() {
+    toggleGearMenu();
+    if (isAdmin) msalInstance.logoutRedirect({ postLogoutRedirectUri: window.location.href.split('?')[0] });
+    else toast("Se requiere rol de Administrador para cerrar sesión.", "error");
+}
+
+document.addEventListener('click', e => {
+    const m   = document.getElementById('gearMenu');
+    const btn = m?.previousElementSibling;
+    if (m && !m.classList.contains('hidden') && !m.contains(e.target) && !btn?.contains(e.target)) {
+        m.classList.add('op-0');
+        setTimeout(() => m.classList.add('hidden'), 180);
+    }
+});
+
+async function gFetch(url, extraHeaders = {}) {
+    return fetch(url, {
+        headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json", ...extraHeaders }
+    });
+}
+
+function setLoader(msg)   { const el = document.getElementById('loaderText'); if(el) el.innerHTML = `<strong>Grupo Imade · Depósitos</strong><span>${msg}</span>`; }
+function removeLoader()   { const el = document.getElementById('globalLoader'); if(el){ el.classList.add('fade-out'); setTimeout(()=>el.remove(), 550); } }
+function esc(s)           { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtSize(b)       { if(!b)return''; if(b<1024)return b+'B'; if(b<1048576)return(b/1024).toFixed(1)+'KB'; return(b/1048576).toFixed(1)+'MB'; }
+
+function toast(msg, type='success') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<div class="t-dot ${type}"></div><span>${msg}</span>`;
+    c.appendChild(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+    setTimeout(()=>{ t.classList.add('hide'); setTimeout(()=>t.remove(), 250); }, 3200);
+}
+
+window.onload = init;
+</script>
 </body>
 </html>
