@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flujos Apertura · Power Automate · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255,255,255,0.72);
+            --border: rgba(0,0,0,0.07);
+            --border-mid: rgba(0,0,0,0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10,132,255,0.08);
+            --accent-soft2: rgba(10,132,255,0.14);
+            --green: #30D158;
+            --green-soft: rgba(48,209,88,0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255,69,58,0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255,159,10,0.10);
+            --purple: #BF5AF2;
+            --purple-soft: rgba(191,90,242,0.10);
+            --indigo: #5E5CE6;
+            --indigo-soft: rgba(94,92,230,0.10);
+            --teal: #5AC8FA;
+            --teal-soft: rgba(90,200,250,0.12);
+
+            --sidebar-w: 260px;
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+        #shell { display: flex; height: 100vh; overflow: hidden; }
+
+        #sidebar {
+            width: var(--sidebar-w); flex-shrink: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid var(--border);
+            z-index: 50; overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
+        #sidebarOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(2px); z-index: 49;
+        }
+        #sidebarOverlay.visible { display: block; }
+        #menuToggle {
+            display: none; width: 36px; height: 36px;
+            border: 1px solid var(--border); border-radius: var(--radius-xs);
+            background: var(--surface); align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-2); box-shadow: var(--shadow-sm); flex-shrink: 0;
+        }
+        #menuToggle svg { width: 18px; height: 18px; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 50; }
+            #sidebar.open { transform: translateX(0); box-shadow: var(--shadow-float); }
+            #menuToggle { display: flex; }
+            #main { width: 100vw; }
+            #appHeader { padding: 0 14px; }
+            .panel-inner { padding: 18px 14px 40px; }
+        }
+
+        .sidebar-brand { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+        .brand-logo { width: 36px; height: 36px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .brand-logo img { width: 32px; height: 32px; object-fit: contain; }
+        .brand-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+        .brand-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px; }
+
+        .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+        .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; padding: 10px 10px 4px; }
+        .nav-btn {
+            display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text-2);
+            text-decoration: none; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+            border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .nav-btn:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+        .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-btn .nav-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-btn.active .nav-icon { background: var(--accent-soft2); }
+        .nav-btn svg { width: 15px; height: 15px; }
+        .nav-divider { height: 1px; background: var(--border); margin: 6px 10px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--accent);
+            text-decoration: none; cursor: pointer; transition: background 0.15s; border: none; background: transparent; width: 100%;
+        }
+        .back-btn:hover { background: var(--accent-soft); }
+        .back-btn svg { width: 15px; height: 15px; }
+
+        .sidebar-footer { padding: 10px 10px 12px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); }
+        .doc-meta { padding: 8px 10px; }
+        .doc-meta-label { font-size: 9.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .doc-meta-value { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+        .doc-meta-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--green-soft); color: var(--green);
+            font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 100px; margin-top: 6px;
+        }
+        .doc-meta-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        #appHeader {
+            height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; background: rgba(242,242,247,0.80);
+            backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0;
+        }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
+        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
+        .breadcrumb .current { color: var(--text); font-weight: 600; }
+        .header-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--accent-soft); color: var(--accent);
+            font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 100px; border: 1px solid var(--accent-soft2);
+        }
+        .header-badge svg { width: 12px; height: 12px; }
+
+        .doc-hero {
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 28px;
+            box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 20px;
+        }
+        .doc-hero-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: var(--accent-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 26px; }
+        .doc-hero-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+        .doc-hero-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .doc-hero-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+        .doc-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border-mid); color: var(--text-2); background: var(--surface-2); }
+        .doc-tag.blue { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-tag.green { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.2); }
+        .doc-tag.orange { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,159,10,0.2); }
+        .doc-tag.purple { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.2); }
+        .doc-tag.indigo { background: var(--indigo-soft); color: var(--indigo); border-color: rgba(94,92,230,0.2); }
+        .doc-tag.red { background: var(--red-soft); color: var(--red); border-color: rgba(255,69,58,0.2); }
+
+        .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); scroll-margin-top: 80px; }
+        .doc-section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; transition: background 0.15s; user-select: none; border-bottom: 1px solid transparent; }
+        .doc-section-header:hover { background: var(--surface-2); }
+        .doc-section-header.open { border-bottom-color: var(--border); }
+        .section-num { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .section-num.green { background: var(--green-soft); color: var(--green); }
+        .section-num.red { background: var(--red-soft); color: var(--red); }
+        .section-num.purple { background: var(--purple-soft); color: var(--purple); }
+        .section-num.orange { background: var(--orange-soft); color: var(--orange); }
+        .section-title-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+        .section-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
+        .section-chevron { width: 16px; height: 16px; color: var(--text-muted); transition: transform 0.25s ease; flex-shrink: 0; }
+        .section-chevron.open { transform: rotate(180deg); }
+        .doc-section-body { display: none; padding: 20px 24px 24px; }
+        .doc-section-body.open { display: block; animation: fadeBody 0.2s ease; }
+        @keyframes fadeBody { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        .doc-p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+        .doc-p:last-child { margin-bottom: 0; }
+        .doc-h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
+        .doc-h3:first-child { margin-top: 0; }
+        .doc-h3::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+
+        .alert { border-radius: var(--radius-sm); padding: 14px 16px; margin: 14px 0; font-size: 13px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+        .alert-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+        .alert.info { background: var(--accent-soft); border: 1px solid var(--accent-soft2); color: var(--text-2); }
+        .alert.info .alert-icon { color: var(--accent); }
+        .alert.warning { background: var(--orange-soft); border: 1px solid rgba(255,159,10,0.2); color: var(--text-2); }
+        .alert.warning .alert-icon { color: var(--orange); }
+        .alert.success { background: var(--green-soft); border: 1px solid rgba(48,209,88,0.2); color: var(--text-2); }
+        .alert.success .alert-icon { color: var(--green); }
+        .alert.danger { background: var(--red-soft); border: 1px solid rgba(255,69,58,0.2); color: var(--text-2); }
+        .alert.danger .alert-icon { color: var(--red); }
+        .alert strong { color: var(--text); }
+
+        .doc-table-wrap { overflow-x: auto; margin: 14px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .doc-table th { background: var(--surface-2); color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-mid); }
+        .doc-table td { padding: 10px 14px; color: var(--text-2); border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+        .doc-table tr:last-child td { border-bottom: none; }
+        .doc-table tr:hover td { background: var(--surface-2); }
+        .doc-table .td-key { font-weight: 600; color: var(--text); white-space: nowrap; }
+        .doc-table .td-mono { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+        .doc-table .td-desc { color: var(--text-muted); font-size: 12px; }
+
+        .inline-code { font-family: var(--mono); font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 5px; }
+
+        .steps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+        .step { display: flex; gap: 12px; align-items: flex-start; }
+        .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+        .step-body { flex: 1; }
+        .step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+        .step-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+
+        .connector-list { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+        .connector-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: 100px; padding: 5px 12px 5px 6px;
+            font-size: 12px; font-weight: 600; color: var(--text-2);
+            box-shadow: var(--shadow-sm);
+        }
+        .connector-pill .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+        .flow-diagram { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 20px 0; }
+        .flow-node {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm); padding: 10px 16px;
+            width: 100%; max-width: 560px; box-shadow: var(--shadow-sm);
+            font-size: 13px; font-weight: 500; color: var(--text);
+        }
+        .flow-node.trigger { border-color: var(--green); background: var(--green-soft); }
+        .flow-node.action { border-color: var(--accent-soft2); }
+        .flow-node.email { border-color: rgba(94,92,230,0.25); background: var(--indigo-soft); }
+        .flow-node.sp { border-color: rgba(10,132,255,0.2); background: var(--accent-soft); }
+        .flow-node.condition { border-color: rgba(255,159,10,0.3); background: var(--orange-soft); }
+        .flow-node.loop { border-color: rgba(191,90,242,0.25); background: var(--purple-soft); }
+        .flow-node.danger { border-color: rgba(255,69,58,0.3); background: var(--red-soft); }
+        .flow-node-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .flow-connector { width: 2px; height: 20px; background: var(--border-mid); }
+
+        .toc { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 20px; }
+        .toc-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+        .toc-list { display: flex; flex-direction: column; gap: 4px; }
+        .toc-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); text-decoration: none; padding: 4px 6px; border-radius: 6px; transition: background 0.12s, color 0.12s; cursor: pointer; }
+        .toc-item:hover { background: var(--accent-soft); color: var(--accent); }
+        .toc-num { font-size: 10px; font-weight: 700; color: var(--text-muted); width: 18px; text-align: right; }
+
+        .doc-nav-footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .doc-nav-footer.end { justify-content: flex-end; }
+        .doc-nav-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); border: 1px solid var(--border-mid); background: var(--surface); cursor: pointer; text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.15s; }
+        .doc-nav-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-nav-btn svg { width: 14px; height: 14px; }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        .flow-switcher { display: flex; gap: 4px; padding: 10px 8px 6px; border-bottom: 1px solid var(--border); }
+        .flow-tab {
+            flex: 1; padding: 7px 6px; border-radius: var(--radius-xs);
+            font-size: 11px; font-weight: 600; text-align: center; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s ease; color: var(--text-muted);
+            background: transparent;
+        }
+        .flow-tab:hover { background: rgba(0,0,0,0.04); color: var(--text-2); }
+        .flow-tab.active-tab { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .flow-tab.active-tab.green-tab { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.25); }
+        .flow-tab.active-tab.red-tab { background: var(--red-soft); color: var(--red); border-color: rgba(255,69,58,0.25); }
+        .flow-tab.active-tab.purple-tab { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.25); }
+        .nav-panel { display: none; }
+        .nav-panel.visible { display: block; }
+
+        .page-panel { display: none; }
+        .page-panel.visible { display: block; animation: fadeUp 0.25s ease; }
+        #pageContent { flex: 1; overflow-y: auto; padding: 0; position: relative; }
+        .panel-inner { padding: 32px 32px 60px; }
+    </style>
+</head>
+
+<body>
+<div id="shell">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">
+                <img src="logo.png" alt="Imade"
+                    onerror="this.style.display='none';this.parentNode.innerHTML='<span style=font-size:18px;font-weight:800;color:var(--accent)>G</span>'">
+            </div>
+            <div>
+                <div class="brand-name">Grupo Imade</div>
+                <div class="brand-sub" id="sidebar-flow-name">Apertura · Power Automate</div>
+            </div>
+        </div>
+
+        <!-- Flow switcher tabs -->
+        <div class="flow-switcher">
+            <button class="flow-tab active-tab purple-tab" id="tab-apertura" onclick="switchFlow('apertura')">⚡ Apertura</button>
+            <button class="flow-tab green-tab" id="tab-aprobacion" onclick="switchFlow('aprobacion')">✓ Aprobación</button>
+            <button class="flow-tab red-tab" id="tab-rechazo" onclick="switchFlow('rechazo')">✕ Rechazo</button>
+        </div>
+
+        <!-- NAV: Apertura -->
+        <nav class="sidebar-nav nav-panel visible" id="nav-apertura">
+            <div class="nav-section-label">Contenido — Apertura</div>
+
+            <a onclick="scrollToO('sec-intro-o')" class="nav-btn active">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                Introducción y Arquitectura
+            </a>
+            <a onclick="scrollToO('sec-prerrequisitos-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></span>
+                Prerrequisitos
+            </a>
+            <a onclick="scrollToO('sec-trigger-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
+                Trigger y Respuesta del Form
+            </a>
+            <a onclick="scrollToO('sec-create-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></span>
+                Create item — Lista Clientes
+            </a>
+            <a onclick="scrollToO('sec-email-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                Correos de Notificación
+            </a>
+            <a onclick="scrollToO('sec-documentos-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></span>
+                Procesamiento de Adjuntos
+            </a>
+            <a onclick="scrollToO('sec-troubleshooting-o')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
+                Troubleshooting
+            </a>
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <!-- NAV: Aprobación -->
+        <nav class="sidebar-nav nav-panel" id="nav-aprobacion">
+            <div class="nav-section-label">Contenido — Aprobación</div>
+
+            <a onclick="scrollToA('sec-intro')" class="nav-btn active">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                Introducción y Arquitectura
+            </a>
+            <a onclick="scrollToA('sec-prerrequisitos')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></span>
+                Prerrequisitos
+            </a>
+            <a onclick="scrollToA('sec-trigger-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
+                Trigger
+            </a>
+            <a onclick="scrollToA('sec-condicion-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>
+                Condición — Aprobado
+            </a>
+            <a onclick="scrollToA('sec-email-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                Correo — Aprobación
+            </a>
+            <a onclick="scrollToA('sec-create-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></span>
+                Create item — Aprobados
+            </a>
+            <a onclick="scrollToA('sec-adjuntos-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></span>
+                Adjuntos y Bucle
+            </a>
+            <a onclick="scrollToA('sec-delete-a')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></span>
+                Delete item
+            </a>
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <!-- NAV: Rechazo -->
+        <nav class="sidebar-nav nav-panel" id="nav-rechazo">
+            <div class="nav-section-label">Contenido — Rechazo</div>
+
+            <a onclick="scrollToR('sec-trigger-r')" class="nav-btn active">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
+                Trigger
+            </a>
+            <a onclick="scrollToR('sec-condicion-r')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>
+                Condición — Rechazado
+            </a>
+            <a onclick="scrollToR('sec-email-r')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                Correo — Rechazo
+            </a>
+            <a onclick="scrollToR('sec-create-r')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></span>
+                Create item — Rechazados
+            </a>
+            <a onclick="scrollToR('sec-adjuntos-r')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg></span>
+                Adjuntos y Bucle
+            </a>
+            <a onclick="scrollToR('sec-delete-r')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></span>
+                Delete item
+            </a>
+            <a onclick="scrollToR('sec-comparativo')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg></span>
+                Diagrama Comparativo
+            </a>
+            <a onclick="scrollToR('sec-listas')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
+                Listas SharePoint
+            </a>
+            <a onclick="scrollToR('sec-troubleshooting')" class="nav-btn">
+                <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
+                Troubleshooting
+            </a>
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="doc-meta">
+                <div class="doc-meta-label">Entorno</div>
+                <div class="doc-meta-value">Apertura Clientes</div>
+                <div class="doc-meta-badge">3 flujos documentados</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN -->
+    <div id="main">
+        <div id="appHeader">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button id="menuToggle" onclick="openSidebar()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <div class="breadcrumb">
+                    <span class="root">Power Automate</span>
+                    <span class="sep">›</span>
+                    <span class="current" id="breadcrumb-current">Flujo Apertura</span>
+                </div>
+            </div>
+            <div class="header-badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Apertura Clientes
+            </div>
+        </div>
+
+        <div id="pageContent">
+
+            <!-- ═══════════════════ PANEL APERTURA ═══════════════════ -->
+            <div class="page-panel visible" id="panel-apertura">
+            <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon" style="background:var(--purple-soft)">⚡</div>
+                    <div>
+                        <div class="doc-hero-title">Flujo 0 — Cliente Apertura</div>
+                        <div class="doc-hero-sub">Automatización del registro inicial de solicitudes de apertura de código de cliente. Se activa al enviar el formulario "Apertura de Cliente" en Microsoft Forms y crea el ítem en estado Pendiente que alimenta los Flujos 1 y 2.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag purple">Apertura</span>
+                            <span class="doc-tag blue">SharePoint</span>
+                            <span class="doc-tag indigo">Outlook 365</span>
+                            <span class="doc-tag orange">Microsoft Forms</span>
+                            <span class="doc-tag">13 pasos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOC -->
+                <div class="toc">
+                    <div class="toc-title">Tabla de Contenido</div>
+                    <div class="toc-list">
+                        <a class="toc-item" onclick="scrollToO('sec-intro-o')"><span class="toc-num">1</span> Introducción y Arquitectura General</a>
+                        <a class="toc-item" onclick="scrollToO('sec-prerrequisitos-o')"><span class="toc-num">2</span> Prerrequisitos y Configuración Inicial</a>
+                        <a class="toc-item" onclick="scrollToO('sec-trigger-o')"><span class="toc-num">3.1–3.2</span> Trigger + Obtener detalles de la respuesta</a>
+                        <a class="toc-item" onclick="scrollToO('sec-create-o')"><span class="toc-num">3.3</span> Create item — Lista Clientes (Estado = Pendiente)</a>
+                        <a class="toc-item" onclick="scrollToO('sec-email-o')"><span class="toc-num">3.4–3.5</span> Correos — Confirmación e Interno</a>
+                        <a class="toc-item" onclick="scrollToO('sec-documentos-o')"><span class="toc-num">3.6–3.13</span> Parse JSON + Apply to each (DPI, RTU, Foto, Patente, Luz)</a>
+                        <a class="toc-item" onclick="scrollToO('sec-troubleshooting-o')"><span class="toc-num">4</span> Troubleshooting</a>
+                    </div>
+                </div>
+
+                <!-- Sección 1: Introducción -->
+                <div class="doc-section" id="sec-intro-o">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <div class="section-num purple">1</div>
+                        <div>
+                            <div class="section-title-text">Introducción y Arquitectura General</div>
+                            <div class="section-subtitle">Origen del proceso: cómo nace la solicitud que luego aprueba o rechaza el gestor</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <p class="doc-p">El flujo <strong>Cliente Apertura</strong> automatiza el registro y gestión de solicitudes de apertura de código de cliente dentro del ecosistema de Grupo IMADE. Se activa cuando un usuario envía una respuesta en Microsoft Forms y ejecuta una cadena de pasos que van desde la recopilación de datos hasta el adjunto de la documentación respaldatoria, dejando el ítem listo en estado <strong>Pendiente</strong> para que los Flujos 1 (Aprobación) y 2 (Rechazo) lo procesen.</p>
+                        <p class="doc-p">El flujo está alojado en el entorno de Power Automate de Microsoft 365 y opera mediante la conexión autenticada de <span class="inline-code">tecnologiadeinformacion@grupoimade.com</span>. Todos los datos se almacenan en la lista de SharePoint <strong>Clientes</strong>, dentro del sitio <strong>Apertura Clientes</strong> — la misma lista de origen que disparan los Flujos 1 y 2.</p>
+
+                        <div class="doc-h3">Resumen de Arquitectura</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Componente</th><th>Detalle</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Nombre del flujo</td><td>Cliente Apertura</td></tr>
+                                    <tr><td class="td-key">Plataforma</td><td>Microsoft Power Automate (make.powerautomate.com)</td></tr>
+                                    <tr><td class="td-key">Trigger</td><td>When a new response is submitted (Microsoft Forms)</td></tr>
+                                    <tr><td class="td-key">Formulario origen</td><td>Apertura de Cliente</td></tr>
+                                    <tr><td class="td-key">Destino de datos</td><td>SharePoint — Lista: Clientes</td></tr>
+                                    <tr><td class="td-key">Sitio SharePoint</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">Cuenta de servicio</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    <tr><td class="td-key">Total de pasos principales</td><td>13 acciones (incluyendo 5 bucles Apply to each)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Diagrama de flujo — Apertura</div>
+                        <div class="flow-diagram">
+                            <div class="flow-node trigger"><span class="flow-node-icon">⚡</span> Trigger: When a new response is submitted — Form "Apertura de Cliente"</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node action"><span class="flow-node-icon">📥</span> Obtener los detalles de la respuesta (Microsoft Forms)</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node sp"><span class="flow-node-icon">📋</span> Create item → Lista <strong>Clientes</strong> · Estado = Pendiente</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node email"><span class="flow-node-icon">📧</span> Send an email (V2) — Confirmación al solicitante</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node email"><span class="flow-node-icon">📧</span> Send an email (V2) 1 — Notificación interna a s.franco@grupoimade.com</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node action"><span class="flow-node-icon">🧩</span> PROCESAR DPI / RTU / FOTO / PATENTE / LUZ (Parse JSON ×5)</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node loop"><span class="flow-node-icon">🔁</span> Apply to each ×5: Get file content + Add attachment → Lista Clientes</div>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Este flujo es el punto de entrada de todo el proceso de apertura. El ítem que crea con <strong>Estado = Pendiente</strong> es exactamente el que los Flujos 1 y 2 detectan en su propio trigger sobre la lista Clientes.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Prerrequisitos -->
+                <div class="doc-section" id="sec-prerrequisitos-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">2</div>
+                        <div>
+                            <div class="section-title-text">Prerrequisitos y Configuración Inicial</div>
+                            <div class="section-subtitle">Permisos, conexiones y configuración previa requerida</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-h3">2.1 Permisos requeridos</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Licencia de Power Automate</div><div class="step-desc">Plan 1 o superior para el usuario administrador.</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Acceso al flujo</div><div class="step-desc">Propietario o Co-propietario del flujo en el entorno Default.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Permisos en SharePoint</div><div class="step-desc">Colaborador o superior en la lista <span class="inline-code">Clientes</span>.</div></div></div>
+                            <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Acceso al formulario</div><div class="step-desc">Propietario del formulario "Apertura de Cliente" en Microsoft Forms.</div></div></div>
+                            <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Envío de correos</div><div class="step-desc">Permisos para enviar correos desde el buzón del usuario de servicio.</div></div></div>
+                        </div>
+
+                        <div class="doc-h3">2.2 Conexiones requeridas en Power Automate</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Conector</th><th>Cuenta</th><th>Propósito</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Microsoft Forms</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Leer respuestas del formulario</td></tr>
+                                    <tr><td class="td-key">SharePoint</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Crear y actualizar ítems + adjuntos</td></tr>
+                                    <tr><td class="td-key">Office 365 Outlook</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Enviar notificaciones por correo electrónico</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">2.3 Pasos para crear las conexiones</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-desc">En Power Automate, navegue a <strong>Datos &gt; Conexiones</strong> y verifique que las tres conexiones anteriores existan y estén autenticadas.</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-desc">Si alguna conexión muestra error, haga clic en la conexión afectada y seleccione "Editar" o "Reparar conexión".</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-desc">Autentíquese nuevamente con las credenciales de <span class="inline-code">tecnologiadeinformacion@grupoimade.com</span>.</div></div></div>
+                        </div>
+
+                        <div class="doc-h3">Conectores necesarios</div>
+                        <div class="connector-list">
+                            <div class="connector-pill"><span class="pill-dot"></span>Microsoft Forms</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.1-3.2: Trigger + Obtener detalles -->
+                <div class="doc-section" id="sec-trigger-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">3.1</div>
+                        <div>
+                            <div class="section-title-text">Trigger — When a new response is submitted</div>
+                            <div class="section-subtitle">Se activa al enviar el formulario "Apertura de Cliente"</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Tipo de acción</td><td>Trigger automático (instantáneo)</td></tr>
+                                    <tr><td class="td-key">Conector</td><td>Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">Form Id</td><td>Apertura de Cliente</td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="doc-h3">Instrucciones de configuración</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-desc">Cree un nuevo flujo automatizado seleccionando el trigger "When a new response is submitted".</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-desc">En el campo Form Id, elija "Apertura de Cliente". Si no aparece, verifique que la conexión de Microsoft Forms tenga acceso al buzón correcto.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-desc">Confirme que la conexión activa sea la cuenta de servicio mediante "Change connection" si fuera necesario.</div></div></div>
+                        </div>
+
+                        <div class="doc-h3">3.2 Paso 2 — Obtener los detalles de la respuesta</div>
+                        <p class="doc-p">Recupera todos los campos del formulario enviado para que estén disponibles como tokens dinámicos en los pasos siguientes.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">Form Id</td><td>Apertura de Cliente (mismo formulario del trigger)</td></tr>
+                                    <tr><td class="td-key">Response Id</td><td><span class="inline-code">Response Id</span> (token dinámico del trigger)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>El token <strong>Response Id</strong> se representa con el ícono azul del conector de Forms y proviene directamente del trigger.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.3: Create item -->
+                <div class="doc-section" id="sec-create-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">3.3</div>
+                        <div>
+                            <div class="section-title-text">Create item — Lista Clientes</div>
+                            <div class="section-subtitle">Crea el ítem inicial con Estado = Pendiente, mapeando los campos del formulario</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Parámetros avanzados</td><td class="td-desc">Mostrando 24 de 31 campos (Show all en Advanced parameters)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Mapeo de campos</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo SharePoint</th><th>Valor / Token dinámico</th><th>Nota</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Estado Value</td><td><strong>Pendiente</strong> (valor estático)</td><td class="td-desc">Estado inicial de toda solicitud nueva — campo Choice</td></tr>
+                                    <tr><td class="td-key">Tipo de Apertura</td><td>Pregunta (token Forms)</td><td class="td-desc">Token dinámico del campo del formulario — Contado o Crédito</td></tr>
+                                    <tr><td class="td-key">Solicitante</td><td>Responders' Email (token Forms)</td><td class="td-desc">Correo del usuario que llenó el form</td></tr>
+                                    <tr><td class="td-key">Nombre o Razón Social</td><td>Nombre o Razón… ×4 tokens</td><td class="td-desc">Concatenación de múltiples tokens del formulario</td></tr>
+                                    <tr><td class="td-key">NIT</td><td>NIT ×4 tokens</td><td class="td-desc">Cuatro tokens del campo NIT del formulario</td></tr>
+                                    <tr><td class="td-key">Teléfono con WhatsApp</td><td>Token del campo de teléfono</td><td class="td-desc">Visible al hacer scroll en Advanced parameters</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Instrucciones de configuración</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-desc">Añada "Create item" del conector SharePoint, seleccione el sitio "Apertura Clientes" y la lista "Clientes".</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-desc">Haga clic en "Show all" bajo Advanced parameters para ver los 31 campos disponibles.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-desc">En Estado Value, escriba manualmente "Pendiente" como valor estático.</div></div></div>
+                            <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-desc">Para los demás campos, seleccione el token dinámico correspondiente de "Obtener los detalles de la respuesta". Los campos de texto múltiple (Nombre o Razón Social, NIT) pueden requerir varios tokens concatenados.</div></div></div>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>El <strong>ID</strong> generado por este paso es la salida clave: lo usan los 5 bucles "Add attachment" posteriores para adjuntar archivos a este mismo ítem.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.4-3.5: Correos -->
+                <div class="doc-section" id="sec-email-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">3.4</div>
+                        <div>
+                            <div class="section-title-text">Correos de Notificación</div>
+                            <div class="section-subtitle">Confirmación al solicitante y aviso interno al equipo de TI</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-h3">Paso 4 — Send an email (V2) — Confirmación al solicitante</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Para (To)</td><td><span class="inline-code">Responders' Email</span> (token dinámico de Forms)</td></tr>
+                                    <tr><td class="td-key">Asunto (Subject)</td><td>Solicitud Creada para Apertura de Cliente</td></tr>
+                                    <tr><td class="td-key">Cuerpo (Body)</td><td class="td-desc">Se ha creado la solicitud para apertura de cliente, favor estar atento a su correo respecto a su solicitud.</td></tr>
+                                    <tr><td class="td-key">Importancia</td><td>Normal</td></tr>
+                                    <tr><td class="td-key">Conector</td><td>Office 365 Outlook</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Paso 5 — Send an email (V2) 1 — Notificación interna</div>
+                        <p class="doc-p">Avisa al equipo de Tecnología de la Información que existe una nueva solicitud lista para revisar y aprobar o rechazar.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Para (To)</td><td>s.franco@grupoimade.com</td></tr>
+                                    <tr><td class="td-key">Asunto (Subject)</td><td>Solicitud de Apertura de Cliente [Nombre o Razón Social ×4 tokens]</td></tr>
+                                    <tr><td class="td-key">Cuerpo (Body)</td><td class="td-desc">Se ha creado una nueva solicitud para apertura de código de cliente. Favor revisar el SharePoint o dar click en el hipervínculo "Abrir".</td></tr>
+                                    <tr><td class="td-key">Importancia</td><td>Normal</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>El hipervínculo del correo interno se construye con el editor HTML (botón &lt;/&gt;), concatenando la URL base del sitio con el <strong>ID</strong> del ítem creado en el paso anterior (Create item).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.6-3.13: Documentos -->
+                <div class="doc-section" id="sec-documentos-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">3.6</div>
+                        <div>
+                            <div class="section-title-text">Procesamiento de Documentos Adjuntos</div>
+                            <div class="section-subtitle">Patrón repetido 5 veces: Parse JSON + Apply to each, para DPI, RTU, Foto, Patente y Luz</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Cada uno de los cinco campos de carga de archivos del formulario (DPI, RTU, Foto del Negocio, Patente de Comercio y Recibo de Luz) sigue exactamente el mismo patrón de dos acciones: primero un <strong>Parse JSON</strong> que estructura el array de archivos adjuntos, y luego un <strong>Apply to each</strong> que descarga y adjunta cada archivo al ítem de SharePoint creado en el paso 3.3.</p>
+
+                        <div class="doc-h3">Schema JSON (idéntico para los 5 campos)</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Propiedad</th><th>Tipo</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">name</td><td>string</td></tr>
+                                    <tr><td class="td-key">link</td><td>string</td></tr>
+                                    <tr><td class="td-key">id</td><td>string</td></tr>
+                                    <tr><td class="td-key">type</td><td>object</td></tr>
+                                    <tr><td class="td-key">size</td><td>integer</td></tr>
+                                    <tr><td class="td-key">referenceId</td><td>string</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Los 5 pasos Parse JSON + Apply to each</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>#</th><th>Acción Parse JSON</th><th>Campo origen del formulario</th><th>Bucle Apply to each</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">6–7</td><td>PROCESAR DPI</td><td class="td-desc">DPI Ambos lados, DPI, DPI (3 tokens)</td><td class="td-desc">Apply to each — Get file content + Add attachment</td></tr>
+                                    <tr><td class="td-key">8–9</td><td>PROCESAR RTU</td><td class="td-desc">RTU, RTU, RTU (3 tokens)</td><td class="td-desc">Apply to each 1 — Get file content 1 + Add attachment 1</td></tr>
+                                    <tr><td class="td-key">10</td><td>PROCESAR FOTO</td><td class="td-desc">Foto del Negocio ×3 tokens</td><td class="td-desc">Apply to each 2 — Get file content 2 + Add attachment 2</td></tr>
+                                    <tr><td class="td-key">11</td><td>PROCESAR PATENTE</td><td class="td-desc">Patente de Comercio</td><td class="td-desc">Apply to each 3 — Adjuntar Patente</td></tr>
+                                    <tr><td class="td-key">12</td><td>PROCESAR LUZ</td><td class="td-desc">Recibo de Luz / domicilio comercial</td><td class="td-desc">Apply to each 4 — Adjuntar Luz (acción final del flujo)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Configuración interna de cada bucle (idéntica en los 5)</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Subacción</th><th>Configuración</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Select an output</td><td class="td-desc"><span class="inline-code">Body</span> (salida del Parse JSON correspondiente)</td></tr>
+                                    <tr><td class="td-key">Get file content</td><td class="td-desc">Conector OneDrive/SharePoint Files · File = <span class="inline-code">Body id</span> del ítem actual del bucle</td></tr>
+                                    <tr><td class="td-key">Add attachment</td><td class="td-desc">Conector SharePoint · List Name = Clientes · Id = <span class="inline-code">ID</span> del Create item (paso 3.3) · File Name = <span class="inline-code">Body name</span> · File Content = salida de Get file content</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>Para crear cada nuevo bloque, copie el par PROCESAR [DOCUMENTO] + Apply to each existente, reemplace los tokens del campo Content por los del nuevo campo del formulario y renombre la acción. El schema JSON no cambia.</div>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Renombre todas las acciones con nombres descriptivos en español (PROCESAR DPI, PROCESAR RTU, etc.). Power Automate usa estos nombres como identificadores internos en expresiones, por lo que cambiarlos después puede romper referencias dinámicas.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4: Troubleshooting -->
+                <div class="doc-section" id="sec-troubleshooting-o">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num orange">4</div>
+                        <div>
+                            <div class="section-title-text">Solución de Problemas Comunes</div>
+                            <div class="section-subtitle">Errores frecuentes, causa probable y solución</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Error / Síntoma</th><th>Causa probable</th><th>Solución</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">El flujo no se activa al enviar el formulario</td><td class="td-desc">Token de conexión de Forms expirado</td><td class="td-desc">Reparar la conexión de Microsoft Forms en el paso del trigger</td></tr>
+                                    <tr><td class="td-key">'Create item' falla con error 403</td><td class="td-desc">Sin permisos en la lista de SharePoint</td><td class="td-desc">Verificar que la cuenta de servicio sea Colaboradora en la lista 'Clientes'</td></tr>
+                                    <tr><td class="td-key">Email no llega al solicitante</td><td class="td-desc">El campo Responders' Email está vacío</td><td class="td-desc">Verificar que el formulario esté configurado para recopilar correos</td></tr>
+                                    <tr><td class="td-key">Apply to each no itera archivos</td><td class="td-desc">El Parse JSON tiene schema incorrecto</td><td class="td-desc">Usar 'Use sample payload' con una respuesta real del formulario</td></tr>
+                                    <tr><td class="td-key">'Add attachment' falla con ID inválido</td><td class="td-desc">El token ID del Create item no está mapeado correctamente</td><td class="td-desc">Verificar que el campo Id del Add attachment use el token del Create item y no del bucle</td></tr>
+                                    <tr><td class="td-key">El flujo se ejecuta pero los archivos no se adjuntan</td><td class="td-desc">Get file content no puede acceder al link del archivo</td><td class="td-desc">Verificar permisos de OneDrive/Forms en la cuenta de servicio</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Buenas prácticas y monitoreo</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Run After en modo alternativo</div><div class="step-desc">Configure "has failed" y "has timed out" como condiciones aceptables en los pasos de correo y adjuntos, para que el flujo continúe aunque alguna adjunción falle.</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Escalabilidad</div><div class="step-desc">Si el formulario agrega campos, actualice Create item para mapearlos. Si se agregan tipos de documento, replique el patrón PROCESAR [DOCUMENTO] + Apply to each.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Monitoreo</div><div class="step-desc">Revise el historial de ejecuciones en Power Automate (Mi flujo &gt; Cliente Apertura &gt; Historial de ejecuciones) y active alertas de error por correo.</div></div></div>
+                        </div>
+                        <div class="connector-list">
+                            <div class="connector-pill"><span class="pill-dot"></span>Microsoft Forms</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>Toda la automatización depende de la cuenta <strong>tecnologiadeinformacion@grupoimade.com</strong>. Si pierde acceso, cambia contraseña sin actualizar conexiones o pierde licencia, el flujo fallará en todos sus pasos — incluyendo este, el punto de entrada de todo el ciclo de apertura.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="doc-nav-footer end">
+                    <button class="doc-nav-btn" onclick="switchFlow('aprobacion')">
+                        Ver Flujo 1 — Aprobación
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+            </div><!-- /panel-inner -->
+            </div><!-- /panel-apertura -->
+
+
+            <!-- ═══════════════════ PANEL APROBACIÓN ═══════════════════ -->
+            <div class="page-panel" id="panel-aprobacion">
+            <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon">✅</div>
+                    <div>
+                        <div class="doc-hero-title">Flujo 1 — Aprobación Cliente Contado / Crédito</div>
+                        <div class="doc-hero-sub">Automatización de aprobación de solicitudes de apertura de clientes en SharePoint Online mediante Power Automate.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag green">Aprobación</span>
+                            <span class="doc-tag blue">SharePoint</span>
+                            <span class="doc-tag indigo">Outlook 365</span>
+                            <span class="doc-tag">7 pasos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOC -->
+                <div class="toc">
+                    <div class="toc-title">Tabla de Contenido</div>
+                    <div class="toc-list">
+                        <a class="toc-item" onclick="scrollToA('sec-intro')"><span class="toc-num">1</span> Introducción y Arquitectura General</a>
+                        <a class="toc-item" onclick="scrollToA('sec-prerrequisitos')"><span class="toc-num">2</span> Prerrequisitos</a>
+                        <a class="toc-item" onclick="scrollToA('sec-trigger-a')"><span class="toc-num">3.1</span> Trigger — When an item is created or modified</a>
+                        <a class="toc-item" onclick="scrollToA('sec-condicion-a')"><span class="toc-num">3.2</span> Condición — Estado = Aprobado</a>
+                        <a class="toc-item" onclick="scrollToA('sec-email-a')"><span class="toc-num">3.3</span> Send an email — Notificación de aprobación</a>
+                        <a class="toc-item" onclick="scrollToA('sec-create-a')"><span class="toc-num">3.4</span> Create item — Lista Aprobados</a>
+                        <a class="toc-item" onclick="scrollToA('sec-adjuntos-a')"><span class="toc-num">3.5–3.6</span> Get attachments + Bucle Apply to each</a>
+                        <a class="toc-item" onclick="scrollToA('sec-delete-a')"><span class="toc-num">3.7</span> Delete item — Lista Clientes</a>
+                    </div>
+                </div>
+
+                <!-- Sección 1 -->
+                <div class="doc-section" id="sec-intro">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <div class="section-num">1</div>
+                        <div>
+                            <div class="section-title-text">Introducción y Arquitectura General</div>
+                            <div class="section-subtitle">Descripción del sistema y listas SharePoint involucradas</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <p class="doc-p">Este documento describe la implementación técnica de dos flujos automatizados en Microsoft Power Automate, cuyo propósito es gestionar el ciclo de vida de solicitudes de apertura de clientes (contado/crédito) almacenadas en SharePoint Online.</p>
+                        <p class="doc-p">Cuando un usuario gestor modifica el campo <span class="inline-code">Estado</span> de un ítem en la lista <strong>Clientes</strong>, el sistema evalúa automáticamente si el estado es <strong>Aprobado</strong> o <strong>Rechazado</strong>, y ejecuta la cadena de acciones correspondiente: notificación por correo, creación del registro en la lista destino, copia de adjuntos y eliminación del ítem de la lista de trabajo.</p>
+
+                        <div class="doc-h3">Arquitectura de listas SharePoint</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Lista</th><th>Rol</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Clientes</td><td>Origen / Trabajo</td><td class="td-desc">Lista maestra de solicitudes pendientes. Trigger de ambos flujos.</td></tr>
+                                    <tr><td class="td-key">Aprobados</td><td>Destino — Flujo 1</td><td class="td-desc">Almacena clientes aprobados con sus datos y adjuntos.</td></tr>
+                                    <tr><td class="td-key">Rechazados</td><td>Destino — Flujo 2</td><td class="td-desc">Almacena clientes rechazados con motivo y adjuntos.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Diagrama de flujo — Aprobación</div>
+                        <div class="flow-diagram">
+                            <div class="flow-node trigger"><span class="flow-node-icon">⚡</span> Trigger: When an item is created or modified — Lista Clientes</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node condition"><span class="flow-node-icon">🔀</span> Condition: Estado/Value = <strong>Aprobado</strong></div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node email"><span class="flow-node-icon">📧</span> Send an email (V2) — Notificación de aprobación al solicitante</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node sp"><span class="flow-node-icon">📋</span> Create item → Lista <strong>Aprobados</strong></div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node action"><span class="flow-node-icon">📎</span> Get attachments → Lista Clientes</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node loop"><span class="flow-node-icon">🔁</span> Apply to each: Get attachment content + Add attachment → Aprobados</div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node danger"><span class="flow-node-icon">🗑️</span> Delete item → Lista Clientes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Prerrequisitos -->
+                <div class="doc-section" id="sec-prerrequisitos">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <div class="section-num">2</div>
+                        <div>
+                            <div class="section-title-text">Prerrequisitos</div>
+                            <div class="section-subtitle">Permisos, listas, columnas y conectores requeridos</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <div class="doc-h3">2.1 Permisos requeridos</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Cuenta de servicio</div><div class="step-desc">La cuenta <span class="inline-code">tecnologiadeinformacion@grupoimade.com</span> debe tener permisos de <strong>Diseño o Control total</strong> sobre el sitio AperturaClientes.</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Conector Outlook 365</div><div class="step-desc">La misma cuenta debe estar habilitada como remitente de correo en el conector Outlook 365.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Licencia Power Automate</div><div class="step-desc">El usuario que crea el flujo debe tener licencia <strong>Power Automate Premium</strong> o <strong>Per-flow</strong>.</div></div></div>
+                        </div>
+
+                        <div class="doc-h3">2.2 Listas y columnas requeridas</div>
+                        <p class="doc-p">La lista <strong>Clientes</strong> debe contener como mínimo las siguientes columnas internas:</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Columna (Nombre interno)</th><th>Tipo</th><th>Uso</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Estado</td><td>Choice</td><td class="td-desc">Aprobado / Rechazado — campo clave del trigger</td></tr>
+                                    <tr><td class="td-key">Tipo de Apertura</td><td>Choice o Texto</td><td class="td-desc">Contado o Crédito</td></tr>
+                                    <tr><td class="td-key">Solicitante</td><td>Person or Group</td><td class="td-desc">Usuario que realizó la solicitud</td></tr>
+                                    <tr><td class="td-key">Nombre o Razón Social</td><td>Single line of text</td><td class="td-desc">Nombre del cliente</td></tr>
+                                    <tr><td class="td-key">NIT</td><td>Single line of text</td><td class="td-desc">Identificación tributaria</td></tr>
+                                    <tr><td class="td-key">Teléfono con WhatsApp</td><td>Single line of text</td><td class="td-desc">Contacto del cliente</td></tr>
+                                    <tr><td class="td-key">Código de Cliente</td><td>Single line of text</td><td class="td-desc">Código asignado (para aprobados)</td></tr>
+                                    <tr><td class="td-key">Motivo de Rechazo</td><td>Multiple lines of text</td><td class="td-desc">Justificación del rechazo (para rechazados)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">2.3 Conectores necesarios</div>
+                        <div class="connector-list">
+                            <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.1: Trigger -->
+                <div class="doc-section" id="sec-trigger-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">3.1</div>
+                        <div>
+                            <div class="section-title-text">Trigger — When an item is created or modified</div>
+                            <div class="section-subtitle">Escucha cambios en la lista Clientes</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Descripción</td><td class="td-desc">Escucha cambios en la lista de trabajo. Se dispara cada vez que se crea o modifica un elemento.</td></tr>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Cuenta de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    <tr><td class="td-key">Parámetros avanzados</td><td class="td-desc">Mostrando 0 de 1 (ninguno personalizado)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div><strong>Nota técnica:</strong> El trigger no filtra por columna. La discriminación se realiza en el paso Condition.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.2: Condición -->
+                <div class="doc-section" id="sec-condicion-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">3.2</div>
+                        <div>
+                            <div class="section-title-text">Condición — Estado = Aprobado</div>
+                            <div class="section-subtitle">Bifurca el flujo según el valor del campo Estado</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Operador lógico</td><td>And</td></tr>
+                                    <tr><td class="td-key">Expresión — Left</td><td><span class="inline-code">Estado/Value</span> (dynamic content del trigger)</td></tr>
+                                    <tr><td class="td-key">Expresión — Operador</td><td>is equal to</td></tr>
+                                    <tr><td class="td-key">Expresión — Right</td><td><span class="inline-code">Aprobado</span> (valor literal, case-sensitive)</td></tr>
+                                    <tr><td class="td-key">Rama True</td><td class="td-desc">Contiene todas las acciones de aprobación (pasos 3–7)</td></tr>
+                                    <tr><td class="td-key">Rama False</td><td class="td-desc">0 Actions — el flujo termina sin hacer nada</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>El campo dinámico <strong>Estado/Value</strong> devuelve el texto de la opción seleccionada en la columna de tipo Choice. Si se cambia el nombre de la opción en SharePoint, este valor debe actualizarse aquí.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.3: Email -->
+                <div class="doc-section" id="sec-email-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">3.3</div>
+                        <div>
+                            <div class="section-title-text">Send an email (V2) — Notificación de aprobación</div>
+                            <div class="section-subtitle">Notifica al solicitante que su cliente ha sido aprobado</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>Office 365 Outlook</td></tr>
+                                    <tr><td class="td-key">To</td><td><span class="inline-code">Solicitante</span> (dynamic content — campo Person del trigger)</td></tr>
+                                    <tr><td class="td-key">Subject</td><td>Cliente Aprobado</td></tr>
+                                    <tr><td class="td-key">Body</td><td class="td-desc">El cliente [Nombre o Razón Social] ha sido aprobado. Codigo de cliente: [Código de Cliente]</td></tr>
+                                    <tr><td class="td-key">Importance</td><td>Normal</td></tr>
+                                    <tr><td class="td-key">Cuenta de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Los campos entre corchetes son dynamic content vinculados al ítem disparador. El campo <strong>Solicitante</strong> debe ser de tipo Person or Group para que la resolución del correo sea automática.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.4: Create item -->
+                <div class="doc-section" id="sec-create-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num green">3.4</div>
+                        <div>
+                            <div class="section-title-text">Create item — Lista Aprobados</div>
+                            <div class="section-subtitle">Crea el registro en la lista destino con todos los campos del ítem aprobado</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Aprobados</td></tr>
+                                    <tr><td class="td-key">Estado Value</td><td>Aprobado (valor fijo)</td></tr>
+                                    <tr><td class="td-key">Tipo de Apertura</td><td><span class="inline-code">Tipo de Apertura</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Solicitante</td><td><span class="inline-code">Solicitante</span> (dynamic content — Person)</td></tr>
+                                    <tr><td class="td-key">Nombre o Razón Social</td><td><span class="inline-code">Nombre o Razón Social</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">NIT</td><td><span class="inline-code">NIT</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Teléfono con WhatsApp</td><td><span class="inline-code">Teléfono con WhatsApp</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Parámetros avanzados</td><td class="td-desc">Mostrando 25 de 28 — los demás campos se mapean según estructura de la lista</td></tr>
+                                    <tr><td class="td-key">Salida clave</td><td><span class="inline-code">ID</span> — identificador del ítem creado en Aprobados, usado en Add attachment (paso 6c)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.5 + 3.6: Adjuntos y Bucle -->
+                <div class="doc-section" id="sec-adjuntos-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">3.5</div>
+                        <div>
+                            <div class="section-title-text">Get attachments + Bucle Apply to each</div>
+                            <div class="section-subtitle">Obtiene y copia adjuntos de Clientes hacia Aprobados</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-h3">Paso 5 — Get attachments</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dynamic content del trigger)</td></tr>
+                                    <tr><td class="td-key">Salida</td><td class="td-desc">Body — colección (array) de objetos de adjunto, cada uno con Id y DisplayName</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Paso 6a — Apply to each (contenedor)</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Select an output</td><td><span class="inline-code">Body</span> (salida de Get attachments)</td></tr>
+                                    <tr><td class="td-key">Descripción</td><td class="td-desc">Itera sobre el array de adjuntos devuelto por Get attachments</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Paso 6b — Get attachment content</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dynamic content del trigger)</td></tr>
+                                    <tr><td class="td-key">File Identifier</td><td><span class="inline-code">Id</span> (dynamic content del ítem actual del bucle)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Paso 6c — Add attachment</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Aprobados</td></tr>
+                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dynamic content de Create item — paso 4)</td></tr>
+                                    <tr><td class="td-key">File Name</td><td><span class="inline-code">DisplayName</span> (dynamic content del ítem actual del bucle)</td></tr>
+                                    <tr><td class="td-key">File Content</td><td><span class="inline-code">Body</span> (salida de Get attachment content — paso 6b)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3.7: Delete item -->
+                <div class="doc-section" id="sec-delete-a">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num red">3.7</div>
+                        <div>
+                            <div class="section-title-text">Delete item — Lista Clientes</div>
+                            <div class="section-subtitle">Elimina el ítem procesado de la lista de trabajo</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dynamic content del trigger)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert danger">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div><strong>Advertencia:</strong> Esta acción es irreversible. Verificar que Create item (paso 4) y Add attachment (pasos 6b/6c) hayan completado sin error antes de habilitar este paso en producción. Considerar mover Delete item a un bloque condicional con verificación de estado.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="doc-nav-footer">
+                    <button class="doc-nav-btn" onclick="switchFlow('apertura')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                        Ver Flujo 0 — Apertura
+                    </button>
+                    <button class="doc-nav-btn" onclick="switchFlow('rechazo')">
+                        Ver Flujo 2 — Rechazo
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+            </div><!-- /panel-inner -->
+            </div><!-- /panel-aprobacion -->
+
+
+            <!-- ═══════════════════ PANEL RECHAZO ═══════════════════ -->
+            <div class="page-panel" id="panel-rechazo">
+            <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon" style="background:var(--red-soft)">❌</div>
+                    <div>
+                        <div class="doc-hero-title">Flujo 2 — Rechazado Cliente Contado / Crédito</div>
+                        <div class="doc-hero-sub">Estructuralmente idéntico al Flujo 1. La condición evalúa Estado = Rechazado; el correo incluye Motivo de Rechazo; el destino es la lista Rechazados.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag red">Rechazo</span>
+                            <span class="doc-tag blue">SharePoint</span>
+                            <span class="doc-tag indigo">Outlook 365</span>
+                            <span class="doc-tag">Alta importancia</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.1: Trigger -->
+                <div class="doc-section" id="sec-trigger-r">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <div class="section-num">4.1</div>
+                        <div>
+                            <div class="section-title-text">Trigger — When an item is created or modified</div>
+                            <div class="section-subtitle">Mismo trigger que Flujo 1 — Lista Clientes</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Cuenta de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Ambos flujos (Aprobación y Rechazo) comparten el mismo trigger sobre la misma lista. Power Automate ejecuta ambos en paralelo; la condición de cada uno determina si el flujo procede o no.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.2: Condición -->
+                <div class="doc-section" id="sec-condicion-r">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num red">4.2</div>
+                        <div>
+                            <div class="section-title-text">Condición — Estado = Rechazado</div>
+                            <div class="section-subtitle">Solo procesa ítems cuyo estado sea exactamente Rechazado</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Operador lógico</td><td>And</td></tr>
+                                    <tr><td class="td-key">Expresión — Left</td><td><span class="inline-code">Estado/Value</span> (dynamic content del trigger)</td></tr>
+                                    <tr><td class="td-key">Expresión — Operador</td><td>is equal to</td></tr>
+                                    <tr><td class="td-key">Expresión — Right</td><td><span class="inline-code">Rechazado</span> (valor literal, case-sensitive)</td></tr>
+                                    <tr><td class="td-key">Rama True</td><td class="td-desc">Contiene todas las acciones de rechazo (pasos 3–7)</td></tr>
+                                    <tr><td class="td-key">Rama False</td><td class="td-desc">0 Actions — el flujo termina sin hacer nada</td></tr>
+                                    <tr><td class="td-key">Diferencia con Flujo 1</td><td class="td-desc">El único cambio es el valor literal: Rechazado en lugar de Aprobado</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.3: Email Rechazo -->
+                <div class="doc-section" id="sec-email-r">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num red">4.3</div>
+                        <div>
+                            <div class="section-title-text">Send an email (V2) — Notificación de rechazo</div>
+                            <div class="section-subtitle">Importancia Alta — notifica al solicitante incluyendo el Motivo de Rechazo</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>Office 365 Outlook</td></tr>
+                                    <tr><td class="td-key">To</td><td><span class="inline-code">Solicitante</span> (dynamic content — campo Person del trigger)</td></tr>
+                                    <tr><td class="td-key">Subject</td><td>Apertura de Cliente Rechazada</td></tr>
+                                    <tr><td class="td-key">Body</td><td class="td-desc">Su solicitud de apertura de cliente ha sido rechazada por el siguiente motivo: [Motivo de Rechazo]</td></tr>
+                                    <tr><td class="td-key">Importance</td><td><strong>High</strong> (Alta — diferencia con Flujo 1 que usa Normal)</td></tr>
+                                    <tr><td class="td-key">Cuenta de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>La importancia <strong>Alta (High)</strong> genera una bandera visual en Outlook para el destinatario. Esto es intencional para asegurar visibilidad del rechazo.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.4: Create item Rechazados -->
+                <div class="doc-section" id="sec-create-r">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num red">4.4</div>
+                        <div>
+                            <div class="section-title-text">Create item — Lista Rechazados</div>
+                            <div class="section-subtitle">Crea el registro en Rechazados — estructura idéntica al Flujo 1</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">https://grupoimade.sharepoint.com/sites/AperturaClientes</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td><strong>Rechazados</strong> (diferencia clave con Flujo 1)</td></tr>
+                                    <tr><td class="td-key">Estado Value</td><td>Rechazado (valor fijo)</td></tr>
+                                    <tr><td class="td-key">Tipo de Apertura</td><td><span class="inline-code">Tipo de Apertura</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Solicitante</td><td><span class="inline-code">Solicitante</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Nombre o Razón Social</td><td><span class="inline-code">Nombre o Razón Social</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">NIT</td><td><span class="inline-code">NIT</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Teléfono con WhatsApp</td><td><span class="inline-code">Teléfono con WhatsApp</span> (dynamic content)</td></tr>
+                                    <tr><td class="td-key">Parámetros avanzados</td><td class="td-desc">Mostrando 25 de 28</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.5 + 4.6: Adjuntos Rechazo -->
+                <div class="doc-section" id="sec-adjuntos-r">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">4.5</div>
+                        <div>
+                            <div class="section-title-text">Get attachments + Bucle Apply to each</div>
+                            <div class="section-subtitle">Copia adjuntos hacia la lista Rechazados</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Configuración idéntica al Flujo 1. La única diferencia está en el paso <strong>Add attachment</strong> (6c): la lista destino es <strong>Rechazados</strong> en lugar de Aprobados.</div>
+                        </div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Paso</th><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">6a — Apply to each</td><td>Select an output</td><td><span class="inline-code">Body</span> (salida de Get attachments)</td></tr>
+                                    <tr><td class="td-key">6b — Get attachment content</td><td>List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">6b — Get attachment content</td><td>Id</td><td><span class="inline-code">ID</span> del trigger</td></tr>
+                                    <tr><td class="td-key">6b — Get attachment content</td><td>File Identifier</td><td><span class="inline-code">Id</span> del ítem del bucle</td></tr>
+                                    <tr><td class="td-key">6c — Add attachment</td><td>List Name</td><td><strong>Rechazados</strong> ← diferencia clave</td></tr>
+                                    <tr><td class="td-key">6c — Add attachment</td><td>Id</td><td><span class="inline-code">ID</span> de Create item (paso 4)</td></tr>
+                                    <tr><td class="td-key">6c — Add attachment</td><td>File Name</td><td><span class="inline-code">DisplayName</span> del ítem del bucle</td></tr>
+                                    <tr><td class="td-key">6c — Add attachment</td><td>File Content</td><td><span class="inline-code">Body</span> de Get attachment content</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4.7: Delete item Rechazo -->
+                <div class="doc-section" id="sec-delete-r">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num red">4.7</div>
+                        <div>
+                            <div class="section-title-text">Delete item — Lista Clientes</div>
+                            <div class="section-subtitle">Configuración idéntica al Flujo 1</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">List Name</td><td>Clientes</td></tr>
+                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dynamic content del trigger)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert danger">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div><strong>Advertencia:</strong> Misma advertencia que Flujo 1: acción irreversible. Validar que todos los pasos anteriores hayan completado correctamente.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 5: Diagrama Comparativo -->
+                <div class="doc-section" id="sec-comparativo">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num purple">5</div>
+                        <div>
+                            <div class="section-title-text">Diagrama de Flujo Comparativo</div>
+                            <div class="section-subtitle">Flujo 1 (Aprobación) vs Flujo 2 (Rechazo) paso a paso</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Paso</th><th>Flujo 1 — Aprobación</th><th>Flujo 2 — Rechazo</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">1</td><td>Trigger: Clientes — created or modified</td><td>Trigger: Clientes — created or modified</td></tr>
+                                    <tr><td class="td-key">2</td><td>Condition: Estado = <strong>Aprobado</strong></td><td>Condition: Estado = <strong>Rechazado</strong></td></tr>
+                                    <tr><td class="td-key">3</td><td>Email: Asunto = Cliente Aprobado · Importance: Normal</td><td>Email: Asunto = Apertura Rechazada · Importance: <strong>High</strong></td></tr>
+                                    <tr><td class="td-key">4</td><td>Create item → lista <strong>Aprobados</strong> · Estado: Aprobado</td><td>Create item → lista <strong>Rechazados</strong> · Estado: Rechazado</td></tr>
+                                    <tr><td class="td-key">5</td><td>Get attachments → lista Clientes (ID trigger)</td><td>Get attachments → lista Clientes (ID trigger)</td></tr>
+                                    <tr><td class="td-key">6a</td><td>Apply to each: Body (adjuntos)</td><td>Apply to each: Body (adjuntos)</td></tr>
+                                    <tr><td class="td-key">6b</td><td>Get attachment content → Clientes</td><td>Get attachment content → Clientes</td></tr>
+                                    <tr><td class="td-key">6c</td><td>Add attachment → lista <strong>Aprobados</strong></td><td>Add attachment → lista <strong>Rechazados</strong></td></tr>
+                                    <tr><td class="td-key">7</td><td>Delete item → lista Clientes</td><td>Delete item → lista Clientes</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 6: Listas SharePoint -->
+                <div class="doc-section" id="sec-listas">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num">6</div>
+                        <div>
+                            <div class="section-title-text">Listas SharePoint Requeridas — Columnas Detalladas</div>
+                            <div class="section-subtitle">Columnas comunes para Clientes, Aprobados y Rechazados</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Las listas <strong>Aprobados</strong> y <strong>Rechazados</strong> deben tener exactamente las mismas columnas (excepto los campos exclusivos de cada proceso). Se recomienda crear ambas desde la misma plantilla o duplicando la lista Clientes.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Columna</th><th>Tipo SharePoint</th><th>Notas de configuración</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Estado</td><td>Choice</td><td class="td-desc">Opciones: Aprobado, Rechazado, Pendiente. Campo indexado recomendado.</td></tr>
+                                    <tr><td class="td-key">Tipo de Apertura</td><td>Choice</td><td class="td-desc">Opciones: Contado, Crédito.</td></tr>
+                                    <tr><td class="td-key">Solicitante</td><td>Person or Group</td><td class="td-desc">Permitir un solo usuario. Allow selection: People Only.</td></tr>
+                                    <tr><td class="td-key">Nombre o Razón Social</td><td>Single line of text</td><td class="td-desc">Límite 255 caracteres.</td></tr>
+                                    <tr><td class="td-key">NIT</td><td>Single line of text</td><td class="td-desc">Sin validación especial (puede incluir guion).</td></tr>
+                                    <tr><td class="td-key">Teléfono con WhatsApp</td><td>Single line of text</td><td class="td-desc">Formato libre.</td></tr>
+                                    <tr><td class="td-key">Código de Cliente</td><td>Single line of text</td><td class="td-desc">Solo requerido en lista Aprobados.</td></tr>
+                                    <tr><td class="td-key">Motivo de Rechazo</td><td>Multiple lines of text</td><td class="td-desc">Plain text. Solo requerido en lista Rechazados.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 7: Troubleshooting -->
+                <div class="doc-section" id="sec-troubleshooting">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <div class="section-num orange">7</div>
+                        <div>
+                            <div class="section-title-text">Solución de Problemas (Troubleshooting)</div>
+                            <div class="section-subtitle">Problemas comunes, causas y verificación post-implementación</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Problema</th><th>Causa probable y solución</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">El flujo no se dispara al modificar un ítem</td><td class="td-desc">Verificar que la conexión del trigger apunta a la lista Clientes correcta. Revisar que la cuenta de servicio tenga permisos de lectura. Comprobar que el flujo esté activado (estado On).</td></tr>
+                                    <tr><td class="td-key">La condición siempre va a False</td><td class="td-desc">El valor del campo Estado no coincide exactamente con Aprobado o Rechazado (mayúsculas/minúsculas). Revisar las opciones de la columna Choice en SharePoint y ajustar el valor literal.</td></tr>
+                                    <tr><td class="td-key">El correo no se envía</td><td class="td-desc">La columna Solicitante no es de tipo Person or Group, o el usuario no tiene correo asignado en Azure AD. Verificar la conexión del conector Outlook.</td></tr>
+                                    <tr><td class="td-key">Create item falla con error de campo</td><td class="td-desc">Alguna columna mapeada no existe en la lista destino. Revisar que todas las columnas estén creadas con los mismos nombres internos.</td></tr>
+                                    <tr><td class="td-key">Los adjuntos no se copian</td><td class="td-desc">El bucle Apply to each itera sobre un array vacío (el ítem no tenía adjuntos). Si hay adjuntos y no se copian, verificar que Get attachment content usa el campo Id del ítem del bucle (no el ID del trigger).</td></tr>
+                                    <tr><td class="td-key">El ítem no se elimina de Clientes</td><td class="td-desc">Delete item usa el campo ID del trigger. Si falla, revisar los errores en el historial de ejecución del flujo en Power Automate.</td></tr>
+                                    <tr><td class="td-key">Ambos flujos se ejecutan para el mismo ítem</td><td class="td-desc">Correcto: ambos flujos escuchan la misma lista. La condición de cada uno filtra según Estado. Si Estado = Aprobado, solo Flujo 1 procede; si Estado = Rechazado, solo Flujo 2 procede.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">7.1 Verificación post-implementación</div>
+                        <div class="steps">
+                            <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Prueba Flujo 1</div><div class="step-desc">Crear un ítem de prueba en la lista Clientes con Estado = Aprobado y verificar que el Flujo 1 se ejecuta completamente.</div></div></div>
+                            <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Verificar lista Aprobados</div><div class="step-desc">Confirmar que el ítem aparece en la lista Aprobados con todos sus campos y adjuntos.</div></div></div>
+                            <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Verificar correo</div><div class="step-desc">Confirmar que el correo llegó al Solicitante.</div></div></div>
+                            <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Verificar eliminación</div><div class="step-desc">Confirmar que el ítem fue eliminado de la lista Clientes.</div></div></div>
+                            <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Prueba Flujo 2</div><div class="step-desc">Repetir el proceso con Estado = Rechazado para el Flujo 2.</div></div></div>
+                            <div class="step"><div class="step-num">6</div><div class="step-body"><div class="step-title">Revisar historial</div><div class="step-desc">Revisar el historial de ejecución en Power Automate (Monitor > Cloud flow activity) para confirmar 0 errores.</div></div></div>
+                        </div>
+
+                        <div class="doc-h3">Conectores utilizados</div>
+                        <div class="connector-list">
+                            <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                        </div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>Toda la automatización depende de la cuenta <strong>tecnologiadeinformacion@grupoimade.com</strong>. Si esta cuenta pierde acceso, cambia contraseña sin actualizar conexiones o pierde licencia, el flujo fallará en todos sus pasos.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="doc-nav-footer">
+                    <button class="doc-nav-btn" onclick="switchFlow('aprobacion')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                        Ver Flujo 1 — Aprobación
+                    </button>
+                    <a href="inicio.html" class="doc-nav-btn">
+                        Regresar al Portal
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+
+            </div><!-- /panel-inner -->
+            </div><!-- /panel-rechazo -->
+
+        </div><!-- /pageContent -->
+    </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+    function toggleSection(header) {
+        const body = header.nextElementSibling;
+        const chevron = header.querySelector('.section-chevron');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        chevron.classList.toggle('open', !isOpen);
+        header.classList.toggle('open', !isOpen);
+    }
+
+    function scrollToA(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('#nav-aprobacion .nav-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    function scrollToR(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('#nav-rechazo .nav-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    function scrollToO(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('#nav-apertura .nav-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    function switchFlow(flow) {
+        const panels = { apertura: 'panel-apertura', aprobacion: 'panel-aprobacion', rechazo: 'panel-rechazo' };
+        const navs = { apertura: 'nav-apertura', aprobacion: 'nav-aprobacion', rechazo: 'nav-rechazo' };
+        const tabs = { apertura: 'tab-apertura', aprobacion: 'tab-aprobacion', rechazo: 'tab-rechazo' };
+        const names = { apertura: 'Apertura · Power Automate', aprobacion: 'Aprobación · Power Automate', rechazo: 'Rechazo · Power Automate' };
+        const breadcrumbs = { apertura: 'Flujo Apertura', aprobacion: 'Flujo Aprobación', rechazo: 'Flujo Rechazo' };
+
+        Object.keys(panels).forEach(key => {
+            document.getElementById(panels[key]).classList.toggle('visible', key === flow);
+            document.getElementById(navs[key]).classList.toggle('visible', key === flow);
+            document.getElementById(tabs[key]).classList.toggle('active-tab', key === flow);
+        });
+
+        document.getElementById('sidebar-flow-name').textContent = names[flow];
+        document.getElementById('breadcrumb-current').textContent = breadcrumbs[flow];
+        document.getElementById('pageContent').scrollTop = 0;
+        if (window.innerWidth <= 768) closeSidebar();
+    }
+
+    function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('visible');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('visible');
+    }
+
+    // Active nav on scroll
+    document.getElementById('pageContent').addEventListener('scroll', () => {
+        const scrollY = document.getElementById('pageContent').scrollTop;
+        let panelId = 'panel-aprobacion', navId = 'nav-aprobacion';
+        if (document.getElementById('panel-apertura').classList.contains('visible')) {
+            panelId = 'panel-apertura'; navId = 'nav-apertura';
+        } else if (document.getElementById('panel-rechazo').classList.contains('visible')) {
+            panelId = 'panel-rechazo'; navId = 'nav-rechazo';
+        }
+        const sections = document.querySelectorAll('#' + panelId + ' .doc-section');
+        const navBtns = document.querySelectorAll('#' + navId + ' .nav-btn');
+        sections.forEach((sec, i) => {
+            const top = sec.offsetTop - 100;
+            const bottom = top + sec.offsetHeight;
+            if (scrollY >= top && scrollY < bottom) {
+                navBtns.forEach(b => b.classList.remove('active'));
+                if (navBtns[i]) navBtns[i].classList.add('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>

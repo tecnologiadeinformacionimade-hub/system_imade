@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Confirmación de Depósitos Bancarios · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255,255,255,0.72);
+            --border: rgba(0,0,0,0.07);
+            --border-mid: rgba(0,0,0,0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10,132,255,0.08);
+            --accent-soft2: rgba(10,132,255,0.14);
+            --green: #30D158;
+            --green-soft: rgba(48,209,88,0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255,69,58,0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255,159,10,0.10);
+            --purple: #BF5AF2;
+            --purple-soft: rgba(191,90,242,0.10);
+            --indigo: #5E5CE6;
+            --indigo-soft: rgba(94,92,230,0.10);
+            --teal: #5AC8FA;
+            --teal-soft: rgba(90,200,250,0.12);
+
+            --sidebar-w: 260px;
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+        #shell { display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        #sidebar {
+            width: var(--sidebar-w); flex-shrink: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid var(--border);
+            z-index: 50; overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
+        #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.25); backdrop-filter: blur(2px); z-index: 49; }
+        #sidebarOverlay.visible { display: block; }
+        #menuToggle { display: none; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); box-shadow: var(--shadow-sm); flex-shrink: 0; }
+        #menuToggle svg { width: 18px; height: 18px; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 50; }
+            #sidebar.open { transform: translateX(0); box-shadow: var(--shadow-float); }
+            #menuToggle { display: flex; }
+            #main { width: 100vw; }
+            #appHeader { padding: 0 14px; }
+            #pageContent { padding: 18px 14px 40px; }
+        }
+
+        .sidebar-brand { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+        .brand-logo { width: 36px; height: 36px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+        .brand-logo img { width: 32px; height: 32px; object-fit: contain; }
+        .brand-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+        .brand-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px; }
+
+        .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+        .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; padding: 10px 10px 4px; }
+        .nav-btn { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text-2); text-decoration: none; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; border: none; background: transparent; width: 100%; text-align: left; }
+        .nav-btn:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+        .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-btn .nav-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-btn.active .nav-icon { background: var(--accent-soft2); }
+        .nav-btn svg { width: 15px; height: 15px; }
+        .nav-divider { height: 1px; background: var(--border); margin: 6px 10px; }
+        .back-btn { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s; border: none; background: transparent; width: 100%; }
+        .back-btn:hover { background: var(--accent-soft); }
+        .back-btn svg { width: 15px; height: 15px; }
+
+        .sidebar-footer { padding: 10px 10px 12px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); }
+        .doc-meta { padding: 8px 10px; }
+        .doc-meta-label { font-size: 9.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .doc-meta-value { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+        .doc-meta-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-top: 6px; }
+        .doc-meta-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+
+        /* MAIN */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        #appHeader { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(242,242,247,0.80); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0; }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
+        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
+        .breadcrumb .current { color: var(--text); font-weight: 600; }
+        .header-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 100px; border: 1px solid var(--accent-soft2); }
+        .header-badge svg { width: 12px; height: 12px; }
+
+        #pageContent { flex: 1; overflow-y: auto; padding: 32px 32px 60px; }
+
+        /* Hero */
+        .doc-hero { background: var(--surface); border: 1px solid var(--border-mid); border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 28px; box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 20px; }
+        .doc-hero-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: var(--accent-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 26px; }
+        .doc-hero-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+        .doc-hero-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .doc-hero-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+        .doc-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border-mid); color: var(--text-2); background: var(--surface-2); }
+        .doc-tag.blue { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-tag.green { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.2); }
+        .doc-tag.orange { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,159,10,0.2); }
+        .doc-tag.purple { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.2); }
+        .doc-tag.red { background: var(--red-soft); color: var(--red); border-color: rgba(255,69,58,0.2); }
+
+        /* Section card */
+        .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); scroll-margin-top: 80px; }
+        .doc-section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; transition: background 0.15s; user-select: none; border-bottom: 1px solid transparent; }
+        .doc-section-header:hover { background: var(--surface-2); }
+        .doc-section-header.open { border-bottom-color: var(--border); }
+        .section-num { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .section-num.green { background: var(--green-soft); color: var(--green); }
+        .section-num.orange { background: var(--orange-soft); color: var(--orange); }
+        .section-num.purple { background: var(--purple-soft); color: var(--purple); }
+        .section-num.red { background: var(--red-soft); color: var(--red); }
+        .section-num.indigo { background: var(--indigo-soft); color: var(--indigo); }
+        .section-title-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+        .section-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
+        .section-chevron { width: 16px; height: 16px; color: var(--text-muted); transition: transform 0.25s ease; flex-shrink: 0; }
+        .section-chevron.open { transform: rotate(180deg); }
+        .doc-section-body { display: none; padding: 20px 24px 24px; }
+        .doc-section-body.open { display: block; animation: fadeBody 0.2s ease; }
+        @keyframes fadeBody { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        .doc-p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+        .doc-p:last-child { margin-bottom: 0; }
+        .doc-h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
+        .doc-h3:first-child { margin-top: 0; }
+        .doc-h3::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+
+        .alert { border-radius: var(--radius-sm); padding: 14px 16px; margin: 14px 0; font-size: 13px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+        .alert-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+        .alert.info { background: var(--accent-soft); border: 1px solid var(--accent-soft2); color: var(--text-2); }
+        .alert.info .alert-icon { color: var(--accent); }
+        .alert.warning { background: var(--orange-soft); border: 1px solid rgba(255,159,10,0.2); color: var(--text-2); }
+        .alert.warning .alert-icon { color: var(--orange); }
+        .alert.success { background: var(--green-soft); border: 1px solid rgba(48,209,88,0.2); color: var(--text-2); }
+        .alert.success .alert-icon { color: var(--green); }
+        .alert.danger { background: var(--red-soft); border: 1px solid rgba(255,69,58,0.2); color: var(--text-2); }
+        .alert.danger .alert-icon { color: var(--red); }
+        .alert strong { color: var(--text); }
+
+        /* Flow diagram */
+        .flow-diagram { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 8px 0; }
+        .flow-step {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--surface-2); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm); padding: 12px 16px;
+            width: 100%; max-width: 520px; transition: box-shadow 0.15s, border-color 0.15s;
+            cursor: default;
+        }
+        .flow-step:hover { box-shadow: var(--shadow-md); border-color: var(--accent-soft2); }
+        .flow-step-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+        .flow-step-icon.blue { background: var(--accent-soft); }
+        .flow-step-icon.green { background: var(--green-soft); }
+        .flow-step-icon.orange { background: var(--orange-soft); }
+        .flow-step-icon.purple { background: var(--purple-soft); }
+        .flow-step-icon.indigo { background: var(--indigo-soft); }
+        .flow-step-icon.teal { background: var(--teal-soft); }
+        .flow-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+        .flow-step-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+        .flow-arrow { height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+        .flow-arrow svg { width: 16px; height: 16px; }
+
+        .flow-loop-wrap { border: 2px dashed rgba(10,132,255,0.2); border-radius: var(--radius-md); padding: 14px; width: 100%; max-width: 520px; background: var(--accent-soft); }
+        .flow-loop-label { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .flow-loop-label svg { width: 13px; height: 13px; }
+        .flow-loop-inner { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+        /* Detail grid */
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+        @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+        .detail-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+        .detail-card-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .detail-card-value { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 4px; word-break: break-all; }
+        .detail-card-value.mono { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
+
+        /* Step detail table */
+        .step-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+        .step-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 10px; border-bottom: 1px solid var(--border-mid); }
+        .step-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text-2); vertical-align: top; }
+        .step-table tr:last-child td { border-bottom: none; }
+        .step-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; width: 40%; }
+
+        /* Pill badge inline */
+        .pill { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+        .pill.blue { background: var(--accent-soft); color: var(--accent); }
+        .pill.green { background: var(--green-soft); color: var(--green); }
+        .pill.orange { background: var(--orange-soft); color: var(--orange); }
+        .pill.purple { background: var(--purple-soft); color: var(--purple); }
+        .pill.red { background: var(--red-soft); color: var(--red); }
+
+        /* SharePoint lists grid */
+        .list-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+        @media (max-width: 700px) { .list-grid { grid-template-columns: 1fr; } }
+        .list-card { background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 14px 16px; }
+        .list-card-icon { font-size: 22px; margin-bottom: 8px; }
+        .list-card-name { font-size: 13px; font-weight: 700; color: var(--text); }
+        .list-card-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; padding: 2px 8px; border-radius: 100px; }
+        .list-card-status.pending { background: var(--orange-soft); color: var(--orange); }
+        .list-card-status.confirmed { background: var(--green-soft); color: var(--green); }
+        .list-card-status.rejected { background: var(--red-soft); color: var(--red); }
+        .list-card-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+
+        /* Email preview */
+        .email-preview { border: 1px solid var(--border-mid); border-radius: var(--radius-sm); overflow: hidden; margin: 14px 0; }
+        .email-header { background: var(--surface-2); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+        .email-field { font-size: 12px; color: var(--text-2); margin-bottom: 3px; }
+        .email-field:last-child { margin-bottom: 0; }
+        .email-field strong { color: var(--text); }
+        .email-body { padding: 14px; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+
+        /* Columns fields */
+        .columns-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .col-pill { background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: var(--radius-xs); padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--text-2); font-family: var(--mono); }
+
+        /* ── FLOW SWITCHER TABS ── */
+        .flow-switcher { display: flex; gap: 4px; padding: 10px 8px 6px; border-bottom: 1px solid var(--border); }
+        .flow-tab {
+            flex: 1; padding: 7px 4px; border-radius: var(--radius-xs);
+            font-size: 10.5px; font-weight: 600; text-align: center; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s ease; color: var(--text-muted);
+            background: transparent;
+        }
+        .flow-tab:hover { background: rgba(0,0,0,0.04); color: var(--text-2); }
+        .flow-tab.active-tab { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .flow-tab.active-tab.green-tab { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.25); }
+        .flow-tab.active-tab.red-tab { background: var(--red-soft); color: var(--red); border-color: rgba(255,69,58,0.25); }
+        .nav-panel { display: none; flex: 1; padding: 10px 8px; overflow-y: auto; flex-direction: column; }
+        .nav-panel.visible { display: flex; }
+
+        /* ── PAGE PANELS ── */
+        .page-panel { display: none; }
+        .page-panel.visible { display: block; animation: fadePanel 0.22s ease; }
+        @keyframes fadePanel { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+
+<body>
+<div id="shell">
+
+    <!-- Overlay móvil -->
+    <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">
+                <img src="logo.png" alt="Imade"
+                    onerror="this.style.display='none';this.parentNode.innerHTML='<span style=font-size:18px;font-weight:800;color:var(--accent)>G</span>'">
+            </div>
+            <div>
+                <div class="brand-name">Grupo Imade</div>
+                <div class="brand-sub">Documentación</div>
+            </div>
+        </div>
+
+        <!-- Flow switcher tabs -->
+        <div class="flow-switcher">
+            <button class="flow-tab active-tab" id="tab-principal" onclick="switchFlow('principal')">📨 Principal</button>
+            <button class="flow-tab green-tab" id="tab-confirmada" onclick="switchFlow('confirmada')">✅ Confirmada</button>
+            <button class="flow-tab red-tab" id="tab-rechazada" onclick="switchFlow('rechazada')">❌ Rechazada</button>
+        </div>
+
+        <!-- NAV PANEL: Flujo Principal -->
+        <nav class="sidebar-nav nav-panel visible" id="nav-principal">
+            <div class="nav-section-label">Contenido — Flujo Principal</div>
+
+            <button onclick="scrollToSec('sec-resumen')" class="nav-btn active">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </span>
+                Resumen del flujo
+            </button>
+
+            <button onclick="scrollToSec('sec-diagrama')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                </span>
+                Diagrama de pasos
+            </button>
+
+            <button onclick="scrollToSec('sec-trigger')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </span>
+                Paso 1 · Disparador
+            </button>
+
+            <button onclick="scrollToSec('sec-detalle')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </span>
+                Paso 2 · Obtener detalles
+            </button>
+
+            <button onclick="scrollToSec('sec-correo1')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </span>
+                Paso 3 · Correo interno
+            </button>
+
+            <button onclick="scrollToSec('sec-sharepoint')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                </span>
+                Paso 4 · Crear ítem SP
+            </button>
+
+            <button onclick="scrollToSec('sec-json')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                </span>
+                Paso 5 · Análisis JSON
+            </button>
+
+            <button onclick="scrollToSec('sec-loop')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </span>
+                Paso 6 · Bucle adjuntos
+            </button>
+
+            <button onclick="scrollToSec('sec-correo2')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+                </span>
+                Paso 7 · Correo cliente
+            </button>
+
+            <button onclick="scrollToSec('sec-listas')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </span>
+                Listas SharePoint
+            </button>
+
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <!-- NAV PANEL: Boleta Confirmada -->
+        <nav class="sidebar-nav nav-panel" id="nav-confirmada">
+            <div class="nav-section-label">Contenido — Boleta Confirmada</div>
+
+            <button onclick="scrollToPanel('panel-confirmada','sec-bc-resumen')" class="nav-btn active">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+                Resumen
+            </button>
+            <button onclick="scrollToPanel('panel-confirmada','sec-bc-diagrama')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </span>
+                Diagrama de pasos
+            </button>
+            <button onclick="scrollToPanel('panel-confirmada','sec-bc-pasos')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                </span>
+                Detalle de acciones
+            </button>
+
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <!-- NAV PANEL: Boleta Rechazada -->
+        <nav class="sidebar-nav nav-panel" id="nav-rechazada">
+            <div class="nav-section-label">Contenido — Boleta Rechazada</div>
+
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-resumen')" class="nav-btn active">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </span>
+                Resumen
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-diagrama')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </span>
+                Diagrama de pasos
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-trigger')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </span>
+                1 · Disparador
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-condicion')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </span>
+                2 · Condición
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-correo')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </span>
+                3 · Correo al cliente
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-crear')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                </span>
+                4 · Crear en Rechazadas
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-adjuntos')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                </span>
+                5 · Obtener adjuntos
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-loop')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </span>
+                6 · Bucle de adjuntos
+            </button>
+            <button onclick="scrollToPanel('panel-rechazada','sec-br-eliminar')" class="nav-btn">
+                <span class="nav-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </span>
+                7 · Eliminar original
+            </button>
+
+            <div class="nav-divider"></div>
+            <a href="inicio.html" class="back-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Regresar al Portal
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="doc-meta">
+                <div class="doc-meta-label">Flujo</div>
+                <div class="doc-meta-value">Confirmación de Depósitos Bancarios</div>
+                <div class="doc-meta-badge">Activo</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div id="main">
+        <header id="appHeader">
+            <div class="breadcrumb">
+                <button id="menuToggle" onclick="openSidebar()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <span class="root">Documentación</span>
+                <span class="sep">›</span>
+                <span class="root">Power Automate</span>
+                <span class="sep">›</span>
+                <span class="current">Confirmación de Depósitos Bancarios</span>
+            </div>
+            <div class="header-badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                v1.0 · Activo
+            </div>
+        </header>
+
+        <div id="pageContent">
+
+        <!-- ══ PANEL: FLUJO PRINCIPAL ══ -->
+        <div class="page-panel visible" id="panel-principal">
+            <div style="padding: 32px 32px 60px;">
+
+            <!-- Hero -->
+            <div class="doc-hero">
+                <div class="doc-hero-icon">🏦</div>
+                <div>
+                    <div class="doc-hero-title">Confirmación de Depósitos Bancarios</div>
+                    <div class="doc-hero-sub">Flujo automatizado en Power Automate que procesa las boletas de depósito enviadas por clientes a través de Microsoft Forms, registrándolas en SharePoint y notificando a los equipos correspondientes vía correo electrónico.</div>
+                    <div class="doc-hero-tags">
+                        <span class="doc-tag blue">Power Automate</span>
+                        <span class="doc-tag">Microsoft Forms</span>
+                        <span class="doc-tag">SharePoint</span>
+                        <span class="doc-tag green">Activo</span>
+                        <span class="doc-tag orange">7 Pasos</span>
+                        <span class="doc-tag purple">Outlook 365</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESUMEN -->
+            <div class="doc-section" id="sec-resumen">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num">📋</div>
+                    <div>
+                        <div class="section-title-text">Resumen del flujo</div>
+                        <div class="section-subtitle">Objetivo, herramientas y conexiones involucradas</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este flujo automatiza el proceso de recepción y registro de boletas de depósito bancario. Cuando un cliente o colaborador llena el formulario <strong>"Confirmación de depósitos bancarios"</strong> en Microsoft Forms adjuntando su comprobante, el flujo se ejecuta automáticamente para notificar al equipo contable, registrar la solicitud en SharePoint y confirmarle al remitente que su boleta fue recibida.</div>
+
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div><strong>Cuenta de servicio:</strong> El flujo opera conectado a <code>tecnologiadeinformacion@grupoimade.com</code> y el sitio de SharePoint utilizado es <code>grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios/</code>.</div>
+                    </div>
+
+                    <div class="doc-h3">Herramientas utilizadas</div>
+                    <div class="detail-grid">
+                        <div class="detail-card">
+                            <div class="detail-card-label">Plataforma</div>
+                            <div class="detail-card-value">Microsoft Power Automate</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Formulario de entrada</div>
+                            <div class="detail-card-value">Microsoft Forms</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Base de datos / Listas</div>
+                            <div class="detail-card-value">Microsoft SharePoint</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Notificaciones</div>
+                            <div class="detail-card-value">Outlook 365 (V2)</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Almacenamiento de archivos</div>
+                            <div class="detail-card-value">OneDrive / SharePoint (adjuntos)</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Procesamiento de datos</div>
+                            <div class="detail-card-value">JSON Parse (Data Operations)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIAGRAMA -->
+            <div class="doc-section" id="sec-diagrama">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num indigo">⚡</div>
+                    <div>
+                        <div class="section-title-text">Diagrama de pasos</div>
+                        <div class="section-subtitle">Vista completa del flujo de automatización</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="flow-diagram">
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon blue">📝</div>
+                            <div>
+                                <div class="flow-step-label">1 · When a new response is submitted</div>
+                                <div class="flow-step-desc">Disparador: nueva respuesta en Microsoft Forms</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon blue">🔍</div>
+                            <div>
+                                <div class="flow-step-label">2 · Obtener los detalles de la respuesta</div>
+                                <div class="flow-step-desc">Recupera todos los campos del formulario usando el Response Id</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon orange">📧</div>
+                            <div>
+                                <div class="flow-step-label">3 · Enviar correo electrónico (V2) 2</div>
+                                <div class="flow-step-desc">Alerta interna al equipo contable — importancia Alta</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon green">📂</div>
+                            <div>
+                                <div class="flow-step-label">4 · Create item</div>
+                                <div class="flow-step-desc">Crea registro en la lista "Depositos Bancarios" de SharePoint</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon purple">{ }</div>
+                            <div>
+                                <div class="flow-step-label">5 · Análisis del archivo JSON</div>
+                                <div class="flow-step-desc">Parsea el campo de adjuntos del formulario como array de objetos</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <!-- LOOP -->
+                        <div class="flow-loop-wrap">
+                            <div class="flow-loop-label">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                6 · Aplicar a cada uno (bucle por adjunto)
+                            </div>
+                            <div class="flow-loop-inner">
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon teal">📎</div>
+                                    <div>
+                                        <div class="flow-step-label">6a · Get file content</div>
+                                        <div class="flow-step-desc">Obtiene el contenido binario de cada archivo adjunto (Body id)</div>
+                                    </div>
+                                </div>
+                                <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon green">📌</div>
+                                    <div>
+                                        <div class="flow-step-label">6b · Agregar datos adjuntos</div>
+                                        <div class="flow-step-desc">Sube el archivo al ítem de SharePoint recién creado</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon orange">✉️</div>
+                            <div>
+                                <div class="flow-step-label">7 · Enviar correo electrónico (V2) 2 1</div>
+                                <div class="flow-step-desc">Confirmación al cliente de que su boleta fue recibida</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 1 -->
+            <div class="doc-section" id="sec-trigger">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num">1</div>
+                    <div>
+                        <div class="section-title-text">Disparador — When a new response is submitted</div>
+                        <div class="section-subtitle">Microsoft Forms · Evento de nueva respuesta</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Este es el punto de entrada del flujo. Cada vez que alguien completa y envía el formulario <strong>"Confirmación de depósitos bancarios"</strong> en Microsoft Forms, Power Automate detecta el evento automáticamente y pone en marcha toda la cadena de acciones.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Conector</td><td>Microsoft Forms</td></tr>
+                            <tr><td>Formulario (Form Id)</td><td>Confirmación de depósitos bancarios</td></tr>
+                            <tr><td>Cuenta conectada</td><td>tecnologiadeinformacion@grupoimade.com</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El disparador entrega el <strong>Response Id</strong> de la respuesta, que es utilizado en el siguiente paso para recuperar todos los campos del formulario.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2 -->
+            <div class="doc-section" id="sec-detalle">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num">2</div>
+                    <div>
+                        <div class="section-title-text">Obtener los detalles de la respuesta</div>
+                        <div class="section-subtitle">Microsoft Forms · Recuperar campos del formulario</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Con el <strong>Response Id</strong> obtenido en el disparador, esta acción consulta Microsoft Forms para traer todos los campos que el usuario llenó: observaciones, correo electrónico, archivos adjuntos, etc.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Form Id</td><td>Confirmación de depósitos bancarios</td></tr>
+                            <tr><td>Response Id</td><td><span class="pill blue">Dinámica — Response Id del disparador</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="doc-p">Los valores dinámicos obtenidos aquí —como <em>Observaciones</em>, <em>Responders' Email</em> e <em>Ingrese su depósito</em> (campo JSON de adjuntos)— alimentan todos los pasos siguientes del flujo.</div>
+                </div>
+            </div>
+
+            <!-- PASO 3 -->
+            <div class="doc-section" id="sec-correo1">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num orange">3</div>
+                    <div>
+                        <div class="section-title-text">Enviar correo electrónico interno</div>
+                        <div class="section-subtitle">Outlook 365 (V2) · Alerta al equipo contable</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Inmediatamente después de recibir la respuesta, el flujo envía un correo de alta prioridad al equipo interno notificando que hay una nueva boleta de depósito pendiente de revisión.</div>
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <div class="email-field"><strong>Para:</strong> s.franco@grupoimade.com</div>
+                            <div class="email-field"><strong>Asunto:</strong> Boleta de depósito cargada</div>
+                            <div class="email-field"><strong>Importancia:</strong> <span class="pill orange">Alta</span></div>
+                        </div>
+                        <div class="email-body">
+                            Buen día,<br><br>
+                            Por medio del presente, le informamos que se ha enviado una nueva boleta de depósito en el sistema.<br><br>
+                            Le solicitamos amablemente proceder con la revisión correspondiente y validar la información registrada.
+                        </div>
+                    </div>
+                    <div class="alert warning">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>Este correo se envía <strong>antes</strong> de que el ítem sea creado en SharePoint. Si el flujo falla en el paso siguiente, el notificado deberá verificar manualmente el estado.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 4 -->
+            <div class="doc-section" id="sec-sharepoint">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num green">4</div>
+                    <div>
+                        <div class="section-title-text">Create item — SharePoint</div>
+                        <div class="section-subtitle">Crea el registro en la lista "Depositos Bancarios"</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Se crea un nuevo ítem en la lista <strong>"Depositos Bancarios"</strong> del sitio SharePoint, registrando la información clave de la solicitud. El estado inicial siempre es <span class="pill orange">Pendiente</span>, y el departamento contable deberá actualizarlo manualmente a Confirmado o Rechazado.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Campo SharePoint</th><th>Valor mapeado</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11.5px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios/</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Fecha y Hora</td><td><span class="pill blue">addHours(utcNow(), -6)</span> — Ajuste GMT-6</td></tr>
+                            <tr><td>Observaciones</td><td><span class="pill blue">Dinámica — campo Observaciones del formulario</span></td></tr>
+                            <tr><td>Estado Value</td><td><span class="pill orange">Pendiente</span></td></tr>
+                            <tr><td>Correo Electronico</td><td><span class="pill blue">Dinámica — Responders' Email</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert success">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El <strong>ID</strong> generado por SharePoint en este paso se utiliza más adelante para adjuntar los archivos de la boleta directamente al ítem correspondiente.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 5 -->
+            <div class="doc-section" id="sec-json">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num purple">5</div>
+                    <div>
+                        <div class="section-title-text">Análisis del archivo JSON</div>
+                        <div class="section-subtitle">Data Operations · Parsear adjuntos del formulario</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">El campo de adjuntos de Microsoft Forms llega como una cadena de texto en formato JSON. Esta acción la convierte en un <strong>array de objetos</strong> que el bucle siguiente puede recorrer, uno por cada archivo adjunto.</div>
+                    <div class="doc-h3">Esquema utilizado</div>
+                    <div class="doc-p">El esquema define la estructura esperada de cada objeto dentro del array:</div>
+                    <table class="step-table">
+                        <thead><tr><th>Propiedad</th><th>Tipo</th><th>Descripción</th></tr></thead>
+                        <tbody>
+                            <tr><td>name</td><td><span class="pill blue">string</span></td><td>Nombre del archivo adjunto</td></tr>
+                            <tr><td>link</td><td><span class="pill blue">string</span></td><td>URL de descarga del archivo</td></tr>
+                            <tr><td>id</td><td><span class="pill blue">string</span></td><td>Identificador único del archivo en Forms</td></tr>
+                            <tr><td>type</td><td><span class="pill">object</span></td><td>Tipo MIME del archivo</td></tr>
+                            <tr><td>size</td><td><span class="pill orange">integer</span></td><td>Tamaño del archivo en bytes</td></tr>
+                            <tr><td>referenceId</td><td><span class="pill blue">string</span></td><td>ID de referencia en OneDrive</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="doc-p">El campo de entrada (<em>Content</em>) es la variable dinámica <strong>"Ingrese su depósito"</strong> proveniente de los detalles del formulario.</div>
+                </div>
+            </div>
+
+            <!-- PASO 6 -->
+            <div class="doc-section" id="sec-loop">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num indigo">6</div>
+                    <div>
+                        <div class="section-title-text">Aplicar a cada uno — Bucle de adjuntos</div>
+                        <div class="section-subtitle">Control · Itera sobre cada archivo y lo adjunta a SharePoint</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Esta es la acción de control más compleja del flujo. Itera sobre el <strong>Body</strong> (resultado del JSON parseado) y para cada archivo adjunto ejecuta dos acciones en secuencia:</div>
+
+                    <div class="doc-h3">6a · Get file content</div>
+                    <div class="doc-p">Descarga el contenido binario de cada archivo usando el campo <code>Body id</code> del ítem actual del bucle. El parámetro <em>Infer Content Type</em> se establece en <strong>Sí</strong> para detectar automáticamente el tipo MIME.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>File</td><td><span class="pill blue">Dinámica — Body id (elemento actual del bucle)</span></td></tr>
+                            <tr><td>Infer Content Type</td><td>Yes</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="doc-h3">6b · Agregar datos adjuntos</div>
+                    <div class="doc-p">Con el contenido del archivo ya descargado, lo carga como adjunto al ítem de SharePoint creado en el paso 4, usando su <strong>ID</strong> como referencia. El nombre del archivo proviene del campo <code>Body name</code>.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/...</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem creado en paso 4</span></td></tr>
+                            <tr><td>File Name</td><td><span class="pill blue">Dinámica — Body name (nombre del archivo)</span></td></tr>
+                            <tr><td>File Content</td><td><span class="pill blue">Dinámica — Body (contenido del archivo)</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Si el cliente adjunta más de una imagen o PDF de boleta, el bucle se ejecuta por cada archivo. Todos quedan vinculados al mismo ítem de SharePoint en la columna <strong>Datos adjuntos</strong>.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 7 -->
+            <div class="doc-section" id="sec-correo2">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num red">7</div>
+                    <div>
+                        <div class="section-title-text">Enviar correo al cliente</div>
+                        <div class="section-subtitle">Outlook 365 (V2) · Confirmación de recepción</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">Una vez que todos los archivos han sido adjuntados en SharePoint, el flujo envía un correo de confirmación directamente al <strong>correo del cliente</strong> que llenó el formulario, usando el campo dinámico <em>Correo Electrónico</em>.</div>
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <div class="email-field"><strong>Para:</strong> <span class="pill blue">Dinámica — Correo Electrónico del formulario</span></div>
+                            <div class="email-field"><strong>Asunto:</strong> Boleta de depósito cargada</div>
+                            <div class="email-field"><strong>Importancia:</strong> <span class="pill orange">Alta</span></div>
+                        </div>
+                        <div class="email-body">
+                            Le informamos que su boleta fue enviada para confirmación.<br><br>
+                            <em>Departamento Contable</em>
+                        </div>
+                    </div>
+                    <div class="alert success">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Este correo confirma al cliente que su boleta fue recibida correctamente y está en proceso de revisión por el Departamento Contable.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTAS SHAREPOINT -->
+            <div class="doc-section" id="sec-listas">
+                <div class="doc-section-header" onclick="toggleSection(this)">
+                    <div class="section-num green">📁</div>
+                    <div>
+                        <div class="section-title-text">Listas de SharePoint</div>
+                        <div class="section-subtitle">Estructura del sitio ConfirmacindeDepositosBancarios</div>
+                    </div>
+                    <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body">
+                    <div class="doc-p">El sitio SharePoint contiene tres listas que representan los distintos estados del ciclo de vida de una boleta. El flujo automatizado solo escribe en <strong>Depositos Bancarios</strong>; las otras dos listas son actualizadas manualmente por el equipo contable.</div>
+
+                    <div class="list-grid">
+                        <div class="list-card">
+                            <div class="list-card-icon">📥</div>
+                            <div class="list-card-name">Depositos Bancarios</div>
+                            <div class="list-card-status pending">● Pendiente</div>
+                            <div class="list-card-desc">Lista principal donde el flujo registra cada nueva boleta. Estado inicial: Pendiente.</div>
+                        </div>
+                        <div class="list-card">
+                            <div class="list-card-icon">✅</div>
+                            <div class="list-card-name">Boletas Confirmadas</div>
+                            <div class="list-card-status confirmed">● Boleta Confirmada</div>
+                            <div class="list-card-desc">Registro de todas las boletas validadas por el equipo contable.</div>
+                        </div>
+                        <div class="list-card">
+                            <div class="list-card-icon">❌</div>
+                            <div class="list-card-name">Boletas Rechazadas</div>
+                            <div class="list-card-status rejected">● Boleta Rechazada</div>
+                            <div class="list-card-desc">Boletas que no pudieron ser confirmadas, con observación del motivo.</div>
+                        </div>
+                    </div>
+
+                    <div class="doc-h3">Columnas de las listas</div>
+                    <div class="doc-p">Todas las listas comparten las siguientes columnas:</div>
+                    <div class="columns-list">
+                        <span class="col-pill">Datos adjuntos</span>
+                        <span class="col-pill">Observaciones</span>
+                        <span class="col-pill">Estado</span>
+                        <span class="col-pill">Correo Electronico</span>
+                        <span class="col-pill">Link de imagen</span>
+                        <span class="col-pill">Fecha y Hora</span>
+                        <span class="col-pill">Comentarios</span>
+                    </div>
+
+                    <div class="alert info" style="margin-top:16px">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>La columna <strong>Fecha y Hora</strong> en la lista "Boletas Confirmadas" muestra "<em>Información necesaria</em>" para ítems migrados o creados manualmente, ya que ese campo es requerido en el flujo automatizado pero opcional en carga manual.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BOLETA CONFIRMADA ===== -->
+
+            </div><!-- /principal inner padding -->
+        </div><!-- /panel-principal -->
+
+        <!-- ══ PANEL: BOLETA CONFIRMADA ══ -->
+        <div class="page-panel" id="panel-confirmada">
+            <div style="padding: 32px 32px 60px;">
+
+            <!-- Hero Confirmada -->
+            <div class="doc-hero">
+                <div class="doc-hero-icon" style="background:var(--green-soft);">✅</div>
+                <div>
+                    <div class="doc-hero-title">Boleta Confirmada</div>
+                    <div class="doc-hero-sub">Flujo secundario que se activa cuando el equipo contable aprueba una boleta. Traslada el registro a <em>Boletas Confirmadas</em>, copia los adjuntos y notifica al cliente.</div>
+                    <div class="doc-hero-tags">
+                        <span class="doc-tag blue">Power Automate</span>
+                        <span class="doc-tag">SharePoint</span>
+                        <span class="doc-tag green">Activo</span>
+                        <span class="doc-tag orange">7 Pasos</span>
+                        <span class="doc-tag purple">Outlook 365</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separador visual -->
+            <div style="margin: 0 0 24px; display:flex; align-items:center; gap:14px;">
+                <div style="flex:1; height:1px; background:var(--border-mid);"></div>
+                <div style="display:flex; align-items:center; gap:8px; background:var(--green-soft); border:1px solid rgba(48,209,88,0.2); border-radius:100px; padding:6px 16px;">
+                    <span style="font-size:14px;">✅</span>
+                    <span style="font-size:12px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:0.6px;">Flujo — Boleta Confirmada</span>
+                </div>
+                <div style="flex:1; height:1px; background:var(--border-mid);"></div>
+            </div>
+
+            <!-- RESUMEN BC -->
+            <div class="doc-section" id="sec-bc-resumen">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num green">📋</div>
+                    <div>
+                        <div class="section-title-text">Resumen — Boleta Confirmada</div>
+                        <div class="section-subtitle">Flujo secundario · Confirmación contable y notificación al cliente</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este flujo se activa cuando el equipo contable actualiza el <strong>Estado</strong> de un ítem en la lista <em>Depositos Bancarios</em> a <span class="pill green">Boleta confirmada</span>. Su objetivo es trasladar el registro a la lista <em>Boletas Confirmadas</em>, copiar los adjuntos, notificar al cliente por correo electrónico y limpiar el ítem original.</div>
+
+                    <div class="alert success">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Este flujo es el <strong>segundo eslabón del ciclo</strong>: actúa justo después de que el contador revisa y aprueba la boleta, cerrando el proceso con la notificación al cliente.</div>
+                    </div>
+
+                    <div class="doc-h3">Parámetros generales</div>
+                    <div class="detail-grid">
+                        <div class="detail-card">
+                            <div class="detail-card-label">Disparador</div>
+                            <div class="detail-card-value">When an item is created or modified</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Lista monitoreada</div>
+                            <div class="detail-card-value">Depositos Bancarios</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Condición de activación</div>
+                            <div class="detail-card-value">Estado = "Boleta confirmada"</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Lista de destino</div>
+                            <div class="detail-card-value">Boletas Confirmadas</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Cuenta de servicio</div>
+                            <div class="detail-card-value mono">tecnologiadeinformacion@grupoimade.com</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Total de pasos</div>
+                            <div class="detail-card-value">7 acciones (1 condición + 6 en rama True)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIAGRAMA BC -->
+            <div class="doc-section" id="sec-bc-diagrama">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num indigo">⚡</div>
+                    <div>
+                        <div class="section-title-text">Diagrama de pasos — Boleta Confirmada</div>
+                        <div class="section-subtitle">Vista completa del flujo de confirmación contable</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="flow-diagram">
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon blue">🔔</div>
+                            <div>
+                                <div class="flow-step-label">1 · When an item is created or modified</div>
+                                <div class="flow-step-desc">Disparador: cambio en la lista Depositos Bancarios</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon orange">⚖️</div>
+                            <div>
+                                <div class="flow-step-label">2 · Condition</div>
+                                <div class="flow-step-desc">Estado/Value = "Boleta confirmada" → rama True</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon green">📂</div>
+                            <div>
+                                <div class="flow-step-label">3 · Create item</div>
+                                <div class="flow-step-desc">Crea registro en "Boletas Confirmadas" con todos los campos</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon teal">📎</div>
+                            <div>
+                                <div class="flow-step-label">4 · Get attachments</div>
+                                <div class="flow-step-desc">Obtiene la lista de adjuntos del ítem original en Depositos Bancarios</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <!-- LOOP BC -->
+                        <div class="flow-loop-wrap">
+                            <div class="flow-loop-label">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                5 · Foreach (bucle por adjunto — Body)
+                            </div>
+                            <div class="flow-loop-inner">
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon teal">📄</div>
+                                    <div>
+                                        <div class="flow-step-label">5a · Get attachment content</div>
+                                        <div class="flow-step-desc">Descarga el contenido binario del adjunto desde Depositos Bancarios</div>
+                                    </div>
+                                </div>
+                                <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon green">📌</div>
+                                    <div>
+                                        <div class="flow-step-label">5b · Add attachment</div>
+                                        <div class="flow-step-desc">Adjunta el archivo al ítem nuevo en Boletas Confirmadas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon orange">✉️</div>
+                            <div>
+                                <div class="flow-step-label">6 · Send an email (V2)</div>
+                                <div class="flow-step-desc">Notifica al cliente que su boleta fue confirmada y registrada</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon red">🗑️</div>
+                            <div>
+                                <div class="flow-step-label">7 · Delete item</div>
+                                <div class="flow-step-desc">Elimina el ítem original de la lista Depositos Bancarios</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE PASOS BC -->
+            <div class="doc-section" id="sec-bc-pasos">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num green">🔍</div>
+                    <div>
+                        <div class="section-title-text">Detalle de acciones — Boleta Confirmada</div>
+                        <div class="section-subtitle">Parámetros y configuración de cada paso</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+
+                    <!-- Paso 1 · Disparador -->
+                    <div class="doc-h3">1 · Disparador — When an item is created or modified</div>
+                    <div class="doc-p">El flujo se pone en marcha cada vez que cualquier ítem de la lista <strong>Depositos Bancarios</strong> es creado o modificado. Esto incluye el momento en que el equipo contable cambia el campo <em>Estado</em>.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Cuenta conectada</td><td>tecnologiadeinformacion@grupoimade.com</td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Paso 2 · Condición -->
+                    <div class="doc-h3">2 · Condition — Filtrar por estado "Boleta confirmada"</div>
+                    <div class="doc-p">Para que el flujo no se dispare en cada modificación sin importar el estado, esta condición actúa como filtro. Solo la rama <span class="pill green">True</span> ejecuta acciones; la rama <span class="pill red">False</span> no tiene acciones (0 Actions).</div>
+                    <table class="step-table">
+                        <thead><tr><th>Campo</th><th>Operador</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="pill blue">Estado/Value</span></td><td>is equal to</td><td>Boleta confirmada</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El campo <strong>Estado/Value</strong> corresponde al valor interno de la columna de opción en SharePoint. Si el equipo contable selecciona cualquier otro estado (ej. <em>Pendiente</em> o <em>Boleta rechazada</em>), el flujo termina sin ejecutar ninguna acción adicional.</div>
+                    </div>
+
+                    <!-- Paso 3 · Create item -->
+                    <div class="doc-h3">3 · Create item — Boletas Confirmadas</div>
+                    <div class="doc-p">Crea un nuevo ítem en la lista <strong>Boletas Confirmadas</strong> copiando los campos del ítem original. El estado se fija a <span class="pill green">Boleta Confirmada</span> de forma estática.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Boletas Confirmadas</td></tr>
+                            <tr><td>Fecha y Hora</td><td><span class="pill blue">Dinámica — Fecha y Hora del ítem original</span></td></tr>
+                            <tr><td>Observaciones</td><td><span class="pill blue">Dinámica — Observaciones del ítem original</span></td></tr>
+                            <tr><td>Estado Value</td><td><span class="pill green">Boleta Confirmada</span> (valor estático)</td></tr>
+                            <tr><td>Correo Electronico</td><td><span class="pill blue">Dinámica — Correo Electrónico del ítem original</span></td></tr>
+                            <tr><td>Link de imagen</td><td><span class="pill blue">Dinámica — Link de imagen del ítem original</span></td></tr>
+                            <tr><td>Comentarios</td><td><span class="pill blue">Dinámica — Comentarios del ítem original</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert success">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El <strong>ID</strong> generado por este paso se usa en el paso 5b (Add attachment) para vincular los adjuntos copiados al nuevo ítem en Boletas Confirmadas.</div>
+                    </div>
+
+                    <!-- Paso 4 · Get attachments -->
+                    <div class="doc-h3">4 · Get attachments — Depositos Bancarios</div>
+                    <div class="doc-p">Recupera la lista completa de adjuntos del ítem original en <strong>Depositos Bancarios</strong> usando su ID. Esta lista es el insumo del bucle Foreach del siguiente paso.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Paso 5 · Foreach -->
+                    <div class="doc-h3">5 · Foreach — Bucle de adjuntos (Body)</div>
+                    <div class="doc-p">Itera sobre el resultado <strong>Body</strong> del paso <em>Get attachments</em>. Para cada adjunto encontrado ejecuta dos acciones en secuencia: obtener el contenido y adjuntarlo al ítem de destino.</div>
+
+                    <div class="doc-h3" style="margin-top:14px;">5a · Get attachment content</div>
+                    <div class="doc-p">Descarga el contenido binario de cada adjunto directamente desde la lista <em>Depositos Bancarios</em>.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador</span></td></tr>
+                            <tr><td>File Identifier</td><td><span class="pill blue">Dinámica — id (elemento actual del bucle)</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="doc-h3">5b · Add attachment</div>
+                    <div class="doc-p">Sube el archivo descargado como adjunto al nuevo ítem creado en <em>Boletas Confirmadas</em> usando el ID del paso 3.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Boletas Confirmadas</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem creado en paso 3</span></td></tr>
+                            <tr><td>File Name</td><td><span class="pill blue">Dinámica — DisplayName (nombre del adjunto)</span></td></tr>
+                            <tr><td>File Content</td><td><span class="pill blue">Dinámica — Body (contenido binario del adjunto)</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Si la boleta original tiene múltiples adjuntos, el bucle se ejecuta por cada uno. Todos quedan vinculados al mismo ítem en <strong>Boletas Confirmadas</strong>.</div>
+                    </div>
+
+                    <!-- Paso 6 · Send email -->
+                    <div class="doc-h3">6 · Send an email (V2) — Notificación al cliente</div>
+                    <div class="doc-p">Envía un correo de confirmación al cliente usando el campo <em>Correo Electrónico</em> del ítem original. El correo incluye un enlace a la boleta de depósito y los comentarios del equipo contable.</div>
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <div class="email-field"><strong>Para:</strong> <span class="pill blue">Dinámica — Correo Electrónico del ítem</span></div>
+                            <div class="email-field"><strong>Asunto:</strong> Boleta de depósito confirmada</div>
+                            <div class="email-field"><strong>Importancia:</strong> <span class="pill">Normal</span></div>
+                        </div>
+                        <div class="email-body">
+                            Buen día.<br><br>
+                            Le informamos que su boleta de depósito ha sido confirmada y registrada exitosamente.<br><br>
+                            Boleta de confirmación adjunta en el siguiente enlace:<br>
+                            <span style="color:var(--accent);">Ver boleta de depósito</span><br><br>
+                            Comentarios: <span class="pill blue">Dinámica — Comentarios</span><br><br>
+                            Quedamos a su disposición por cualquier consulta.<br><br>
+                            Saludos,
+                        </div>
+                    </div>
+                    <div class="alert success">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Este correo cierra el ciclo desde la perspectiva del cliente: primero recibe confirmación de que su boleta fue <em>recibida</em> (flujo principal), y luego recibe esta notificación indicando que fue <em>confirmada y registrada</em> por el equipo contable.</div>
+                    </div>
+
+                    <!-- Paso 7 · Delete item -->
+                    <div class="doc-h3">7 · Delete item — Limpieza de Depositos Bancarios</div>
+                    <div class="doc-p">Una vez que el ítem ha sido copiado a <em>Boletas Confirmadas</em> y el cliente ha sido notificado, este paso elimina el ítem original de la lista <strong>Depositos Bancarios</strong>, manteniendo esa lista limpia con solo los depósitos pendientes de revisión.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert warning">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>La eliminación es <strong>permanente</strong>. El registro histórico queda únicamente en la lista <em>Boletas Confirmadas</em>. Asegúrate de que los adjuntos se hayan copiado correctamente antes de que este paso se ejecute.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            </div><!-- /confirmada inner padding -->
+        </div><!-- /panel-confirmada -->
+
+        <!-- ══ PANEL: BOLETA RECHAZADA ══ -->
+        <div class="page-panel" id="panel-rechazada">
+            <div style="padding: 32px 32px 60px;">
+
+            <!-- Hero Rechazada -->
+            <div class="doc-hero">
+                <div class="doc-hero-icon" style="background:var(--red-soft);">❌</div>
+                <div>
+                    <div class="doc-hero-title">Boleta Rechazada</div>
+                    <div class="doc-hero-sub">Flujo secundario que se activa cuando el equipo contable rechaza una boleta. Notifica al cliente por correo, traslada el registro a <em>Boletas Rechazadas</em>, copia los adjuntos y elimina el ítem original de la lista de pendientes.</div>
+                    <div class="doc-hero-tags">
+                        <span class="doc-tag blue">Power Automate</span>
+                        <span class="doc-tag">SharePoint</span>
+                        <span class="doc-tag red">Rechazo</span>
+                        <span class="doc-tag orange">7 Pasos</span>
+                        <span class="doc-tag purple">Outlook 365</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separador visual -->
+            <div style="margin: 0 0 24px; display:flex; align-items:center; gap:14px;">
+                <div style="flex:1; height:1px; background:var(--border-mid);"></div>
+                <div style="display:flex; align-items:center; gap:8px; background:var(--red-soft); border:1px solid rgba(255,69,58,0.2); border-radius:100px; padding:6px 16px;">
+                    <span style="font-size:14px;">❌</span>
+                    <span style="font-size:12px; font-weight:700; color:var(--red); text-transform:uppercase; letter-spacing:0.6px;">Flujo — Boleta Rechazada</span>
+                </div>
+                <div style="flex:1; height:1px; background:var(--border-mid);"></div>
+            </div>
+
+            <!-- RESUMEN BR -->
+            <div class="doc-section" id="sec-br-resumen">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">📋</div>
+                    <div>
+                        <div class="section-title-text">Resumen — Boleta Rechazada</div>
+                        <div class="section-subtitle">Flujo de rechazo contable · Notificación y archivado</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este flujo se activa cuando el equipo contable actualiza el <strong>Estado</strong> de un ítem en la lista <em>Depositos Bancarios</em> a <span class="pill red">Boleta rechazada</span>. Su objetivo es notificar al cliente del rechazo, trasladar el registro a la lista <em>Boletas Rechazadas</em> con las observaciones del motivo, copiar los adjuntos y limpiar el ítem original de la lista de pendientes.</div>
+
+                    <div class="alert danger">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>Este flujo es el <strong>tercer eslabón del ciclo</strong>: actúa cuando el contador identifica inconsistencias en la boleta. El cliente es notificado para que reenvíe la boleta correcta a la brevedad posible.</div>
+                    </div>
+
+                    <div class="doc-h3">Parámetros generales</div>
+                    <div class="detail-grid">
+                        <div class="detail-card">
+                            <div class="detail-card-label">Nombre del flujo</div>
+                            <div class="detail-card-value">Boleta Rechazada</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Disparador</div>
+                            <div class="detail-card-value">When an item is created or modified</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Lista monitoreada</div>
+                            <div class="detail-card-value">Depositos Bancarios</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Condición de activación</div>
+                            <div class="detail-card-value">Estado = "Boleta rechazada"</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Lista de destino</div>
+                            <div class="detail-card-value">Boletas Rechazadas</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Cuenta de servicio</div>
+                            <div class="detail-card-value mono">tecnologiadeinformacion@grupoimade.com</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Site SharePoint</div>
+                            <div class="detail-card-value mono">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-card-label">Total de pasos</div>
+                            <div class="detail-card-value">7 acciones (1 condición + 6 en rama True)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIAGRAMA BR -->
+            <div class="doc-section" id="sec-br-diagrama">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">⚡</div>
+                    <div>
+                        <div class="section-title-text">Diagrama de pasos — Boleta Rechazada</div>
+                        <div class="section-subtitle">Vista completa del flujo de rechazo contable</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="flow-diagram">
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon blue">🔔</div>
+                            <div>
+                                <div class="flow-step-label">1 · When an item is created or modified</div>
+                                <div class="flow-step-desc">Disparador: cambio detectado en la lista Depositos Bancarios</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon orange">⚖️</div>
+                            <div>
+                                <div class="flow-step-label">2 · Condition</div>
+                                <div class="flow-step-desc">Estado/Value = "Boleta rechazada" → rama True se ejecuta</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon purple">✉️</div>
+                            <div>
+                                <div class="flow-step-label">3 · Send an email (V2)</div>
+                                <div class="flow-step-desc">Notifica al cliente que su boleta fue rechazada y solicita reenvío</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon red">📂</div>
+                            <div>
+                                <div class="flow-step-label">4 · Create item</div>
+                                <div class="flow-step-desc">Crea registro en "Boletas Rechazadas" con observaciones y estado</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon teal">📎</div>
+                            <div>
+                                <div class="flow-step-label">5 · Get attachments</div>
+                                <div class="flow-step-desc">Obtiene la lista de adjuntos del ítem original en Depositos Bancarios</div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <!-- LOOP BR -->
+                        <div class="flow-loop-wrap">
+                            <div class="flow-loop-label">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                6 · Foreach (bucle por adjunto — Body)
+                            </div>
+                            <div class="flow-loop-inner">
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon teal">📄</div>
+                                    <div>
+                                        <div class="flow-step-label">6a · Get attachment content</div>
+                                        <div class="flow-step-desc">Descarga el contenido binario del adjunto desde Depositos Bancarios</div>
+                                    </div>
+                                </div>
+                                <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+                                <div class="flow-step" style="max-width:100%">
+                                    <div class="flow-step-icon red">📌</div>
+                                    <div>
+                                        <div class="flow-step-label">6b · Add attachment</div>
+                                        <div class="flow-step-desc">Adjunta el archivo al ítem nuevo en Boletas Rechazadas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div>
+
+                        <div class="flow-step">
+                            <div class="flow-step-icon red">🗑️</div>
+                            <div>
+                                <div class="flow-step-label">7 · Delete item</div>
+                                <div class="flow-step-desc">Elimina el ítem original de la lista Depositos Bancarios</div>
+                            </div>
+                        </div>
+
+                    </div><!-- /flow-diagram -->
+
+                    <div class="alert info" style="margin-top:20px">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>La rama <strong>False</strong> de la condición tiene <strong>0 acciones</strong>: si el estado no es "Boleta rechazada", el flujo simplemente termina sin hacer nada. Esto evita ejecuciones innecesarias ante cualquier otra modificación del ítem.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: TRIGGER -->
+            <div class="doc-section" id="sec-br-trigger">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">1</div>
+                    <div>
+                        <div class="section-title-text">Disparador — When an item is created or modified</div>
+                        <div class="section-subtitle">Trigger de SharePoint · Lista Depositos Bancarios</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este disparador monitorea constantemente la lista <strong>Depositos Bancarios</strong> en el sitio de SharePoint de Confirmación de Depósitos Bancarios. Se ejecuta automáticamente cada vez que se <em>crea o modifica</em> cualquier ítem en esa lista, lo que permite reaccionar al momento exacto en que el equipo contable cambia el estado a "Boleta rechazada".</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Connected as</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert warning">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>El disparador se activa para <strong>cualquier creación o modificación</strong> en la lista. Por eso es imprescindible la condición del paso 2 para filtrar únicamente los ítems con estado "Boleta rechazada" y evitar ejecuciones no deseadas.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: CONDICIÓN -->
+            <div class="doc-section" id="sec-br-condicion">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">2</div>
+                    <div>
+                        <div class="section-title-text">Condición — Filtro de estado</div>
+                        <div class="section-subtitle">Verifica que Estado/Value = "Boleta rechazada"</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Esta condición es la <strong>puerta de entrada</strong> del flujo. Solo cuando el campo <em>Estado</em> del ítem tiene el valor exacto <code style="font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:1px 6px;border-radius:4px;">Boleta rechazada</code> se ejecuta la rama <span style="color:var(--red);font-weight:700;">True</span> con los 6 pasos de procesamiento. En cualquier otro caso, la rama <span style="color:var(--text-muted);font-weight:700;">False</span> (0 acciones) termina el flujo silenciosamente.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Elemento</th><th>Configuración</th></tr></thead>
+                        <tbody>
+                            <tr><td>Operador lógico</td><td>And</td></tr>
+                            <tr><td>Campo evaluado</td><td><span class="pill blue">Estado/Value</span> — valor del campo de tipo Choice</td></tr>
+                            <tr><td>Operador de comparación</td><td>is equal to</td></tr>
+                            <tr><td>Valor a comparar</td><td><span class="pill red">Boleta rechazada</span> (texto exacto, sensible a mayúsculas)</td></tr>
+                            <tr><td>Rama True</td><td>6 acciones: correo + crear + get adjuntos + foreach + eliminar</td></tr>
+                            <tr><td>Rama False</td><td>0 acciones — el flujo termina sin hacer nada</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El valor <strong>"Boleta rechazada"</strong> debe coincidir exactamente con la opción definida en la columna <em>Estado</em> de la lista de SharePoint. Si se cambia el nombre de la opción en la lista, también debe actualizarse aquí.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: CORREO -->
+            <div class="doc-section" id="sec-br-correo">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">3</div>
+                    <div>
+                        <div class="section-title-text">Send an email (V2) — Notificación de rechazo al cliente</div>
+                        <div class="section-subtitle">Correo automático informando el rechazo de la boleta</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este es el <strong>primer paso en la rama True</strong>. Envía inmediatamente un correo electrónico al cliente cuya boleta fue rechazada, usando el campo <em>Correo Electrónico</em> dinámico del ítem. El mensaje informa sobre el rechazo por inconsistencias y solicita el reenvío correcto.</div>
+
+                    <div class="doc-h3">Configuración del correo</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Para (To)</td><td><span class="pill blue">Dinámica — Correo Electrónico del ítem disparador</span></td></tr>
+                            <tr><td>Asunto (Subject)</td><td><strong>Boleta Rechazada</strong></td></tr>
+                            <tr><td>Importancia</td><td>Normal</td></tr>
+                            <tr><td>Connected as</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="doc-h3">Cuerpo del correo</div>
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <div class="email-field"><strong>Para:</strong> <span class="pill blue">Dinámica — Correo Electrónico del ítem</span></div>
+                            <div class="email-field"><strong>Asunto:</strong> Boleta Rechazada</div>
+                            <div class="email-field"><strong>Importancia:</strong> <span class="pill">Normal</span></div>
+                        </div>
+                        <div class="email-body">
+                            Buen día.<br><br>
+                            La boleta de depósito enviada fue rechazada por inconsistencias en la información.<br>
+                            Por favor, revise y reenvíe la boleta correcta a la brevedad.<br><br>
+                            Quedamos atentos.<br><br>
+                            Saludos,<br>
+                            <em>Departamento Contable</em>
+                        </div>
+                    </div>
+                    <div class="alert danger">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>El correo <strong>no incluye el motivo específico</strong> del rechazo. Si se desea personalizar el mensaje con el campo <em>Observaciones</em>, debe modificarse el cuerpo del correo para incluir la variable dinámica correspondiente.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: CREAR ITEM -->
+            <div class="doc-section" id="sec-br-crear">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">4</div>
+                    <div>
+                        <div class="section-title-text">Create item — Registro en Boletas Rechazadas</div>
+                        <div class="section-subtitle">Archivado del ítem rechazado en la lista de destino</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Crea un nuevo ítem en la lista <strong>Boletas Rechazadas</strong> copiando los datos más relevantes del ítem original, incluyendo las <em>Observaciones</em> que el equipo contable ingresó como motivo del rechazo, el estado fijo "Boleta rechazada" y el correo del cliente para trazabilidad.</div>
+
+                    <div class="doc-h3">Configuración del paso</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td><strong>Boletas Rechazadas</strong></td></tr>
+                            <tr><td>Observaciones</td><td><span class="pill blue">Dinámica — Observaciones del ítem disparador</span></td></tr>
+                            <tr><td>Estado Value</td><td><span class="pill red">Boleta rechazada</span> (valor fijo)</td></tr>
+                            <tr><td>Correo Electrónico</td><td><span class="pill blue">Dinámica — Correo Electrónico del ítem disparador</span></td></tr>
+                            <tr><td>Connected as</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>El <strong>ID</strong> del ítem creado en este paso es utilizado en el paso 6b (<em>Add attachment</em>) para adjuntar correctamente los archivos al registro en <strong>Boletas Rechazadas</strong>. Power Automate lo referencia automáticamente como variable dinámica.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: GET ATTACHMENTS -->
+            <div class="doc-section" id="sec-br-adjuntos">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">5</div>
+                    <div>
+                        <div class="section-title-text">Get attachments — Listado de adjuntos del ítem original</div>
+                        <div class="section-subtitle">Obtiene la lista de archivos adjuntos desde Depositos Bancarios</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Antes de poder copiar los archivos adjuntos, el flujo necesita obtener el <strong>listado de adjuntos</strong> del ítem original (la boleta rechazada en <em>Depositos Bancarios</em>). Este paso devuelve un array de objetos con metadatos de cada adjunto, que luego el bucle del paso 6 recorre uno por uno.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador (trigger)</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>La salida de este paso es el array <strong>Body</strong>, que es exactamente el valor que se usa como entrada del bucle <em>Foreach</em> en el paso siguiente. Cada elemento del array representa un adjunto con su nombre (<code style="font-family:var(--mono);font-size:11px">DisplayName</code>) e identificador (<code style="font-family:var(--mono);font-size:11px">id</code>).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: LOOP -->
+            <div class="doc-section" id="sec-br-loop">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">6</div>
+                    <div>
+                        <div class="section-title-text">Foreach + Get content + Add attachment — Copia de adjuntos</div>
+                        <div class="section-subtitle">Bucle que descarga y adjunta cada archivo al nuevo registro</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Este bucle itera sobre cada adjunto encontrado en el paso anterior. Por cada archivo: primero descarga su contenido binario desde <em>Depositos Bancarios</em>, y luego lo adjunta al ítem recién creado en <em>Boletas Rechazadas</em>. Se ejecuta tantas veces como adjuntos tenga la boleta rechazada.</div>
+
+                    <div class="doc-h3">6 · Foreach — Configuración del bucle</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Select an output from previous steps</td><td><span class="pill blue">Dinámica — Body (salida del paso Get attachments)</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="doc-h3">6a · Get attachment content — Descarga del binario</div>
+                    <div class="doc-p">Descarga el contenido binario de cada adjunto individual para poder copiarlo al nuevo ítem.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador</span></td></tr>
+                            <tr><td>File Identifier</td><td><span class="pill blue">Dinámica — id del adjunto actual en el bucle</span></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="doc-h3">6b · Add attachment — Adjuntar al nuevo ítem</div>
+                    <div class="doc-p">Adjunta el archivo descargado como archivo en el ítem recién creado en <em>Boletas Rechazadas</em>, usando el ID generado en el paso 4.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td><strong>Boletas Rechazadas</strong></td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem creado en paso 4</span></td></tr>
+                            <tr><td>File Name</td><td><span class="pill blue">Dinámica — DisplayName (nombre del adjunto)</span></td></tr>
+                            <tr><td>File Content</td><td><span class="pill blue">Dinámica — Body (contenido binario del adjunto)</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert info">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Si la boleta original tiene <strong>múltiples adjuntos</strong>, el bucle se ejecuta una vez por cada uno. Todos quedan vinculados al mismo ítem en <strong>Boletas Rechazadas</strong>. Esto garantiza que la evidencia del rechazo queda completamente archivada.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE BR: DELETE ITEM -->
+            <div class="doc-section" id="sec-br-eliminar">
+                <div class="doc-section-header open" onclick="toggleSection(this)">
+                    <div class="section-num red">7</div>
+                    <div>
+                        <div class="section-title-text">Delete item — Limpieza de Depositos Bancarios</div>
+                        <div class="section-subtitle">Elimina el ítem rechazado de la lista de pendientes</div>
+                    </div>
+                    <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="doc-section-body open">
+                    <div class="doc-p">Una vez que el ítem rechazado ha sido copiado a <em>Boletas Rechazadas</em> con todos sus adjuntos, y el cliente ha sido notificado, este paso elimina el ítem original de la lista <strong>Depositos Bancarios</strong>. Esto mantiene la lista de pendientes limpia, con únicamente las boletas que aún están esperando revisión contable.</div>
+                    <table class="step-table">
+                        <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Site Address</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">grupoimade.sharepoint.com/sites/ConfirmacindeDepositosBancarios</span></td></tr>
+                            <tr><td>List Name</td><td>Depositos Bancarios</td></tr>
+                            <tr><td>Id</td><td><span class="pill blue">Dinámica — ID del ítem disparador</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert danger">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div>La eliminación es <strong>permanente e irreversible</strong>. El registro histórico queda únicamente en la lista <em>Boletas Rechazadas</em>. Asegúrate de que los adjuntos se hayan copiado correctamente antes de que este paso se ejecute. Si el flujo falla en el paso 6, el ítem <strong>no se eliminará</strong> ya que este paso no se alcanzaría.</div>
+                    </div>
+                    <div class="alert info" style="margin-top:12px">
+                        <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>Tras este paso, el <strong>ciclo de vida de la boleta rechazada queda completo</strong>: el cliente fue notificado para que reenvíe, el registro quedó archivado en Boletas Rechazadas con observaciones y adjuntos, y la lista de pendientes queda despejada para nuevas boletas.</div>
+                    </div>
+                </div>
+            </div>
+
+            </div><!-- /rechazada inner padding -->
+        </div><!-- /panel-rechazada -->
+
+        </div><!-- /pageContent -->
+    </div><!-- /main -->
+
+</div><!-- /shell -->
+
+<script>
+    // ── Toggle sections ──
+    function toggleSection(header) {
+        const body = header.nextElementSibling;
+        const chevron = header.querySelector('.section-chevron');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        chevron.classList.toggle('open', !isOpen);
+        header.classList.toggle('open', !isOpen);
+    }
+
+    // ── Scroll dentro del panel principal ──
+    function scrollToSec(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('#nav-principal .nav-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // ── Scroll dentro de un panel específico ──
+    function scrollToPanel(panelId, sectionId) {
+        // Primero asegura que el panel esté visible (ya debería estarlo por el tab activo)
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const navId = panelId === 'panel-confirmada' ? 'nav-confirmada' : 'nav-rechazada';
+        document.querySelectorAll('#' + navId + ' .nav-btn').forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // ── Tab switcher ──
+    function switchFlow(flow) {
+        // Panels
+        document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('visible'));
+        document.querySelectorAll('.nav-panel').forEach(p => p.classList.remove('visible'));
+
+        // Tabs
+        document.querySelectorAll('.flow-tab').forEach(t => {
+            t.classList.remove('active-tab');
+        });
+
+        if (flow === 'principal') {
+            document.getElementById('panel-principal').classList.add('visible');
+            document.getElementById('nav-principal').classList.add('visible');
+            document.getElementById('tab-principal').classList.add('active-tab');
+        } else if (flow === 'confirmada') {
+            document.getElementById('panel-confirmada').classList.add('visible');
+            document.getElementById('nav-confirmada').classList.add('visible');
+            document.getElementById('tab-confirmada').classList.add('active-tab', 'green-tab');
+        } else if (flow === 'rechazada') {
+            document.getElementById('panel-rechazada').classList.add('visible');
+            document.getElementById('nav-rechazada').classList.add('visible');
+            document.getElementById('tab-rechazada').classList.add('active-tab', 'red-tab');
+        }
+
+        // Scroll al tope
+        document.getElementById('pageContent').scrollTop = 0;
+    }
+
+    // ── Sidebar móvil ──
+    function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebarOverlay').classList.add('visible');
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('visible');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manual Técnico de Flujos · Soporte TI · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255,255,255,0.72);
+            --border: rgba(0,0,0,0.07);
+            --border-mid: rgba(0,0,0,0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10,132,255,0.08);
+            --accent-soft2: rgba(10,132,255,0.14);
+            --green: #30D158;
+            --green-soft: rgba(48,209,88,0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255,69,58,0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255,159,10,0.10);
+            --purple: #BF5AF2;
+            --purple-soft: rgba(191,90,242,0.10);
+            --indigo: #5E5CE6;
+            --indigo-soft: rgba(94,92,230,0.10);
+            --teal: #5AC8FA;
+            --teal-soft: rgba(90,200,250,0.12);
+
+            --sidebar-w: 260px;
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+        /* ── SHELL ── */
+        #shell { display: flex; height: 100vh; overflow: hidden; }
+
+        /* ── SIDEBAR ── */
+        #sidebar {
+            width: var(--sidebar-w); flex-shrink: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid var(--border);
+            z-index: 50; overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
+        #sidebarOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(2px); z-index: 49;
+        }
+        #sidebarOverlay.visible { display: block; }
+        #menuToggle {
+            display: none; width: 36px; height: 36px;
+            border: 1px solid var(--border); border-radius: var(--radius-xs);
+            background: var(--surface); align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-2); box-shadow: var(--shadow-sm); flex-shrink: 0;
+        }
+        #menuToggle svg { width: 18px; height: 18px; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 50; }
+            #sidebar.open { transform: translateX(0); box-shadow: var(--shadow-float); }
+            #menuToggle { display: flex; }
+            #main { width: 100vw; }
+            #appHeader { padding: 0 14px; }
+            .panel-inner { padding: 18px 14px 40px; }
+        }
+
+        .sidebar-brand { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+        .brand-logo { width: 36px; height: 36px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .brand-logo img { width: 32px; height: 32px; object-fit: contain; }
+        .brand-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+        .brand-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px; }
+
+        .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+        .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; padding: 10px 10px 4px; }
+        .nav-btn {
+            display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text-2);
+            text-decoration: none; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+            border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .nav-btn:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+        .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-btn .nav-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-btn.active .nav-icon { background: var(--accent-soft2); }
+        .nav-btn svg { width: 15px; height: 15px; }
+        .nav-divider { height: 1px; background: var(--border); margin: 6px 10px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--accent);
+            text-decoration: none; cursor: pointer; transition: background 0.15s; border: none; background: transparent; width: 100%;
+        }
+        .back-btn:hover { background: var(--accent-soft); }
+        .back-btn svg { width: 15px; height: 15px; }
+
+        .sidebar-footer { padding: 10px 10px 12px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); }
+        .doc-meta { padding: 8px 10px; }
+        .doc-meta-label { font-size: 9.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .doc-meta-value { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+        .doc-meta-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--green-soft); color: var(--green);
+            font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 100px; margin-top: 6px;
+        }
+        .doc-meta-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+
+        /* ── MAIN ── */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        #appHeader {
+            height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; background: rgba(242,242,247,0.80);
+            backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0;
+        }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
+        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
+        .breadcrumb .current { color: var(--text); font-weight: 600; }
+        .header-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--accent-soft); color: var(--accent);
+            font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 100px; border: 1px solid var(--accent-soft2);
+        }
+        .header-badge svg { width: 12px; height: 12px; }
+
+        /* Hero */
+        .doc-hero {
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 28px;
+            box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 20px;
+        }
+        .doc-hero-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: var(--purple-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 26px; }
+        .doc-hero-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+        .doc-hero-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .doc-hero-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+        .doc-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border-mid); color: var(--text-2); background: var(--surface-2); }
+        .doc-tag.blue { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-tag.green { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.2); }
+        .doc-tag.orange { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,159,10,0.2); }
+        .doc-tag.purple { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.2); }
+        .doc-tag.indigo { background: var(--indigo-soft); color: var(--indigo); border-color: rgba(94,92,230,0.2); }
+
+        /* Section card */
+        .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); scroll-margin-top: 80px; }
+        .doc-section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; transition: background 0.15s; user-select: none; border-bottom: 1px solid transparent; }
+        .doc-section-header:hover { background: var(--surface-2); }
+        .doc-section-header.open { border-bottom-color: var(--border); }
+        .section-num { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .section-title-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+        .section-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
+        .section-chevron { width: 16px; height: 16px; color: var(--text-muted); transition: transform 0.25s ease; flex-shrink: 0; }
+        .section-chevron.open { transform: rotate(180deg); }
+        .doc-section-body { display: none; padding: 20px 24px 24px; }
+        .doc-section-body.open { display: block; animation: fadeBody 0.2s ease; }
+        @keyframes fadeBody { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Content */
+        .doc-p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+        .doc-p:last-child { margin-bottom: 0; }
+        .doc-h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
+        .doc-h3:first-child { margin-top: 0; }
+        .doc-h3::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+
+        /* Code */
+        .code-block { background: #0D0D14; border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-sm); padding: 16px; margin: 12px 0; overflow-x: auto; position: relative; }
+        .code-block code { font-family: var(--mono); font-size: 12.5px; color: #9cdcfe; line-height: 1.6; display: block; white-space: pre; }
+        .code-label { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+        .code-comment { color: #6a9955; }
+        .code-string { color: #ce9178; }
+        .code-keyword { color: #c586c0; }
+        .code-value { color: #b5cea8; }
+        .inline-code { font-family: var(--mono); font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 5px; }
+
+        /* Table */
+        .doc-table-wrap { overflow-x: auto; margin: 14px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .doc-table th { background: var(--surface-2); color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-mid); }
+        .doc-table td { padding: 10px 14px; color: var(--text-2); border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+        .doc-table tr:last-child td { border-bottom: none; }
+        .doc-table tr:hover td { background: var(--surface-2); }
+        .doc-table .td-key { font-weight: 600; color: var(--text); white-space: nowrap; }
+        .doc-table .td-mono { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+        .doc-table .td-desc { color: var(--text-muted); font-size: 12px; }
+
+        /* Images */
+        .doc-image-wrap { margin-top: 14px; margin-bottom: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #000; box-shadow: var(--shadow-sm); cursor: pointer; transition: opacity 0.2s ease;}
+        .doc-image-wrap:hover { opacity: 0.9; }
+        .doc-image-wrap img { width: 100%; display: block; }
+
+        /* Footer nav */
+        .doc-nav-footer { display: flex; justify-content: flex-end; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .doc-nav-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); border: 1px solid var(--border-mid); background: var(--surface); cursor: pointer; text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.15s; }
+        .doc-nav-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-nav-btn svg { width: 14px; height: 14px; }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ── FLOW SWITCHER ── */
+        .flow-switcher { display: flex; gap: 4px; padding: 10px 8px 6px; border-bottom: 1px solid var(--border); }
+        .flow-tab {
+            flex: 1; padding: 7px 6px; border-radius: var(--radius-xs);
+            font-size: 11px; font-weight: 600; text-align: center; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s ease; color: var(--text-muted);
+            background: transparent;
+        }
+        .flow-tab:hover { background: rgba(0,0,0,0.04); color: var(--text-2); }
+        .flow-tab.active-tab { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .flow-tab.active-tab.purple-tab { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.25); }
+        .nav-panel { display: none; }
+        .nav-panel.visible { display: block; }
+
+        /* ── PAGE PANEL ── */
+        .page-panel { display: none; }
+        .page-panel.visible { display: block; animation: fadeUp 0.25s ease; }
+        #pageContent { flex: 1; overflow-y: auto; padding: 0; position: relative; }
+        .panel-inner { padding: 32px 32px 60px; }
+        
+        /* Lightbox Overlay */
+        .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 40px; }
+        .lightbox-overlay.open { display: flex; animation: fadeBody 0.2s ease; }
+        .lightbox-overlay img { max-width: 100%; max-height: 100%; border-radius: var(--radius-sm); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .lightbox-close { position: absolute; top: 24px; right: 32px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: background 0.15s ease; }
+        .lightbox-close:hover { background: rgba(255,255,255,0.16); }
+    </style>
+</head>
+
+<body>
+    <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <div id="shell">
+
+        <!-- ══ SIDEBAR ══ -->
+        <aside id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <img src="logo.png" alt="Imade"
+                        onerror="this.style.display='none';this.parentNode.innerHTML='<span style=font-size:18px;font-weight:800;color:var(--accent)>G</span>'">
+                </div>
+                <div>
+                    <div class="brand-name">Grupo Imade</div>
+                    <div class="brand-sub">DOCUMENTACIÓN</div>
+                </div>
+            </div>
+
+            <!-- Flow switcher tabs -->
+            <div class="flow-switcher">
+                <button class="flow-tab active-tab" id="tab-creacion" onclick="switchFlow('creacion')">⚡ Creación</button>
+                <button class="flow-tab purple-tab" id="tab-actualizacion" onclick="switchFlow('actualizacion')">📧 Actualización</button>
+            </div>
+
+            <!-- NAV PANEL: Creación -->
+            <nav class="sidebar-nav nav-panel visible" id="nav-creacion">
+                <div class="nav-section-label">Contenido — Creación</div>
+
+                <a href="#sec-c-general" onclick="scrollToSection('sec-c-general', 'nav-creacion')" class="nav-btn active">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Información General
+                </a>
+
+                <a href="#sec-c-paso1" onclick="scrollToSection('sec-c-paso1', 'nav-creacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    Captura del Disparador
+                </a>
+
+                <a href="#sec-c-paso2" onclick="scrollToSection('sec-c-paso2', 'nav-creacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </span>
+                    Detalles e Inicialización
+                </a>
+
+                <a href="#sec-c-paso3" onclick="scrollToSection('sec-c-paso3', 'nav-creacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    </span>
+                    Consulta de Consecutivo
+                </a>
+
+                <a href="#sec-c-paso4" onclick="scrollToSection('sec-c-paso4', 'nav-creacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Evaluación y Notificación
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="inicio.html" class="back-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Regresar al Portal
+                </a>
+            </nav>
+
+            <!-- NAV PANEL: Actualización -->
+            <nav class="sidebar-nav nav-panel" id="nav-actualizacion">
+                <div class="nav-section-label">Contenido — Actualización</div>
+
+                <a href="#sec-a-general" onclick="scrollToSection('sec-a-general', 'nav-actualizacion')" class="nav-btn active">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Información General
+                </a>
+
+                <a href="#sec-a-flujo1" onclick="scrollToSection('sec-a-flujo1', 'nav-actualizacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    Flujo 1 - Parámetros Trigger
+                </a>
+
+                <a href="#sec-a-flujo2" onclick="scrollToSection('sec-a-flujo2', 'nav-actualizacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </span>
+                    Flujo 2 - Vista General
+                </a>
+
+                <a href="#sec-a-flujo3" onclick="scrollToSection('sec-a-flujo3', 'nav-actualizacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </span>
+                    Flujo 3 - Lógica Condición
+                </a>
+
+                <a href="#sec-a-flujo4" onclick="scrollToSection('sec-a-flujo4', 'nav-actualizacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </span>
+                    Flujo 4 - Record a Proces (Agente)
+                </a>
+
+                <a href="#sec-a-flujo5" onclick="scrollToSection('sec-a-flujo5', 'nav-actualizacion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Flujo 5 - Record a Proces
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="inicio.html" class="back-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Regresar al Portal
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="doc-meta">
+                    <div class="doc-meta-label">Manual Técnico</div>
+                    <div class="doc-meta-value" id="sidebar-flow-name">Creación de Tickets</div>
+                    <div class="doc-meta-badge">Activo</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ══ MAIN ══ -->
+        <div id="main">
+            <header id="appHeader">
+                <div class="breadcrumb">
+                    <button id="menuToggle" onclick="openSidebar()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <span class="root">Manual Técnico de Soporte TI</span>
+                    <span class="sep">›</span>
+                    <span class="current" id="header-flow-name">Flujo Creación</span>
+                </div>
+                <div class="header-badge">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Power Automate
+                </div>
+            </header>
+
+            <div id="pageContent">
+
+                <!-- ════════════════════════════════════════════════════
+                     PANEL: CREACIÓN DE TICKETS
+                ════════════════════════════════════════════════════ -->
+                <div class="page-panel visible" id="panel-creacion">
+                <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon" style="background:var(--accent-soft);color:var(--accent)">⚡</div>
+                    <div>
+                        <div class="doc-hero-title">Creación e Inicialización de Tickets</div>
+                        <div class="doc-hero-sub">Este flujo automatiza la captura de solicitudes de soporte enviadas a través de Microsoft Forms, registrándolas de forma centralizada en SharePoint y generando alertas inmediatas al equipo de TI.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag blue">Microsoft Forms</span>
+                            <span class="doc-tag">SharePoint</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. INFORMACIÓN GENERAL -->
+                <div class="doc-section" id="sec-c-general">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--accent-soft);color:var(--accent)">1</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Información General</div>
+                            <div class="section-subtitle">Orígenes y destinos del flujo</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Origen / Disparador</td><td>Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">Lista SharePoint de Destino</td><td>Tickets (ID Consecutivo)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PASO 1 -->
+                <div class="doc-section" id="sec-c-paso1">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--accent-soft);color:var(--accent)">2</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Paso 1 — Captura del Disparador Inicial</div>
+                            <div class="section-subtitle">Configuración del trigger en Forms</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Configure el disparador principal de Power Automate seleccionando el componente oficial:</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor Requerido</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Trigger</td><td>When a new response is submitted</td></tr>
+                                    <tr><td class="td-key">Form Id</td><td>Solicitud de Ticket de Soporte (IMADE)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. PASO 2 -->
+                <div class="doc-section" id="sec-c-paso2">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--accent-soft);color:var(--accent)">3</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Paso 2 — Obtención de Detalles e Inicialización de Variables</div>
+                            <div class="section-subtitle">Extracción de respuestas y variables internas</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Agregue la acción <strong>Get response details</strong> para extraer las respuestas dinámicas de la solicitud. Inmediatamente después, inicialice las variables necesarias para el control interno de flujos:</p>
+                        <div class="code-block">
+                            <div class="code-label">JSON</div>
+                            <code><span class="code-comment">// Inicialización de variables de control de archivos adjuntos</span>
+{
+    <span class="code-string">"Name"</span>: <span class="code-value">"varAdjuntos"</span>,
+    <span class="code-string">"Type"</span>: <span class="code-value">"Array"</span>,
+    <span class="code-string">"Value"</span>: []
+}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. PASO 3 -->
+                <div class="doc-section" id="sec-c-paso3">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--accent-soft);color:var(--accent)">4</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Paso 3 — Consulta de Consecutivo del Día y Ordenamiento</div>
+                            <div class="section-subtitle">Get items y organización por fecha</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Para mantener una correlación idónea, inserte un bloque <strong>Get items</strong> apuntando a la lista de SharePoint. Ordene los registros de forma descendente para capturar el último número de caso creado hoy:</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Propiedad Avanzada</th><th>Configuración</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Filter Query</td><td class="td-mono">Created ge formatDateTime(utcNow(), 'yyyy-MM-dd')</td></tr>
+                                    <tr><td class="td-key">Order By</td><td class="td-mono">Consecutivo Dia desc</td></tr>
+                                    <tr><td class="td-key">Top Count</td><td class="td-mono">1</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. PASO 4 -->
+                <div class="doc-section" id="sec-c-paso4">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--accent-soft);color:var(--accent)">5</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Paso 4 — Evaluación, Notificación y Procesamiento</div>
+                            <div class="section-subtitle">Creación en SharePoint y alertas finales</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Inserte una estructura condicional. Si se cumple el orden dinámico, ejecute <strong>Create item</strong> para insertar el registro en la lista de soporte oficial. Seguido, añada las bifurcaciones automatizadas de notificación (Email y Push).</p>
+                    </div>
+                </div>
+
+                <!-- Footer nav -->
+                <div class="doc-nav-footer">
+                    <a href="inicio.html" class="doc-nav-btn">
+                        Regresar al Portal
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+
+                </div><!-- /panel-inner -->
+                </div><!-- /panel-creacion -->
+
+                <!-- ════════════════════════════════════════════════════
+                     PANEL: ACTUALIZACIÓN DE TICKETS
+                ════════════════════════════════════════════════════ -->
+                <div class="page-panel" id="panel-actualizacion">
+                <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon" style="background:var(--purple-soft);color:var(--purple)">📧</div>
+                    <div>
+                        <div class="doc-hero-title">Actualización de Tickets (Gestión por Correo)</div>
+                        <div class="doc-hero-sub">A continuación se listan de manera independiente los flujos automatizados de Power Automate utilizados para monitorear, validar y actualizar el estado de los tickets mediante la integración con la bandeja de correo institucional.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag">SharePoint</span>
+                            <span class="doc-tag indigo">Office 365 Outlook</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. INFORMACIÓN GENERAL -->
+                <div class="doc-section" id="sec-a-general">
+                    <div class="doc-section-header open" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">1</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Información General</div>
+                            <div class="section-subtitle">Entorno base de actualización</div>
+                        </div>
+                        <svg class="section-chevron open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body open">
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Entorno SharePoint Base</td><td><span class="inline-code">/sites/Tickets</span></td></tr>
+                                    <tr><td class="td-key">Conector Autenticado</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. FLUJO 1 -->
+                <div class="doc-section" id="sec-a-flujo1">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">2</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Flujo 1 — ID Ticket Update Mail Proceso (Parámetros del Trigger)</div>
+                            <div class="section-subtitle">Activación en bandeja de entrada</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Este flujo se dispara al recibir un nuevo correo electrónico. Se aplican filtros avanzados directamente en el trigger para optimizar ejecuciones: solo se activa si el asunto contiene la frase exacta <strong>"Ticket generado"</strong> y llega específicamente a la carpeta de la <strong>Bandeja de entrada</strong>.</p>
+                        <div class="doc-image-wrap" onclick="openLightbox('image_8cce4e.jpg')">
+                            <img src="image_8cce4e.jpg" alt="ID Ticket Update Mail Proceso - Parámetros Trigger" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjE1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2VuIG5vIGRpc3BvbmlibGUgKFNvdXJjZSAyKTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. FLUJO 2 -->
+                <div class="doc-section" id="sec-a-flujo2">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">3</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Flujo 2 — ID Ticket Update Mail Proceso (Vista General)</div>
+                            <div class="section-subtitle">Arquitectura del proceso principal</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Estructura general del proceso principal de actualización. Tras el trigger, se incluye la obtención de ítems (<span class="inline-code">Get items</span>) desde la lista de SharePoint, un ciclo iterativo (<span class="inline-code">Apply to each</span>) que evalúa los resultados, y una condición que bifurca hacia la actualización del ítem en caso afirmativo.</p>
+                        <div class="doc-image-wrap" onclick="openLightbox('image_8cce52.jpg')">
+                            <img src="image_8cce52.jpg" alt="ID Ticket Update Mail Proceso - Vista General" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjE1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2VuIG5vIGRpc3BvbmlibGUgKFNvdXJjZSAyKTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. FLUJO 3 -->
+                <div class="doc-section" id="sec-a-flujo3">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">4</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Flujo 3 — ID Ticket Update Mail Inicio (Lógica de la Condición)</div>
+                            <div class="section-subtitle">Validación y coincidencia de ticket</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">En la evaluación lógica (<span class="inline-code">Condition</span>) del ciclo, el flujo comprueba que el elemento que se está analizando coincida con el correo. Específicamente, verifica que el campo del correo entrante "Subject" (Asunto) contenga el valor dinámico <strong>"NumerodeTicket"</strong> traído desde la base de datos de SharePoint.</p>
+                        <div class="doc-image-wrap" onclick="openLightbox('image_8cce6c.png')">
+                            <img src="image_8cce6c.png" alt="ID Ticket Update Mail Inicio - Condición" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjE1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2VuIG5vIGRpc3BvbmlibGUgKFNvdXJjZSAyKTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. FLUJO 4 -->
+                <div class="doc-section" id="sec-a-flujo4">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">5</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Flujo 4 — ID Ticket Update Mail Record a Proces (Agente)</div>
+                            <div class="section-subtitle">Interacción directa de TI</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Variante del flujo de actualización orientada a la interacción directa del Agente de TI. Su arquitectura refleja el modelo de sincronización para mapear la trazabilidad entre el hilo de respuesta del agente y el seguimiento del ticket original.</p>
+                        <div class="doc-image-wrap" onclick="openLightbox('image_8cce8b.png')">
+                            <img src="image_8cce8b.png" alt="ID Ticket Update Mail Record a Proces (Agente)" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjE1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2VuIG5vIGRpc3BvbmlibGUgKFNvdXJjZSAyKTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. FLUJO 5 -->
+                <div class="doc-section" id="sec-a-flujo5">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num" style="background:var(--purple-soft);color:var(--purple)">6</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Flujo 5 — ID Ticket Update Mail Record a Proces</div>
+                            <div class="section-subtitle">Consolidación general de estados</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Flujo de consolidación general para mantener la bitácora del proceso, asegurando la actualización y consistencia de los estados del ítem en SharePoint de forma automatizada y sin intervención manual redundante.</p>
+                        <div class="doc-image-wrap" onclick="openLightbox('image_8cce90.png')">
+                            <img src="image_8cce90.png" alt="ID Ticket Update Mail Record a Proces" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjE1MCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2VuIG5vIGRpc3BvbmlibGUgKFNvdXJjZSAyKTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer nav -->
+                <div class="doc-nav-footer">
+                    <a href="inicio.html" class="doc-nav-btn">
+                        Regresar al Portal
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+
+                </div><!-- /panel-inner -->
+                </div><!-- /panel-actualizacion -->
+
+            </div><!-- /pageContent -->
+        </div><!-- /main -->
+    </div><!-- /shell -->
+
+    <!-- Global Lightbox -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
+        <div class="lightbox-close" onclick="event.stopPropagation(); closeLightbox()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+        <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const body = header.nextElementSibling;
+            const chevron = header.querySelector('.section-chevron');
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            chevron.classList.toggle('open', !isOpen);
+            header.classList.toggle('open', !isOpen);
+        }
+
+        function scrollToSection(id, navId) {
+            const el = document.getElementById(id);
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            document.querySelectorAll(`#${navId} .nav-btn`).forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Si está en móvil, cerramos el sidebar automáticamente al hacer click
+            if(window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+
+        function switchFlow(flow) {
+            const isCreacion = flow === 'creacion';
+            const isActualizacion = flow === 'actualizacion';
+
+            // Alternar paneles de contenido
+            document.getElementById('panel-creacion').classList.toggle('visible', isCreacion);
+            document.getElementById('panel-actualizacion').classList.toggle('visible', isActualizacion);
+            
+            // Alternar menús laterales
+            document.getElementById('nav-creacion').classList.toggle('visible', isCreacion);
+            document.getElementById('nav-actualizacion').classList.toggle('visible', isActualizacion);
+
+            // Alternar estilos de las pestañas
+            document.getElementById('tab-creacion').classList.toggle('active-tab', isCreacion);
+            document.getElementById('tab-actualizacion').classList.toggle('active-tab', isActualizacion);
+
+            // Textos dinámicos en base a la pestaña seleccionada
+            document.getElementById('sidebar-flow-name').textContent = isCreacion
+                ? 'Creación de Tickets'
+                : 'Actualización de Tickets';
+            const cur = document.getElementById('header-flow-name');
+            if (cur) cur.textContent = isCreacion ? 'Flujo Creación' : 'Flujo Actualización';
+            
+            document.getElementById('pageContent').scrollTop = 0;
+        }
+
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('visible');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('visible');
+        }
+
+        // Lightbox adaptado al estilo minimalista
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxOverlay').classList.add('open');
+        }
+        
+        function closeLightbox() {
+            document.getElementById('lightboxOverlay').classList.remove('open');
+        }
+
+        // Highlight active nav on scroll — Creación
+        const sectionsC = document.querySelectorAll('#panel-creacion .doc-section');
+        const navBtnsC = document.querySelectorAll('#nav-creacion .nav-btn');
+        // Highlight active nav on scroll — Actualización
+        const sectionsA = document.querySelectorAll('#panel-actualizacion .doc-section');
+        const navBtnsA = document.querySelectorAll('#nav-actualizacion .nav-btn');
+
+        document.getElementById('pageContent').addEventListener('scroll', () => {
+            const scrollY = document.getElementById('pageContent').scrollTop;
+            const isActualizacionVisible = document.getElementById('panel-actualizacion').classList.contains('visible');
+            const sections = isActualizacionVisible ? sectionsA : sectionsC;
+            const navBtns = isActualizacionVisible ? navBtnsA : navBtnsC;
+            
+            sections.forEach((sec, i) => {
+                const top = sec.offsetTop - 100;
+                const bottom = top + sec.offsetHeight;
+                if (scrollY >= top && scrollY < bottom) {
+                    navBtns.forEach(b => b.classList.remove('active'));
+                    if (navBtns[i]) navBtns[i].classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

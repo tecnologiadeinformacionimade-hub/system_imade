@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flujo Cierre · Power Automate · Grupo Imade</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F2F2F7;
+            --surface: #FFFFFF;
+            --surface-2: #F9F9FB;
+            --surface-glass: rgba(255,255,255,0.72);
+            --border: rgba(0,0,0,0.07);
+            --border-mid: rgba(0,0,0,0.10);
+            --text: #0A0A0F;
+            --text-2: #3C3C43;
+            --text-muted: #8E8E93;
+            --accent: #0A84FF;
+            --accent-hover: #0070E0;
+            --accent-soft: rgba(10,132,255,0.08);
+            --accent-soft2: rgba(10,132,255,0.14);
+            --green: #30D158;
+            --green-soft: rgba(48,209,88,0.10);
+            --red: #FF453A;
+            --red-soft: rgba(255,69,58,0.10);
+            --orange: #FF9F0A;
+            --orange-soft: rgba(255,159,10,0.10);
+            --purple: #BF5AF2;
+            --purple-soft: rgba(191,90,242,0.10);
+            --indigo: #5E5CE6;
+            --indigo-soft: rgba(94,92,230,0.10);
+            --teal: #5AC8FA;
+            --teal-soft: rgba(90,200,250,0.12);
+
+            --sidebar-w: 260px;
+            --header-h: 56px;
+            --radius-xs: 8px;
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            --shadow-float: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+        /* ── SHELL ── */
+        #shell { display: flex; height: 100vh; overflow: hidden; }
+
+        /* ── SIDEBAR ── */
+        #sidebar {
+            width: var(--sidebar-w); flex-shrink: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-right: 1px solid var(--border);
+            z-index: 50; overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        }
+        #sidebarOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(2px); z-index: 49;
+        }
+        #sidebarOverlay.visible { display: block; }
+        #menuToggle {
+            display: none; width: 36px; height: 36px;
+            border: 1px solid var(--border); border-radius: var(--radius-xs);
+            background: var(--surface); align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-2); box-shadow: var(--shadow-sm); flex-shrink: 0;
+        }
+        #menuToggle svg { width: 18px; height: 18px; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 50; }
+            #sidebar.open { transform: translateX(0); box-shadow: var(--shadow-float); }
+            #menuToggle { display: flex; }
+            #main { width: 100vw; }
+            #appHeader { padding: 0 14px; }
+            .panel-inner { padding: 18px 14px 40px; }
+        }
+
+        .sidebar-brand { padding: 18px 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+        .brand-logo { width: 36px; height: 36px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .brand-logo img { width: 32px; height: 32px; object-fit: contain; }
+        .brand-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+        .brand-sub { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px; }
+
+        .sidebar-nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
+        .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; padding: 10px 10px 4px; }
+        .nav-btn {
+            display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text-2);
+            text-decoration: none; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+            border: none; background: transparent; width: 100%; text-align: left;
+        }
+        .nav-btn:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+        .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-btn .nav-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-btn.active .nav-icon { background: var(--accent-soft2); }
+        .nav-btn svg { width: 15px; height: 15px; }
+        .nav-divider { height: 1px; background: var(--border); margin: 6px 10px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px; padding: 9px 10px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--accent);
+            text-decoration: none; cursor: pointer; transition: background 0.15s; border: none; background: transparent; width: 100%;
+        }
+        .back-btn:hover { background: var(--accent-soft); }
+        .back-btn svg { width: 15px; height: 15px; }
+
+        .sidebar-footer { padding: 10px 10px 12px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.5); }
+        .doc-meta { padding: 8px 10px; }
+        .doc-meta-label { font-size: 9.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+        .doc-meta-value { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+        .doc-meta-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--green-soft); color: var(--green);
+            font-size: 10px; font-weight: 700; padding: 2px 8px;
+            border-radius: 100px; margin-top: 6px;
+        }
+        .doc-meta-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+
+        /* ── MAIN ── */
+        #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        #appHeader {
+            height: var(--header-h); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; background: rgba(242,242,247,0.80);
+            backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 40; position: sticky; top: 0;
+        }
+        .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .breadcrumb .root { color: var(--text-muted); font-weight: 400; }
+        .breadcrumb .sep { color: var(--text-muted); opacity: 0.5; font-size: 11px; }
+        .breadcrumb .current { color: var(--text); font-weight: 600; }
+        .header-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: var(--accent-soft); color: var(--accent);
+            font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 100px; border: 1px solid var(--accent-soft2);
+        }
+        .header-badge svg { width: 12px; height: 12px; }
+
+        /* pageContent padding handled by panel-inner */
+
+        /* Hero */
+        .doc-hero {
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-lg); padding: 28px 32px; margin-bottom: 28px;
+            box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 20px;
+        }
+        .doc-hero-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: var(--purple-soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 26px; }
+        .doc-hero-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+        .doc-hero-sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .doc-hero-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+        .doc-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border-mid); color: var(--text-2); background: var(--surface-2); }
+        .doc-tag.blue { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-tag.green { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.2); }
+        .doc-tag.orange { background: var(--orange-soft); color: var(--orange); border-color: rgba(255,159,10,0.2); }
+        .doc-tag.purple { background: var(--purple-soft); color: var(--purple); border-color: rgba(191,90,242,0.2); }
+        .doc-tag.indigo { background: var(--indigo-soft); color: var(--indigo); border-color: rgba(94,92,230,0.2); }
+
+        /* Section card */
+        .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); scroll-margin-top: 80px; }
+        .doc-section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; transition: background 0.15s; user-select: none; border-bottom: 1px solid transparent; }
+        .doc-section-header:hover { background: var(--surface-2); }
+        .doc-section-header.open { border-bottom-color: var(--border); }
+        .section-num { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .section-title-text { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+        .section-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
+        .section-chevron { width: 16px; height: 16px; color: var(--text-muted); transition: transform 0.25s ease; flex-shrink: 0; }
+        .section-chevron.open { transform: rotate(180deg); }
+        .doc-section-body { display: none; padding: 20px 24px 24px; }
+        .doc-section-body.open { display: block; animation: fadeBody 0.2s ease; }
+        @keyframes fadeBody { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Content */
+        .doc-p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+        .doc-p:last-child { margin-bottom: 0; }
+        .doc-h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; }
+        .doc-h3:first-child { margin-top: 0; }
+        .doc-h3::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+
+        /* Alerts */
+        .alert { border-radius: var(--radius-sm); padding: 14px 16px; margin: 14px 0; font-size: 13px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+        .alert-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+        .alert.info { background: var(--accent-soft); border: 1px solid var(--accent-soft2); color: var(--text-2); }
+        .alert.info .alert-icon { color: var(--accent); }
+        .alert.warning { background: var(--orange-soft); border: 1px solid rgba(255,159,10,0.2); color: var(--text-2); }
+        .alert.warning .alert-icon { color: var(--orange); }
+        .alert.success { background: var(--green-soft); border: 1px solid rgba(48,209,88,0.2); color: var(--text-2); }
+        .alert.success .alert-icon { color: var(--green); }
+        .alert.danger { background: var(--red-soft); border: 1px solid rgba(255,69,58,0.2); color: var(--text-2); }
+        .alert.danger .alert-icon { color: var(--red); }
+        .alert strong { color: var(--text); }
+
+        /* Code */
+        .code-block { background: #0D0D14; border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-sm); padding: 16px; margin: 12px 0; overflow-x: auto; position: relative; }
+        .code-block code { font-family: var(--mono); font-size: 12.5px; color: #9cdcfe; line-height: 1.6; display: block; white-space: pre; }
+        .code-label { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+        .code-comment { color: #6a9955; }
+        .code-string { color: #ce9178; }
+        .code-keyword { color: #c586c0; }
+        .code-value { color: #b5cea8; }
+        .inline-code { font-family: var(--mono); font-size: 12px; background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 5px; }
+
+        /* Table */
+        .doc-table-wrap { overflow-x: auto; margin: 14px 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .doc-table th { background: var(--surface-2); color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-mid); }
+        .doc-table td { padding: 10px 14px; color: var(--text-2); border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+        .doc-table tr:last-child td { border-bottom: none; }
+        .doc-table tr:hover td { background: var(--surface-2); }
+        .doc-table .td-key { font-weight: 600; color: var(--text); white-space: nowrap; }
+        .doc-table .td-mono { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+        .doc-table .td-desc { color: var(--text-muted); font-size: 12px; }
+        .doc-table .td-badge { white-space: nowrap; }
+
+        /* Steps */
+        .steps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+        .step { display: flex; gap: 12px; align-items: flex-start; }
+        .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+        .step-body { flex: 1; }
+        .step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+        .step-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+
+        /* Phase badge */
+        .phase-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 100px; margin-bottom: 10px; }
+        .phase-badge.a { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-soft2); }
+        .phase-badge.b { background: var(--indigo-soft); color: var(--indigo); border: 1px solid rgba(94,92,230,0.2); }
+        .phase-badge.c { background: var(--green-soft); color: var(--green); border: 1px solid rgba(48,209,88,0.2); }
+        .phase-badge.d { background: var(--purple-soft); color: var(--purple); border: 1px solid rgba(191,90,242,0.2); }
+        .phase-badge.e { background: var(--orange-soft); color: var(--orange); border: 1px solid rgba(255,159,10,0.2); }
+
+        /* Flow diagram */
+        .flow-diagram { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 20px 0; }
+        .flow-node {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: var(--radius-sm); padding: 10px 16px;
+            width: 100%; max-width: 500px; box-shadow: var(--shadow-sm);
+            font-size: 13px; font-weight: 500; color: var(--text);
+        }
+        .flow-node.trigger { border-color: var(--green); background: var(--green-soft); }
+        .flow-node.action { border-color: var(--accent-soft2); }
+        .flow-node.email { border-color: rgba(94,92,230,0.25); background: var(--indigo-soft); }
+        .flow-node.sp { border-color: rgba(10,132,255,0.2); background: var(--accent-soft); }
+        .flow-node.parallel-label { border-color: var(--orange-soft); background: var(--orange-soft); justify-content: center; font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.5px; max-width: 500px; }
+        .flow-node-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .flow-node-icon.forms { background: rgba(48,209,88,0.15); }
+        .flow-node-icon.outlook { background: var(--indigo-soft); }
+        .flow-node-icon.sharepoint { background: var(--accent-soft2); }
+        .flow-node-icon.data { background: var(--purple-soft); }
+        .flow-node-icon.control { background: var(--orange-soft); }
+        .flow-connector { width: 2px; height: 20px; background: var(--border-mid); }
+        .flow-arrow { font-size: 14px; color: var(--text-muted); line-height: 1; margin: -4px 0; }
+        .flow-parallel { display: flex; gap: 12px; width: 100%; margin: 4px 0; }
+        .flow-branch { display: flex; flex-direction: column; align-items: center; gap: 0; flex: 1; }
+        .flow-branch-node {
+            width: 100%; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 8px 10px; font-size: 11.5px;
+            font-weight: 500; color: var(--text-2); text-align: center; box-shadow: var(--shadow-sm);
+        }
+        .flow-branch-node.json { border-color: var(--purple-soft); background: var(--purple-soft); color: var(--purple); font-weight: 600; }
+        .flow-branch-node.loop { border-color: var(--accent-soft2); background: var(--accent-soft); color: var(--accent); }
+        .flow-branch-node.delay { border-color: var(--orange-soft); background: var(--orange-soft); color: var(--orange); }
+        .flow-branch-connector { width: 2px; height: 16px; background: var(--border-mid); }
+
+        /* Connector pills */
+        .connector-list { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+        .connector-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface); border: 1px solid var(--border-mid);
+            border-radius: 100px; padding: 5px 12px 5px 6px;
+            font-size: 12px; font-weight: 600; color: var(--text-2);
+            box-shadow: var(--shadow-sm);
+        }
+        .connector-pill .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+        /* JSON Schema block */
+        .schema-block { background: #0D0D14; border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-sm); padding: 16px; margin: 12px 0; overflow-x: auto; }
+        .schema-block code { font-family: var(--mono); font-size: 12px; color: #9cdcfe; line-height: 1.7; display: block; white-space: pre; }
+
+        /* Credential card */
+        .cred-card { background: linear-gradient(135deg, #0D0D14 0%, #12141f 100%); border: 1px solid rgba(10,132,255,0.2); border-radius: var(--radius-md); padding: 20px; margin: 14px 0; display: flex; flex-direction: column; gap: 12px; }
+        .cred-row { display: flex; align-items: center; gap: 12px; }
+        .cred-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; width: 110px; flex-shrink: 0; font-family: var(--mono); }
+        .cred-value { font-family: var(--mono); font-size: 13px; color: #9cdcfe; font-weight: 500; }
+        .cred-note { font-size: 11.5px; color: rgba(255,255,255,0.35); padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+        /* TOC */
+        .toc { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 20px; }
+        .toc-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+        .toc-list { display: flex; flex-direction: column; gap: 4px; }
+        .toc-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); text-decoration: none; padding: 4px 6px; border-radius: 6px; transition: background 0.12s, color 0.12s; }
+        .toc-item:hover { background: var(--accent-soft); color: var(--accent); }
+        .toc-num { font-size: 10px; font-weight: 700; color: var(--text-muted); width: 18px; text-align: right; }
+
+        /* Footer nav */
+        .doc-nav-footer { display: flex; justify-content: flex-end; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .doc-nav-btn { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text-2); border: 1px solid var(--border-mid); background: var(--surface); cursor: pointer; text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.15s; }
+        .doc-nav-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .doc-nav-btn svg { width: 14px; height: 14px; }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ── FLOW SWITCHER ── */
+        .flow-switcher { display: flex; gap: 4px; padding: 10px 8px 6px; border-bottom: 1px solid var(--border); }
+        .flow-tab {
+            flex: 1; padding: 7px 6px; border-radius: var(--radius-xs);
+            font-size: 11px; font-weight: 600; text-align: center; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s ease; color: var(--text-muted);
+            background: transparent;
+        }
+        .flow-tab:hover { background: rgba(0,0,0,0.04); color: var(--text-2); }
+        .flow-tab.active-tab { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft2); }
+        .flow-tab.active-tab.green-tab { background: var(--green-soft); color: var(--green); border-color: rgba(48,209,88,0.25); }
+        .flow-tab.active-tab.red-tab { background: var(--red-soft); color: var(--red); border-color: rgba(255,69,58,0.25); }
+        .nav-panel { display: none; }
+        .nav-panel.visible { display: block; }
+
+        /* ── PAGE PANEL ── */
+        .page-panel { display: none; }
+        .page-panel.visible { display: block; animation: fadeUp 0.25s ease; }
+        #pageContent { flex: 1; overflow-y: auto; padding: 0; position: relative; }
+        .panel-inner { padding: 32px 32px 60px; }
+    </style>
+</head>
+
+<body>
+    <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <div id="shell">
+
+        <!-- ══ SIDEBAR ══ -->
+        <aside id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <img src="logo.png" alt="Imade"
+                        onerror="this.style.display='none';this.parentNode.innerHTML='<span style=font-size:18px;font-weight:800;color:var(--accent)>G</span>'">
+                </div>
+                <div>
+                    <div class="brand-name">Grupo Imade</div>
+                    <div class="brand-sub">Documentación</div>
+                </div>
+            </div>
+
+            <!-- Flow switcher tabs -->
+            <div class="flow-switcher">
+                <button class="flow-tab active-tab" id="tab-cierre" onclick="switchFlow('cierre')">⚡ Cierre</button>
+                <button class="flow-tab green-tab" id="tab-finalizado" onclick="switchFlow('finalizado')">✅ Finalizado</button>
+                <button class="flow-tab red-tab" id="tab-rechazado" onclick="switchFlow('rechazado')">🚫 Rechazado</button>
+            </div>
+
+            <!-- NAV PANEL: Cierre -->
+            <nav class="sidebar-nav nav-panel visible" id="nav-cierre">
+                <div class="nav-section-label">Contenido — Cierre</div>
+
+                <a href="#sec-general" onclick="scrollToSection('sec-general')" class="nav-btn active">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Descripción General
+                </a>
+
+                <a href="#sec-arquitectura" onclick="scrollToSection('sec-arquitectura')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </span>
+                    Arquitectura del Flujo
+                </a>
+
+                <a href="#sec-trigger" onclick="scrollToSection('sec-trigger')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    Desencadenador
+                </a>
+
+                <a href="#sec-correos" onclick="scrollToSection('sec-correos')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    Correos Electrónicos
+                </a>
+
+                <a href="#sec-sharepoint" onclick="scrollToSection('sec-sharepoint')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </span>
+                    SharePoint — Lista CIERRES
+                </a>
+
+                <a href="#sec-adjuntos" onclick="scrollToSection('sec-adjuntos')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    </span>
+                    Documentos Adjuntos
+                </a>
+
+                <a href="#sec-json" onclick="scrollToSection('sec-json')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </span>
+                    Análisis JSON
+                </a>
+
+                <a href="#sec-loops" onclick="scrollToSection('sec-loops')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </span>
+                    Bucles y Adjuntado
+                </a>
+
+                <a href="#sec-conexiones" onclick="scrollToSection('sec-conexiones')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    </span>
+                    Conexiones
+                </a>
+
+                <a href="#sec-observaciones" onclick="scrollToSection('sec-observaciones')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </span>
+                    Observaciones Técnicas
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="inicio.html" class="back-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Regresar al Portal
+                </a>
+            </nav>
+
+            <!-- NAV PANEL: Cierre Rechazado -->
+            <nav class="sidebar-nav nav-panel" id="nav-rechazado">
+                <div class="nav-section-label">Contenido — Cierre Rechazado</div>
+
+                <a href="#cr-general" onclick="scrollToCR('cr-general')" class="nav-btn active">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Descripción General
+                </a>
+
+                <a href="#cr-arquitectura" onclick="scrollToCR('cr-arquitectura')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </span>
+                    Arquitectura del Flujo
+                </a>
+
+                <a href="#cr-trigger" onclick="scrollToCR('cr-trigger')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    Desencadenador
+                </a>
+
+                <a href="#cr-condicion" onclick="scrollToCR('cr-condicion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </span>
+                    Condición — Estado
+                </a>
+
+                <a href="#cr-correo" onclick="scrollToCR('cr-correo')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    Correo — Cierre Rechazado
+                </a>
+
+                <a href="#cr-crear" onclick="scrollToCR('cr-crear')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </span>
+                    Crear en Cierres Rechazados
+                </a>
+
+                <a href="#cr-sharepoint" onclick="scrollToCR('cr-sharepoint')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </span>
+                    SharePoint — Lista Rechazados
+                </a>
+
+                <a href="#cr-adjuntos" onclick="scrollToCR('cr-adjuntos')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    </span>
+                    Obtener y Copiar Adjuntos
+                </a>
+
+                <a href="#cr-eliminar" onclick="scrollToCR('cr-eliminar')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </span>
+                    Eliminar de CIERRES
+                </a>
+
+                <a href="#cr-conexiones" onclick="scrollToCR('cr-conexiones')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    </span>
+                    Conexiones
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="inicio.html" class="back-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Regresar al Portal
+                </a>
+            </nav>
+
+            <!-- NAV PANEL: Cierre Finalizado -->
+            <nav class="sidebar-nav nav-panel" id="nav-finalizado">
+                <div class="nav-section-label">Contenido — Cierre Finalizado</div>
+
+                <a href="#cf-general" onclick="scrollToCF('cf-general')" class="nav-btn active">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </span>
+                    Descripción General
+                </a>
+
+                <a href="#cf-arquitectura" onclick="scrollToCF('cf-arquitectura')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </span>
+                    Arquitectura del Flujo
+                </a>
+
+                <a href="#cf-trigger" onclick="scrollToCF('cf-trigger')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </span>
+                    Desencadenador
+                </a>
+
+                <a href="#cf-condicion" onclick="scrollToCF('cf-condicion')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </span>
+                    Condición — Estado
+                </a>
+
+                <a href="#cf-correo" onclick="scrollToCF('cf-correo')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </span>
+                    Correo — Cierre Finalizado
+                </a>
+
+                <a href="#cf-crear" onclick="scrollToCF('cf-crear')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </span>
+                    Crear en Cierres Finalizados
+                </a>
+
+                <a href="#cf-adjuntos" onclick="scrollToCF('cf-adjuntos')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    </span>
+                    Obtener y Copiar Adjuntos
+                </a>
+
+                <a href="#cf-eliminar" onclick="scrollToCF('cf-eliminar')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </span>
+                    Eliminar Elemento Original
+                </a>
+
+                <a href="#cf-conexiones" onclick="scrollToCF('cf-conexiones')" class="nav-btn">
+                    <span class="nav-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    </span>
+                    Conexiones
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="inicio.html" class="back-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Regresar al Portal
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="doc-meta">
+                    <div class="doc-meta-label">Flujo</div>
+                    <div class="doc-meta-value" id="sidebar-flow-name">Cierre — Power Automate</div>
+                    <div class="doc-meta-badge">Activo</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ══ MAIN ══ -->
+        <div id="main">
+            <header id="appHeader">
+                <div class="breadcrumb">
+                    <button id="menuToggle" onclick="openSidebar()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <span class="root">Documentación</span>
+                    <span class="sep">›</span>
+                    <span class="root">Automatizaciones</span>
+                    <span class="sep">›</span>
+                    <span class="current">Flujo Cierre</span>
+                </div>
+                <div class="header-badge">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Power Automate · Activo
+                </div>
+            </header>
+
+            <div id="pageContent">
+
+                <!-- ══ PANEL: CIERRE ══ -->
+                <div class="page-panel visible" id="panel-cierre">
+                <div class="panel-inner">
+
+                <!-- Hero -->
+                <div class="doc-hero">
+                    <div class="doc-hero-icon">⚡</div>
+                    <div>
+                        <div class="doc-hero-title">Flujo de Cierre de Tiendas — Power Automate</div>
+                        <div class="doc-hero-sub">Automatización completa del proceso de cierre de caja por sucursal. Captura respuestas de Microsoft Forms, envía correos de confirmación, crea registros en SharePoint y adjunta los cuatro documentos de soporte de manera automática.</div>
+                        <div class="doc-hero-tags">
+                            <span class="doc-tag purple">Power Automate</span>
+                            <span class="doc-tag green">Activo</span>
+                            <span class="doc-tag blue">Microsoft Forms</span>
+                            <span class="doc-tag indigo">Office 365 Outlook</span>
+                            <span class="doc-tag">SharePoint</span>
+                            <span class="doc-tag">OneDrive for Business</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 1. DESCRIPCIÓN GENERAL ═══ -->
+                <div class="doc-section" id="sec-general">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">1</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Descripción General</div>
+                            <div class="section-subtitle">Propósito, entorno y datos de identificación del flujo</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">El flujo denominado <strong>"Cierre"</strong> es una automatización desarrollada en Microsoft Power Automate para Grupo IMADE, S.A. Su objetivo es procesar el cierre de caja de cada tienda (sucursal) de manera estandarizada: cada vez que un empleado completa el formulario "Cierres" en Microsoft Forms, el flujo captura todos los campos y documentos adjuntos, envía notificaciones por correo, crea un registro en SharePoint y adjunta los cuatro archivos de soporte automáticamente.</p>
+
+                        <div class="doc-h3">Datos de Identificación</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <tbody>
+                                    <tr><td class="td-key">Nombre del Flujo</td><td>Cierre</td></tr>
+                                    <tr><td class="td-key">Plataforma</td><td>Microsoft Power Automate — <span class="inline-code">make.powerautomate.com</span></td></tr>
+                                    <tr><td class="td-key">Entorno</td><td>IMADE, S.A. (default)</td></tr>
+                                    <tr><td class="td-key">Formulario origen</td><td>Microsoft Forms — <strong>"Cierres"</strong></td></tr>
+                                    <tr><td class="td-key">Usuario de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    <tr><td class="td-key">Destinatario interno</td><td><span class="inline-code">j.franco@grupoimade.com</span></td></tr>
+                                    <tr><td class="td-key">SharePoint destino</td><td>CONTABILIDAD — <span class="inline-code">grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                    <tr><td class="td-key">Lista SharePoint</td><td><strong>CIERRES</strong></td></tr>
+                                    <tr><td class="td-key">Estado inicial ítem</td><td><span class="inline-code">En espera</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Este flujo usa la cuenta <strong>tecnologiadeinformacion@grupoimade.com</strong> como cuenta de servicio para todas las conexiones. Cualquier cambio de contraseña o desactivación de esta cuenta interrumpirá el flujo en su totalidad.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 2. ARQUITECTURA ═══ -->
+                <div class="doc-section" id="sec-arquitectura">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">2</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Arquitectura del Flujo</div>
+                            <div class="section-subtitle">Diagrama de pasos secuenciales y ramas paralelas</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">El flujo consta de <strong>15 acciones principales</strong> organizadas en una cadena secuencial que desemboca en cuatro ramas paralelas, una por cada documento adjunto del formulario. La secuencia garantiza que el ítem de SharePoint exista antes de intentar adjuntarle archivos.</p>
+
+                        <!-- Visual flow diagram -->
+                        <div class="flow-diagram">
+                            <div class="flow-node trigger">
+                                <div class="flow-node-icon forms">📋</div>
+                                <div>
+                                    <div style="font-weight:700;font-size:12px;color:var(--green)">DESENCADENADOR</div>
+                                    <div>Cuando se envía una respuesta nueva — Forms "Cierres"</div>
+                                </div>
+                            </div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node action">
+                                <div class="flow-node-icon forms">📋</div>
+                                <div><strong>Obtener los detalles de la respuesta</strong><div style="font-size:11px;color:var(--text-muted)">Microsoft Forms · Response Id dinámico</div></div>
+                            </div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node email">
+                                <div class="flow-node-icon outlook">✉️</div>
+                                <div><strong>Enviar correo electrónico (V2)</strong><div style="font-size:11px;color:var(--text-muted)">Confirmación al declarante — Responders' Email</div></div>
+                            </div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node email">
+                                <div class="flow-node-icon outlook">✉️</div>
+                                <div><strong>Enviar correo electrónico (V2) 2</strong><div style="font-size:11px;color:var(--text-muted)">Notificación interna — j.franco@grupoimade.com</div></div>
+                            </div>
+                            <div class="flow-connector"></div>
+                            <div class="flow-node sp">
+                                <div class="flow-node-icon sharepoint">🗂️</div>
+                                <div><strong>Crear elemento</strong><div style="font-size:11px;color:var(--text-muted)">SharePoint · Lista CIERRES · Estado: En espera</div></div>
+                            </div>
+                            <div class="flow-connector"></div>
+
+                            <!-- Parallel branches header -->
+                            <div class="flow-node parallel-label">⬇ 4 RAMAS PARALELAS — Una por cada documento adjunto ⬇</div>
+                            <div style="height:8px"></div>
+
+                            <div class="flow-parallel">
+                                <!-- Branch 1 -->
+                                <div class="flow-branch">
+                                    <div class="flow-branch-node json">Análisis JSON<br><span style="font-weight:400;font-size:10px">Tarjeta/Visa</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node loop">Aplicar a cada uno<br><span style="font-weight:400;font-size:10px">Get + Attach</span></div>
+                                </div>
+                                <!-- Branch 2 -->
+                                <div class="flow-branch">
+                                    <div class="flow-branch-node json">Análisis JSON 2<br><span style="font-weight:400;font-size:10px">Depósitos</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node delay">Retraso 2<br><span style="font-weight:400;font-size:10px">5 segundos</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node loop">Aplicar a cada uno 2<br><span style="font-weight:400;font-size:10px">Get + Attach</span></div>
+                                </div>
+                                <!-- Branch 3 -->
+                                <div class="flow-branch">
+                                    <div class="flow-branch-node json">Análisis JSON 3<br><span style="font-weight:400;font-size:10px">Transferencias</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node delay">Retraso 3<br><span style="font-weight:400;font-size:10px">10 segundos</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node loop">Aplicar a cada uno 3<br><span style="font-weight:400;font-size:10px">Get + Attach</span></div>
+                                </div>
+                                <!-- Branch 4 -->
+                                <div class="flow-branch">
+                                    <div class="flow-branch-node json">Análisis JSON 4<br><span style="font-weight:400;font-size:10px">SmartBit</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node delay">Retraso 4<br><span style="font-weight:400;font-size:10px">variable</span></div>
+                                    <div class="flow-branch-connector"></div>
+                                    <div class="flow-branch-node loop">Aplicar a cada uno 4<br><span style="font-weight:400;font-size:10px">Get + Attach</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="doc-h3">Resumen de acciones</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>#</th><th>Nombre del paso</th><th>Tipo / Conector</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">1</td><td>Cuando se envía una respuesta nueva</td><td class="td-desc">Desencadenador — Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">2</td><td>Obtener los detalles de la respuesta</td><td class="td-desc">Acción — Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">3</td><td>Enviar correo electrónico (V2)</td><td class="td-desc">Acción — Office 365 Outlook (al declarante)</td></tr>
+                                    <tr><td class="td-key">4</td><td>Enviar correo electrónico (V2) 2</td><td class="td-desc">Acción — Office 365 Outlook (responsable interno)</td></tr>
+                                    <tr><td class="td-key">5</td><td>Crear elemento</td><td class="td-desc">Acción — SharePoint (lista CIERRES)</td></tr>
+                                    <tr><td class="td-key">6</td><td>Análisis del archivo JSON</td><td class="td-desc">Data Operations — Parse JSON (Doc. Tarjeta/Visa)</td></tr>
+                                    <tr><td class="td-key">7</td><td>Análisis del archivo JSON 2</td><td class="td-desc">Data Operations — Parse JSON (Doc. Depósitos)</td></tr>
+                                    <tr><td class="td-key">8</td><td>Análisis del archivo JSON 3</td><td class="td-desc">Data Operations — Parse JSON (Doc. Transferencias)</td></tr>
+                                    <tr><td class="td-key">9</td><td>Análisis del archivo JSON 4</td><td class="td-desc">Data Operations — Parse JSON (Doc. SmartBit)</td></tr>
+                                    <tr><td class="td-key">10</td><td>Aplicar a cada uno</td><td class="td-desc">Control — Loop · Get archivo + Attach (Doc. 1)</td></tr>
+                                    <tr><td class="td-key">11</td><td>Retraso 2 / Aplicar a cada uno 2</td><td class="td-desc">Control — Delay 5 seg + Loop (Doc. 2)</td></tr>
+                                    <tr><td class="td-key">12</td><td>Retraso 3 / Aplicar a cada uno 3</td><td class="td-desc">Control — Delay 10 seg + Loop (Doc. 3)</td></tr>
+                                    <tr><td class="td-key">13</td><td>Retraso 4 / Aplicar a cada uno 4</td><td class="td-desc">Control — Delay + Loop (Doc. 4)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 3. DESENCADENADOR ═══ -->
+                <div class="doc-section" id="sec-trigger">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">3</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Desencadenador — Microsoft Forms</div>
+                            <div class="section-subtitle">Punto de inicio del flujo y captura de datos del formulario</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <div class="phase-badge a">Paso 1 — Cuando se envía una respuesta nueva</div>
+                        <p class="doc-p">El flujo se activa automáticamente cada vez que alguien envía el formulario "Cierres" en Microsoft Forms. No requiere intervención manual.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Form Id</td><td><strong>Cierres</strong></td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    <tr><td class="td-key">Tipo</td><td>Automático — evento en tiempo real</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="phase-badge b" style="margin-top:20px">Paso 2 — Obtener los detalles de la respuesta</div>
+                        <p class="doc-p">Recupera el contenido completo de la respuesta: todos los campos del formulario y los metadatos de los archivos adjuntos en formato JSON.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Form Id</td><td><strong>Cierres</strong></td></tr>
+                                    <tr><td class="td-key">Response Id</td><td><span class="inline-code">Response Id</span> — expresión dinámica del desencadenador</td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Campos capturados del formulario "Cierres"</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo en Forms</th><th>Referencia dinámica</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Sucursal</td><td class="td-mono">Sucursal</td><td class="td-desc">Nombre o código de la tienda que realiza el cierre</td></tr>
+                                    <tr><td class="td-key">Usuario Declarante</td><td class="td-mono">Usuario Declarante</td><td class="td-desc">Nombre del empleado que declara el cierre</td></tr>
+                                    <tr><td class="td-key">Fecha de Cierre</td><td class="td-mono">Fecha de Cierre</td><td class="td-desc">Fecha en que se realiza el cierre de caja</td></tr>
+                                    <tr><td class="td-key">Observaciones</td><td class="td-mono">Observaciones</td><td class="td-desc">Notas o comentarios adicionales del cierre</td></tr>
+                                    <tr><td class="td-key">Correo Electrónico</td><td class="td-mono">Responders' Email</td><td class="td-desc">Email del usuario que respondió el formulario</td></tr>
+                                    <tr><td class="td-key">Doc. Cierre Tarjeta/Visalink</td><td class="td-mono">Documento Cierre…</td><td class="td-desc">Adjunto de cierre de tarjeta y Visalink (JSON de metadata)</td></tr>
+                                    <tr><td class="td-key">Doc. Depósitos Bancarios</td><td class="td-mono">Documento Depósitos…</td><td class="td-desc">Adjunto de depósitos bancarios (JSON de metadata)</td></tr>
+                                    <tr><td class="td-key">Doc. Transferencias</td><td class="td-mono">Documento Transferencias…</td><td class="td-desc">Adjunto de transferencias (JSON de metadata)</td></tr>
+                                    <tr><td class="td-key">Doc. Cierre SmartBit</td><td class="td-mono">Documento Cierre SmartBit</td><td class="td-desc">Adjunto del sistema SmartBit (JSON de metadata)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 4. CORREOS ═══ -->
+                <div class="doc-section" id="sec-correos">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">4</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Correos Electrónicos</div>
+                            <div class="section-subtitle">Dos correos automáticos: confirmación al declarante y alerta al responsable</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+
+                        <!-- Correo 1 -->
+                        <div class="phase-badge a">Correo 1 — Confirmación al declarante (Enviar correo electrónico V2)</div>
+                        <p class="doc-p">Se envía al empleado que completó el formulario, confirmándole que su cierre fue registrado correctamente.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor / Configuración</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Para (To)</td><td><span class="inline-code">Responders' Email</span> — correo del declarante (dinámico del formulario)</td></tr>
+                                    <tr><td class="td-key">Asunto</td><td>"Confirmación de Envío de Cierre de <span class="inline-code">[Sucursal]</span>"</td></tr>
+                                    <tr><td class="td-key">Importancia</td><td><strong>High</strong></td></tr>
+                                    <tr><td class="td-key">Conector</td><td>Office 365 Outlook</td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="doc-h3">Cuerpo del correo 1</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Elemento</th><th>Contenido / Campo dinámico</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Saludo</td><td>¡Hola <span class="inline-code">[Usuario Declarante]</span>!</td></tr>
+                                    <tr><td class="td-key">Mensaje</td><td>"Su cierre del día <span class="inline-code">[Fecha de Cierre]</span> ha sido enviado correctamente."</td></tr>
+                                    <tr><td class="td-key">Observaciones</td><td><span class="inline-code">[Observaciones]</span> — campo dinámico del formulario</td></tr>
+                                    <tr><td class="td-key">Doc. Tarjeta/Visalink</td><td><span class="inline-code">concat(…)</span> — nombre del archivo generado dinámicamente</td></tr>
+                                    <tr><td class="td-key">Doc. Depósitos Bancarios</td><td><span class="inline-code">concat(…)</span></td></tr>
+                                    <tr><td class="td-key">Doc. Transferencias</td><td><span class="inline-code">concat(…)</span></td></tr>
+                                    <tr><td class="td-key">Doc. Cierre SmartBit</td><td><span class="inline-code">concat(…)</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Correo 2 -->
+                        <div class="phase-badge b" style="margin-top:24px">Correo 2 — Notificación interna (Enviar correo electrónico V2 2)</div>
+                        <p class="doc-p">Se envía a <strong>j.franco@grupoimade.com</strong> para alertar que hay un nuevo cierre pendiente de validación en SharePoint.</p>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor / Configuración</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Para (To)</td><td><span class="inline-code">j.franco@grupoimade.com</span> — destinatario fijo interno</td></tr>
+                                    <tr><td class="td-key">Asunto</td><td>"Tienes un nuevo registro de cierre de la tienda <span class="inline-code">[Sucursal]</span>"</td></tr>
+                                    <tr><td class="td-key">Importancia</td><td><strong>High</strong></td></tr>
+                                    <tr><td class="td-key">Referencia SP</td><td>Enlace a la lista "Cierre" de SharePoint incluido en el cuerpo</td></tr>
+                                    <tr><td class="td-key">Conector</td><td>Office 365 Outlook</td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="doc-h3">Cuerpo del correo 2</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Elemento</th><th>Contenido / Campo dinámico</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Mensaje</td><td>"Tiene un nuevo registro de cierre de la tienda <span class="inline-code">[Sucursal]</span>, por favor validar."</td></tr>
+                                    <tr><td class="td-key">Fecha</td><td>"Cierre con fecha <span class="inline-code">[Fecha de Cierre]</span>"</td></tr>
+                                    <tr><td class="td-key">Adjuntos listados</td><td>Los 4 documentos con <span class="inline-code">concat(…)</span> igual al correo 1</td></tr>
+                                    <tr><td class="td-key">Pie</td><td>"Validarlo en la lista 'Cierre' de SharePoint. Click aquí para acceder a su lista."</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 5. SHAREPOINT ═══ -->
+                <div class="doc-section" id="sec-sharepoint">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">5</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">SharePoint — Crear Elemento en Lista CIERRES</div>
+                            <div class="section-subtitle">Registro del cierre en el sitio de Contabilidad con estado inicial "En espera"</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Esta acción crea un nuevo ítem en la lista SharePoint <strong>CIERRES</strong> dentro del sitio de Contabilidad de Grupo IMADE. El ítem queda en estado <span class="inline-code">En espera</span> hasta que el responsable lo valide manualmente. El campo <strong>Titulo</strong> recibe el <span class="inline-code">Response Id</span> del formulario, que sirve como clave de trazabilidad.</p>
+
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Site Address</td><td><span class="inline-code">CONTABILIDAD — https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                    <tr><td class="td-key">List Name</td><td><strong>CIERRES</strong></td></tr>
+                                    <tr><td class="td-key">Parámetros avanzados</td><td>Mostrando 7 de 10 configurados</td></tr>
+                                    <tr><td class="td-key">Conector</td><td>SharePoint</td></tr>
+                                    <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Campos del ítem que se crean en la lista CIERRES</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo en SharePoint</th><th>Valor / Origen</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Titulo</td><td><span class="inline-code">Response Id</span></td><td class="td-desc">ID de la respuesta del formulario — clave de trazabilidad</td></tr>
+                                    <tr><td class="td-key">Sucursal</td><td><span class="inline-code">Sucursal</span> (Forms)</td><td class="td-desc">Nombre de la tienda que realiza el cierre</td></tr>
+                                    <tr><td class="td-key">Usuario Declarante</td><td><span class="inline-code">Usuario Declarante</span> (Forms)</td><td class="td-desc">Empleado que declaró el cierre</td></tr>
+                                    <tr><td class="td-key">Correo Electronico</td><td><span class="inline-code">Responders' Email</span> (Forms)</td><td class="td-desc">Email del declarante</td></tr>
+                                    <tr><td class="td-key">Observaciones</td><td><span class="inline-code">Observaciones</span> (Forms)</td><td class="td-desc">Notas adicionales del cierre</td></tr>
+                                    <tr><td class="td-key">Fecha Cierre</td><td><span class="inline-code">Fecha de Cierre</span> (Forms)</td><td class="td-desc">Fecha en que ocurrió el cierre</td></tr>
+                                    <tr><td class="td-key">Estado Value</td><td><span class="inline-code">En espera</span> (valor estático)</td><td class="td-desc">Estado inicial — se actualiza manualmente por el responsable</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>El <strong>ID del ítem creado</strong> en esta acción es el que usan todos los bucles posteriores para adjuntar los archivos. Si esta acción falla, los cuatro adjuntos también fallarán.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 6. DOCUMENTOS ADJUNTOS ═══ -->
+                <div class="doc-section" id="sec-adjuntos">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">6</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Documentos Adjuntos del Formulario</div>
+                            <div class="section-subtitle">Los cuatro archivos que el declarante debe subir obligatoriamente</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">El formulario "Cierres" solicita cuatro documentos de soporte. Cada uno se procesa en una rama paralela independiente. Todos se adjuntan finalmente al ítem creado en la lista <strong>CIERRES</strong> de SharePoint.</p>
+
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>#</th><th>Nombre del documento</th><th>Rama</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="td-key">1</td>
+                                        <td><strong>Documento Cierre de Tarjeta y Visalink</strong></td>
+                                        <td><span class="doc-tag blue" style="font-size:11px">Rama 1</span></td>
+                                        <td class="td-desc">Comprobante de cierre del POS de tarjetas y sistema Visalink de la tienda. Se procesa sin retraso.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="td-key">2</td>
+                                        <td><strong>Documento Depósitos Bancarios</strong></td>
+                                        <td><span class="doc-tag indigo" style="font-size:11px">Rama 2</span></td>
+                                        <td class="td-desc">Comprobante del depósito bancario del efectivo del día. Espera 5 segundos antes de adjuntarse.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="td-key">3</td>
+                                        <td><strong>Documento Transferencias</strong></td>
+                                        <td><span class="doc-tag orange" style="font-size:11px">Rama 3</span></td>
+                                        <td class="td-desc">Comprobante de transferencias bancarias del cierre. Espera 10 segundos.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="td-key">4</td>
+                                        <td><strong>Documento Cierre SmartBit</strong></td>
+                                        <td><span class="doc-tag purple" style="font-size:11px">Rama 4</span></td>
+                                        <td class="td-desc">Reporte del sistema SmartBit con resumen de ventas y cobros del día.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Los retrasos escalonados (<strong>5 seg → 10 seg → variable</strong>) entre ramas son esenciales para evitar errores de concurrencia <span class="inline-code">429 Too Many Requests</span> al adjuntar múltiples archivos al mismo ítem de SharePoint simultáneamente.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 7. ANÁLISIS JSON ═══ -->
+                <div class="doc-section" id="sec-json">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">7</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Análisis del Archivo JSON (×4)</div>
+                            <div class="section-subtitle">Parse JSON de la metadata de cada adjunto de OneDrive for Business</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Microsoft Forms devuelve los adjuntos como una cadena JSON con la metadata de cada archivo. Antes de poder descargar y adjuntar cada documento a SharePoint, el flujo debe parsear ese JSON para extraer el <span class="inline-code">driveId</span>, <span class="inline-code">id</span> y <span class="inline-code">name</span> de cada archivo. Los cuatro análisis usan el mismo esquema.</p>
+
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Nombre de acción</th><th>Content (entrada)</th><th>Documento que procesa</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Análisis del archivo JSON</td><td><span class="inline-code">Documento De…</span> (Tarjeta/Visalink)</td><td class="td-desc">Cierre de Tarjeta y Visalink</td></tr>
+                                    <tr><td class="td-key">Análisis del archivo JSON 2</td><td><span class="inline-code">Documento Cier…</span> (Depósitos)</td><td class="td-desc">Depósitos Bancarios</td></tr>
+                                    <tr><td class="td-key">Análisis del archivo JSON 3</td><td><span class="inline-code">Documento Tra…</span> (Transferencias)</td><td class="td-desc">Transferencias</td></tr>
+                                    <tr><td class="td-key">Análisis del archivo JSON 4</td><td><span class="inline-code">Documento Cier…</span> (SmartBit)</td><td class="td-desc">Cierre SmartBit</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Esquema JSON compartido (todos los análisis)</div>
+                        <div class="schema-block">
+                            <code>{
+  <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"array"</span>,
+  <span style="color:#ce9178">"items"</span>: {
+    <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"object"</span>,
+    <span style="color:#ce9178">"properties"</span>: {
+      <span style="color:#9cdcfe">"name"</span>:            { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"string"</span>  },  <span style="color:#6a9955">// Nombre del archivo adjunto</span>
+      <span style="color:#9cdcfe">"link"</span>:            { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"string"</span>  },  <span style="color:#6a9955">// URL de acceso al archivo</span>
+      <span style="color:#9cdcfe">"id"</span>:              { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"string"</span>  },  <span style="color:#6a9955">// ID único del archivo en OneDrive</span>
+      <span style="color:#9cdcfe">"type"</span>:            {                    },  <span style="color:#6a9955">// Tipo MIME (puede ser vacío)</span>
+      <span style="color:#9cdcfe">"size"</span>:            { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"integer"</span> },  <span style="color:#6a9955">// Tamaño en bytes</span>
+      <span style="color:#9cdcfe">"referenceId"</span>:     { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"string"</span>  },  <span style="color:#6a9955">// ID de referencia interna del adjunto</span>
+      <span style="color:#9cdcfe">"driveId"</span>:         { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"string"</span>  },  <span style="color:#6a9955">// ID del drive de OneDrive for Business</span>
+      <span style="color:#9cdcfe">"status"</span>:          { <span style="color:#ce9178">"type"</span>: <span style="color:#ce9178">"integer"</span> },  <span style="color:#6a9955">// Estado de carga (1 = completado)</span>
+      <span style="color:#9cdcfe">"uploadSessionUrl"</span>: {                    }   <span style="color:#6a9955">// URL de sesión (null post-carga)</span>
+    },
+    <span style="color:#ce9178">"required"</span>: [<span style="color:#ce9178">"name"</span>, <span style="color:#ce9178">"link"</span>, <span style="color:#ce9178">"id"</span>, <span style="color:#ce9178">"type"</span>, <span style="color:#ce9178">"size"</span>, <span style="color:#ce9178">"referenceId"</span>, <span style="color:#ce9178">"driveId"</span>, <span style="color:#ce9178">"status"</span>, <span style="color:#ce9178">"uploadSessionUrl"</span>]
+  }
+}</code>
+                        </div>
+
+                        <div class="doc-h3">Descripción de campos del esquema</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">name</td><td class="td-mono">string</td><td>✅</td><td class="td-desc">Nombre del archivo adjunto. Se usa como <em>File Name</em> al adjuntar en SharePoint</td></tr>
+                                    <tr><td class="td-key">link</td><td class="td-mono">string</td><td>✅</td><td class="td-desc">URL directa de acceso al archivo en OneDrive</td></tr>
+                                    <tr><td class="td-key">id</td><td class="td-mono">string</td><td>✅</td><td class="td-desc">Identificador único del archivo. Se usa junto con <span class="inline-code">driveId</span> para obtener el contenido</td></tr>
+                                    <tr><td class="td-key">type</td><td class="td-mono">object</td><td>✅</td><td class="td-desc">Tipo MIME del archivo. Puede ser vacío; el conector infiere el tipo automáticamente</td></tr>
+                                    <tr><td class="td-key">size</td><td class="td-mono">integer</td><td>✅</td><td class="td-desc">Tamaño del archivo en bytes</td></tr>
+                                    <tr><td class="td-key">referenceId</td><td class="td-mono">string</td><td>✅</td><td class="td-desc">ID de referencia interna del adjunto en el formulario de Microsoft Forms</td></tr>
+                                    <tr><td class="td-key">driveId</td><td class="td-mono">string</td><td>✅</td><td class="td-desc">ID del drive de OneDrive for Business donde reside el archivo. Necesario para la descarga</td></tr>
+                                    <tr><td class="td-key">status</td><td class="td-mono">integer</td><td>✅</td><td class="td-desc">Estado de carga del archivo. <span class="inline-code">1</span> = completado correctamente</td></tr>
+                                    <tr><td class="td-key">uploadSessionUrl</td><td class="td-mono">object</td><td>✅</td><td class="td-desc">URL de sesión de carga. Es <span class="inline-code">null</span> una vez completada la subida del archivo</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 8. LOOPS ═══ -->
+                <div class="doc-section" id="sec-loops">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">8</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Bucles — Obtener y Adjuntar Archivos</div>
+                            <div class="section-subtitle">Cuatro loops "Aplicar a cada uno" con estructura idéntica y retrasos escalonados</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Cada documento adjunto puede contener uno o más archivos. El bucle <strong>"Aplicar a cada uno"</strong> itera sobre el array devuelto por el análisis JSON y ejecuta dos acciones por cada archivo: primero descarga el contenido desde OneDrive, luego lo adjunta al ítem de SharePoint recién creado.</p>
+
+                        <!-- Retrasos -->
+                        <div class="doc-h3">Retrasos entre ramas</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Acción</th><th>Count</th><th>Unidad</th><th>Propósito</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Retraso 2</td><td><strong>5</strong></td><td>Segundos</td><td class="td-desc">Antes de adjuntar Depósitos Bancarios. Permite que el primer adjunto (Tarjeta/Visa) inicie sin conflicto de API.</td></tr>
+                                    <tr><td class="td-key">Retraso 3</td><td><strong>10</strong></td><td>Segundos</td><td class="td-desc">Antes de adjuntar Transferencias. Incremento progresivo para escalonar la carga.</td></tr>
+                                    <tr><td class="td-key">Retraso 4</td><td>Variable</td><td>Segundos</td><td class="td-desc">Antes de adjuntar SmartBit. Asegura que los tres documentos anteriores no colisionen.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Loop 1 -->
+                        <div class="phase-badge a" style="margin-top:20px">Aplicar a cada uno — Tarjeta/Visalink (Rama 1, sin retraso)</div>
+                        <div class="steps">
+                            <div class="step">
+                                <div class="step-num">1</div>
+                                <div class="step-body">
+                                    <div class="step-title">Obtener contenido de archivo</div>
+                                    <div class="step-desc">
+                                        <strong>File:</strong> <span class="inline-code">Body driveId</span> + <span class="inline-code">Body id</span> — identifican el archivo actual del loop en OneDrive for Business.<br>
+                                        <strong>Infer Content Type:</strong> <span class="inline-code">Yes</span> — detecta el tipo MIME automáticamente.<br>
+                                        <strong>Conexión:</strong> <span class="inline-code">tecnologiadeinformacion@grupoimade.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">2</div>
+                                <div class="step-body">
+                                    <div class="step-title">Agregar datos adjuntos</div>
+                                    <div class="step-desc">
+                                        <strong>Site Address:</strong> <span class="inline-code">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span><br>
+                                        <strong>List Name:</strong> <span class="inline-code">CIERRES</span><br>
+                                        <strong>Id:</strong> <span class="inline-code">ID</span> — ID del ítem creado en el paso 5 (Crear elemento).<br>
+                                        <strong>File Name:</strong> <span class="inline-code">Body name</span> — nombre del archivo del JSON parseado.<br>
+                                        <strong>File Content:</strong> <span class="inline-code">Body</span> — contenido binario de "Obtener contenido de archivo".
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert info">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div>Los bucles <strong>2, 3 y 4</strong> (Depósitos, Transferencias y SmartBit) tienen exactamente la misma estructura interna. Solo cambia el número del loop y el archivo fuente que iteran. Las acciones internas se nombran: <span class="inline-code">Obtener contenido de archivo 2/3/4</span> y <span class="inline-code">Agregar datos adjuntos 2/3/4</span> respectivamente.</div>
+                        </div>
+
+                        <!-- Summary table -->
+                        <div class="doc-h3">Resumen de todos los bucles</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Loop</th><th>Select output (iteración sobre)</th><th>Retraso previo</th><th>Get archivo</th><th>Attach acción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Aplicar a cada uno</td><td>Body (Análisis JSON 1 — Tarjeta/Visa)</td><td>—</td><td>Obtener contenido de archivo</td><td>Agregar datos adjuntos</td></tr>
+                                    <tr><td class="td-key">Aplicar a cada uno 2</td><td>Body (Análisis JSON 2 — Depósitos)</td><td>Retraso 2 (5s)</td><td>Obtener contenido de archivo 2</td><td>Agregar datos adjuntos 2</td></tr>
+                                    <tr><td class="td-key">Aplicar a cada uno 3</td><td>Body (Análisis JSON 3 — Transferencias)</td><td>Retraso 3 (10s)</td><td>Obtener contenido de archivo 3</td><td>Agregar datos adjuntos 3</td></tr>
+                                    <tr><td class="td-key">Aplicar a cada uno 4</td><td>Body (Análisis JSON 4 — SmartBit)</td><td>Retraso 4</td><td>Obtener contenido de archivo 4</td><td>Agregar datos adjuntos 4</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 9. CONEXIONES ═══ -->
+                <div class="doc-section" id="sec-conexiones">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">9</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Conexiones del Flujo</div>
+                            <div class="section-subtitle">Los cinco conectores activos y las acciones que los usan</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+                        <p class="doc-p">Todas las conexiones están autenticadas con la cuenta de servicio del Departamento de TI. El flujo tiene <strong>5 conectores activos</strong>:</p>
+
+                        <div class="connector-list">
+                            <div class="connector-pill"><span class="pill-dot"></span>Microsoft Forms</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                            <div class="connector-pill"><span class="pill-dot"></span>OneDrive for Business</div>
+                        </div>
+
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Conector</th><th>Cuenta / Usuario</th><th>Acciones que lo utilizan</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key">Microsoft Forms</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Paso 1 (Desencadenador), Paso 2 (Obtener detalles de la respuesta)</td></tr>
+                                    <tr><td class="td-key">Office 365 Outlook</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Paso 3 — Correo al declarante</td></tr>
+                                    <tr><td class="td-key">Office 365 Outlook</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Paso 4 — Correo a j.franco@grupoimade.com</td></tr>
+                                    <tr><td class="td-key">SharePoint</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Paso 5 (Crear elemento) + Agregar datos adjuntos 1/2/3/4 (dentro de los 4 loops)</td></tr>
+                                    <tr><td class="td-key">OneDrive for Business</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Obtener contenido de archivo 1/2/3/4 (dentro de los 4 bucles)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ 10. OBSERVACIONES ═══ -->
+                <div class="doc-section" id="sec-observaciones">
+                    <div class="doc-section-header" onclick="toggleSection(this)">
+                        <span class="section-num">10</span>
+                        <div style="flex:1">
+                            <div class="section-title-text">Observaciones Técnicas</div>
+                            <div class="section-subtitle">Consideraciones de operación, mantenimiento y puntos críticos</div>
+                        </div>
+                        <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="doc-section-body">
+
+                        <div class="doc-h3">Cuenta de servicio</div>
+                        <div class="alert warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <div>Toda la automatización depende de <strong>tecnologiadeinformacion@grupoimade.com</strong>. Si esta cuenta es deshabilitada, cambia de contraseña sin actualizar las conexiones, o pierde licencia de Office 365, el flujo fallará completamente en todos sus pasos.</div>
+                        </div>
+
+                        <div class="doc-h3">Retrasos entre adjuntos</div>
+                        <p class="doc-p">Los delays son obligatorios. La API de SharePoint limita la frecuencia de operaciones de adjuntos sobre el mismo ítem. Eliminar los retrasos o reducirlos provoca errores <span class="inline-code">429 Too Many Requests</span> y la pérdida de uno o más documentos adjuntos en el ítem.</p>
+
+                        <div class="doc-h3">Estado del ítem — Flujo manual post-automatización</div>
+                        <div class="doc-table-wrap">
+                            <table class="doc-table">
+                                <thead><tr><th>Estado</th><th>Quién lo asigna</th><th>Descripción</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="td-key" style="color:var(--orange)">En espera</td><td>El flujo automáticamente</td><td class="td-desc">Estado inicial al crear el ítem. Indica que el cierre llegó pero aún no ha sido revisado.</td></tr>
+                                    <tr><td class="td-key" style="color:var(--green)">Validado</td><td>Responsable (manual en SP)</td><td class="td-desc">El responsable revisó los documentos y confirmó que el cierre es correcto.</td></tr>
+                                    <tr><td class="td-key" style="color:var(--red)">Rechazado</td><td>Responsable (manual en SP)</td><td class="td-desc">El cierre tiene inconsistencias. Se debe contactar al declarante.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="doc-h3">Trazabilidad</div>
+                        <p class="doc-p">El campo <strong>Titulo</strong> del ítem de SharePoint recibe el <span class="inline-code">Response Id</span> de Microsoft Forms. Esto permite cruzar cualquier ítem de la lista CIERRES con su respuesta original en el formulario para auditoría.</p>
+
+                        <div class="doc-h3">URL del flujo en Power Automate</div>
+                        <div class="code-block">
+                            <div class="code-label">URL</div>
+                            <code>make.powerautomate.com/environments/
+  Default-f22a53bd-afee-40ff-ad90-859eb01980fb/flows/shared/
+  59474c64-8181-43dd-82a3-afd4b721b544?v3=true</code>
+                        </div>
+
+                        <div class="alert success">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div><strong>Recomendación:</strong> Agregar bloques <span class="inline-code">Scope</span> con manejo de errores en el flujo para capturar fallos en las acciones de adjuntar archivos y notificar al equipo de IT automáticamente en caso de error.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer nav -->
+                <div class="doc-nav-footer">
+                    <a href="inicio.html" class="doc-nav-btn">
+                        Regresar al Portal
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+
+                </div><!-- /panel-inner -->
+                </div><!-- /panel-cierre -->
+
+                <!-- ══ PANEL: CIERRE FINALIZADO ══ -->
+                <div class="page-panel" id="panel-finalizado">
+                <div class="panel-inner">
+
+                    <!-- Hero -->
+                    <div class="doc-hero">
+                        <div class="doc-hero-icon" style="background:var(--green-soft);font-size:26px">✅</div>
+                        <div>
+                            <div class="doc-hero-title">Flujo Cierre Finalizado — Power Automate</div>
+                            <div class="doc-hero-sub">Automatización que detecta cuando un cierre es marcado como "Finalizado" en la lista CIERRES de SharePoint. Notifica al declarante, crea un registro en la lista "Cierres Finalizados", copia los archivos adjuntos y elimina el elemento original.</div>
+                            <div class="doc-hero-tags">
+                                <span class="doc-tag purple">Power Automate</span>
+                                <span class="doc-tag green">Activo</span>
+                                <span class="doc-tag" style="background:var(--teal-soft);color:var(--teal);border-color:rgba(90,200,250,0.3)">SharePoint</span>
+                                <span class="doc-tag indigo">Office 365 Outlook</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-1. DESCRIPCIÓN GENERAL ═══ -->
+                    <div class="doc-section" id="cf-general">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">1</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Descripción General</div>
+                                <div class="section-subtitle">Propósito, entorno y datos de identificación del flujo</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">El flujo denominado <strong>"Cierre Finalizado"</strong> es una automatización en Microsoft Power Automate para Grupo IMADE, S.A. Se activa cada vez que se crea o modifica un elemento en la lista <strong>CIERRES</strong> de SharePoint. Si el campo <strong>Estado</strong> del elemento es igual a <span class="inline-code">Finalizado</span>, el flujo ejecuta la rama verdadera: notifica al declarante por correo, crea un nuevo registro en la lista <strong>Cierres Finalizados</strong> con los datos del cierre, copia todos los archivos adjuntos hacia ese nuevo registro y finalmente elimina el elemento original de la lista CIERRES.</p>
+
+                            <div class="doc-h3">Datos de Identificación</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Nombre del Flujo</td><td>Cierre Finalizado</td></tr>
+                                        <tr><td class="td-key">Plataforma</td><td>Microsoft Power Automate — <span class="inline-code">make.powerautomate.com</span></td></tr>
+                                        <tr><td class="td-key">Entorno</td><td>IMADE, S.A. (default)</td></tr>
+                                        <tr><td class="td-key">Desencadenador</td><td>SharePoint — Cuando se crea o se modifica un elemento</td></tr>
+                                        <tr><td class="td-key">Lista origen</td><td><strong>CIERRES</strong></td></tr>
+                                        <tr><td class="td-key">Lista destino</td><td><strong>Cierres Finalizados</strong></td></tr>
+                                        <tr><td class="td-key">Sitio SharePoint</td><td>CONTABILIDAD — <span class="inline-code">grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Usuario de conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                        <tr><td class="td-key">Condición de activación</td><td><span class="inline-code">Estado.Value</span> <strong>es igual a</strong> <span class="inline-code">Finalizado</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert info">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>La rama <strong>False</strong> de la condición no contiene acciones (0 Actions). El flujo solo actúa cuando el estado es explícitamente <span class="inline-code">Finalizado</span>; cualquier otro estado deja el ítem sin cambios.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-2. ARQUITECTURA ═══ -->
+                    <div class="doc-section" id="cf-arquitectura">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">2</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Arquitectura del Flujo</div>
+                                <div class="section-subtitle">Diagrama de pasos y lógica condicional</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">El flujo consta de <strong>7 acciones principales</strong>. Inicia con un desencadenador de SharePoint, evalúa una condición y, si se cumple, ejecuta secuencialmente: correo de notificación, creación del registro en la lista de finalizados, obtención de adjuntos, un bucle <em>Foreach</em> con dos acciones internas para copiar cada archivo, y finalmente la eliminación del ítem original.</p>
+
+                            <div class="flow-diagram">
+                                <div class="flow-node trigger" style="border-color:var(--green);background:var(--green-soft)">
+                                    <div class="flow-node-icon" style="background:rgba(48,209,88,0.2);font-size:18px">🗂️</div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:12px;color:var(--green)">DESENCADENADOR</div>
+                                        <div>Cuando se crea o modifica un elemento — Lista CIERRES</div>
+                                    </div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node" style="border-left:3px solid var(--indigo);background:var(--indigo-soft)">
+                                    <div class="flow-node-icon" style="font-size:18px">⚖️</div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:12px;color:var(--indigo)">CONDICIÓN</div>
+                                        <div><span class="inline-code" style="font-size:11px">Estado.Value</span> <strong>es igual a</strong> <span class="inline-code" style="font-size:11px">Finalizado</span></div>
+                                    </div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node parallel-label" style="color:var(--green)">↓ RAMA VERDADERA (True) — Se ejecuta cuando Estado = Finalizado ↓</div>
+                                <div style="height:8px"></div>
+                                <div class="flow-node email">
+                                    <div class="flow-node-icon outlook">✉️</div>
+                                    <div><strong>Send an email (V2)</strong><div style="font-size:11px;color:var(--text-muted)">Notificación al declarante — Asunto: CIERRE FINALIZADO</div></div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node sp">
+                                    <div class="flow-node-icon sharepoint">🗂️</div>
+                                    <div><strong>Create item</strong><div style="font-size:11px;color:var(--text-muted)">Lista "Cierres Finalizados" — copia los campos del cierre original</div></div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node sp">
+                                    <div class="flow-node-icon sharepoint">📎</div>
+                                    <div><strong>Get attachments</strong><div style="font-size:11px;color:var(--text-muted)">Lista CIERRES — obtiene la lista de adjuntos del ítem original</div></div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node" style="border-left:3px solid var(--orange);background:var(--orange-soft)">
+                                    <div class="flow-node-icon" style="font-size:18px">🔁</div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:12px;color:var(--orange)">FOREACH — 2 acciones</div>
+                                        <div>Itera sobre cada adjunto del Body → Get attachment content → Add attachment</div>
+                                    </div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node" style="border-left:3px solid var(--red);background:var(--red-soft)">
+                                    <div class="flow-node-icon" style="font-size:18px">🗑️</div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:12px;color:var(--red)">Delete item</div>
+                                        <div>Lista CIERRES — elimina el elemento original tras copiar todo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-3. DESENCADENADOR ═══ -->
+                    <div class="doc-section" id="cf-trigger">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">3</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Desencadenador — SharePoint</div>
+                                <div class="section-subtitle">Cuando se crea o se modifica un elemento en la lista CIERRES</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">A diferencia del flujo "Cierre" (que parte de Microsoft Forms), este flujo se activa directamente desde SharePoint. Cada vez que un ítem de la lista <strong>CIERRES</strong> es creado o modificado, el flujo se dispara y evalúa si debe ejecutar las acciones.</p>
+
+                            <div class="doc-h3">Configuración del Desencadenador</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Tipo</td><td>SharePoint — Cuando se crea o se modifica un elemento</td></tr>
+                                        <tr><td class="td-key">Dirección del sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Nombre de la lista</td><td><strong>CIERRES</strong></td></tr>
+                                        <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>Este desencadenador se activa en <strong>toda</strong> creación o modificación de elementos en CIERRES, independientemente del campo modificado. La condición del paso siguiente es la encargada de filtrar únicamente los elementos con estado <span class="inline-code">Finalizado</span>.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-4. CONDICIÓN ═══ -->
+                    <div class="doc-section" id="cf-condicion">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">4</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Condición — Verificación de Estado</div>
+                                <div class="section-subtitle">Filtra los elementos cuyo Estado sea igual a "Finalizado"</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Este es el paso de control central del flujo. Evalúa el valor del campo <strong>Estado</strong> del elemento de SharePoint y determina si se ejecuta la rama verdadera (True) o la rama falsa (False).</p>
+
+                            <div class="doc-h3">Expresión de la Condición</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Operador lógico</td><td>And</td></tr>
+                                        <tr><td class="td-key">Valor izquierdo</td><td><span class="inline-code">Estado.Value</span> (campo dinámico del ítem de SharePoint)</td></tr>
+                                        <tr><td class="td-key">Comparador</td><td>is equal to</td></tr>
+                                        <tr><td class="td-key">Valor derecho</td><td><span class="inline-code">Finalizado</span> (texto estático)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Ramas de la Condición</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Rama</th><th>Condición</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key" style="color:var(--green)">True</td><td>Estado.Value = "Finalizado"</td><td class="td-desc">Send email → Create item → Get attachments → Foreach → Delete item</td></tr>
+                                        <tr><td class="td-key" style="color:var(--red)">False</td><td>Estado.Value ≠ "Finalizado"</td><td class="td-desc">Sin acciones (0 Actions) — el flujo termina sin hacer nada</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-5. CORREO ═══ -->
+                    <div class="doc-section" id="cf-correo">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">5</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Send an email (V2) — Cierre Finalizado</div>
+                                <div class="section-subtitle">Notificación al declarante cuando su cierre es marcado como finalizado</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Primera acción de la rama verdadera. Envía un correo electrónico al declarante (la persona que registró el cierre) informándole que su cierre ha sido finalizado correctamente por el Departamento de Contabilidad.</p>
+
+                            <div class="doc-h3">Configuración del Correo</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Para (To)</td><td>Campo dinámico: <strong>Correo Electrónico</strong> del declarante (del ítem de CIERRES)</td></tr>
+                                        <tr><td class="td-key">Asunto (Subject)</td><td><span class="inline-code">CIERRE FINALIZADO</span></td></tr>
+                                        <tr><td class="td-key">Importancia</td><td>High (Alta)</td></tr>
+                                        <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Cuerpo del Correo</div>
+                            <div class="code-block">
+                                <div class="code-label">Cuerpo del mensaje</div>
+                                <code><span class="code-value">[Usuario Declarante]</span> Se le informa que el cierre del día
+<span class="code-value">[Fecha Cierre]</span> ha sido finalizado correctamente.
+<span class="code-string">Dpto. Contable</span>
+
+<span class="code-comment">Comentarios:</span> <span class="code-value">[Comentarios]</span></code>
+                            </div>
+
+                            <div class="alert success">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>Los campos <strong>Usuario Declarante</strong>, <strong>Fecha Cierre</strong> y <strong>Comentarios</strong> son valores dinámicos extraídos directamente del ítem de SharePoint que desencadenó el flujo.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-6. CREAR ITEM ═══ -->
+                    <div class="doc-section" id="cf-crear">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">6</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Create item — Lista Cierres Finalizados</div>
+                                <div class="section-subtitle">Crea el registro permanente en la lista de cierres ya finalizados</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Segunda acción de la rama verdadera. Crea un nuevo elemento en la lista <strong>Cierres Finalizados</strong> del mismo sitio SharePoint, copiando los campos relevantes del ítem original en CIERRES. Este registro sirve como historial permanente de los cierres completados.</p>
+
+                            <div class="doc-h3">Configuración</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Lista destino</td><td><strong>Cierres Finalizados</strong></td></tr>
+                                        <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Campos Mapeados (Parámetros avanzados — 5 de 9)</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Campo en "Cierres Finalizados"</th><th>Valor dinámico (origen: ítem CIERRES)</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Fecha Cierre</td><td><span class="inline-code">Fecha Cierre</span></td></tr>
+                                        <tr><td class="td-key">Sucursal</td><td><span class="inline-code">Sucursal</span></td></tr>
+                                        <tr><td class="td-key">Usuario Declarante</td><td><span class="inline-code">Usuario Declarante</span></td></tr>
+                                        <tr><td class="td-key">Observaciones</td><td><span class="inline-code">Observaciones</span></td></tr>
+                                        <tr><td class="td-key">Estado Value</td><td><span class="inline-code">Finalizado</span> (valor estático)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert info">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>El campo <strong>Estado Value</strong> se establece directamente como texto estático <span class="inline-code">Finalizado</span>, ya que el propósito de esta lista es archivar únicamente cierres que han pasado por el proceso completo de revisión y aprobación.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-7. ADJUNTOS ═══ -->
+                    <div class="doc-section" id="cf-adjuntos">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">7</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Obtener y Copiar Adjuntos — Foreach</div>
+                                <div class="section-subtitle">Get attachments → Foreach → Get attachment content → Add attachment</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Este bloque de tres acciones se encarga de trasladar todos los archivos adjuntos del ítem original en CIERRES hacia el nuevo ítem creado en Cierres Finalizados. Primero obtiene la lista de adjuntos, luego itera sobre cada uno para descargar su contenido y adjuntarlo al nuevo registro.</p>
+
+                            <div class="doc-h3">Paso 7a — Get attachments</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Lista</td><td><strong>CIERRES</strong> (lista origen)</td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (dinámico — ID del ítem que disparó el flujo)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Paso 7b — Foreach</div>
+                            <p class="doc-p">Itera sobre el resultado (<strong>Body</strong>) de "Get attachments". Por cada adjunto encontrado ejecuta dos acciones internas:</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Seleccionar salida de pasos anteriores</td><td><span class="inline-code">Body</span> (salida completa de Get attachments)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Paso 7c — Get attachment content <span style="font-size:11px;font-weight:400;color:var(--text-muted)">(dentro del Foreach)</span></div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Lista</td><td><strong>CIERRES</strong></td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (del ítem original)</td></tr>
+                                        <tr><td class="td-key">File Identifier</td><td><span class="inline-code">id</span> (ID del adjunto actual en la iteración)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Paso 7d — Add attachment <span style="font-size:11px;font-weight:400;color:var(--text-muted)">(dentro del Foreach)</span></div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Lista</td><td><strong>Cierres Finalizados</strong> (lista destino)</td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (del ítem recién creado en Cierres Finalizados)</td></tr>
+                                        <tr><td class="td-key">File Name</td><td><span class="inline-code">DisplayName</span> (nombre del archivo adjunto original)</td></tr>
+                                        <tr><td class="td-key">File Content</td><td><span class="inline-code">Body</span> (contenido binario obtenido en Get attachment content)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert success">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>El bucle Foreach es dinámico: si un cierre tiene 1, 2 o 5 adjuntos, los copiará todos automáticamente sin necesidad de configurar cada uno por separado, a diferencia del flujo original "Cierre" que utiliza ramas paralelas fijas.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-8. ELIMINAR ═══ -->
+                    <div class="doc-section" id="cf-eliminar">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">8</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Delete item — Limpiar Lista CIERRES</div>
+                                <div class="section-subtitle">Elimina el ítem original de CIERRES una vez copiado todo a Cierres Finalizados</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Última acción del flujo. Una vez que el correo fue enviado, el nuevo ítem fue creado en Cierres Finalizados y todos los adjuntos fueron copiados, se elimina el elemento original de la lista CIERRES. Esto mantiene la lista activa limpia, dejando en ella únicamente los cierres pendientes de revisión.</p>
+
+                            <div class="doc-h3">Configuración</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td>CONTABILIDAD — <span class="inline-code">https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Lista</td><td><strong>CIERRES</strong></td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> (del ítem que desencadenó el flujo)</td></tr>
+                                        <tr><td class="td-key">Conexión</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert danger">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div><strong>Acción irreversible:</strong> La eliminación del ítem en CIERRES es permanente. Si el paso anterior (Add attachment) falla para algún archivo, el ítem podría quedar eliminado sin todos sus adjuntos en Cierres Finalizados. Se recomienda implementar manejo de errores con bloques <span class="inline-code">Scope</span> para detectar fallos antes de ejecutar esta acción.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CF-9. CONEXIONES ═══ -->
+                    <div class="doc-section" id="cf-conexiones">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--green-soft);color:var(--green)">9</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Conexiones del Flujo</div>
+                                <div class="section-subtitle">Conectores y cuentas de servicio utilizadas</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <div class="doc-h3">Conectores utilizados</div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                                <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                                <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                            </div>
+
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Conector</th><th>Cuenta / Usuario</th><th>Acciones que lo utilizan</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">SharePoint</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Desencadenador, Get attachments, Get attachment content, Create item, Add attachment, Delete item</td></tr>
+                                        <tr><td class="td-key">Office 365 Outlook</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Send an email (V2) — Notificación al declarante</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>Al igual que el flujo "Cierre", toda la automatización depende de la cuenta <strong>tecnologiadeinformacion@grupoimade.com</strong>. Si esta cuenta pierde acceso, cambia contraseña sin actualizar conexiones o pierde licencia, el flujo fallará en todos sus pasos.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer nav -->
+                    <div class="doc-nav-footer">
+                        <a href="inicio.html" class="doc-nav-btn">
+                            Regresar al Portal
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+
+                </div><!-- /panel-inner -->
+                </div><!-- /panel-finalizado -->
+
+                <!-- ════════════════════════════════════════════════════
+                     PANEL: CIERRE RECHAZADO
+                ════════════════════════════════════════════════════ -->
+                <div class="page-panel" id="panel-rechazado">
+                <div class="panel-inner">
+
+                    <!-- Hero -->
+                    <div class="doc-hero">
+                        <div class="doc-hero-icon" style="background:var(--red-soft)">🚫</div>
+                        <div>
+                            <div class="doc-hero-title">Cierre Rechazado</div>
+                            <div class="doc-hero-sub">Flujo Power Automate que detecta cuando un cierre es rechazado por Contabilidad, notifica al declarante, archiva el registro en <strong>Cierres Rechazados</strong> y elimina el ítem original de la lista CIERRES.</div>
+                            <div class="doc-hero-tags">
+                                <span class="doc-tag blue">SharePoint</span>
+                                <span class="doc-tag indigo">Office 365 Outlook</span>
+                                <span class="doc-tag" style="background:var(--red-soft);color:var(--red);border-color:rgba(255,69,58,0.2)">Estado: Rechazado</span>
+                                <span class="doc-tag orange">Alta Prioridad</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-1. DESCRIPCIÓN GENERAL ═══ -->
+                    <div class="doc-section" id="cr-general">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">1</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Descripción General</div>
+                                <div class="section-subtitle">Propósito, contexto y comportamiento del flujo</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">El flujo <strong>Cierre Rechazado</strong> se activa automáticamente cada vez que un elemento de la lista <span class="inline-code">CIERRES</span> es creado o modificado con el estado <strong>"Rechazado"</strong>. Su propósito es gestionar el rechazo de cierres de forma ordenada: notifica al declarante vía correo electrónico, preserva el registro en la lista <span class="inline-code">Cierres Rechazados</span> junto con sus documentos adjuntos, y elimina el ítem de la lista activa <span class="inline-code">CIERRES</span>.</p>
+                            <p class="doc-p">Este flujo es el complemento del flujo <strong>Cierre Finalizado</strong>: mientras este último maneja aprobaciones, el flujo Rechazado canaliza los rechazos con su propia notificación y destino de archivo.</p>
+                            <div class="alert danger">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div><strong>Acción destructiva:</strong> El paso final elimina el ítem de CIERRES de forma permanente. El flujo debe completarse correctamente en todos los pasos anteriores antes de llegar a esta acción.</div>
+                            </div>
+                            <div class="doc-h3">Resumen operacional</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Nombre del flujo</td><td>Cierre Rechazado</td></tr>
+                                        <tr><td class="td-key">Tipo de desencadenador</td><td>Cuando se crea o se modifica un elemento (SharePoint)</td></tr>
+                                        <tr><td class="td-key">Lista de origen</td><td><span class="inline-code">CIERRES</span></td></tr>
+                                        <tr><td class="td-key">Lista de destino</td><td><span class="inline-code">Cierres Rechazados</span></td></tr>
+                                        <tr><td class="td-key">Sitio SharePoint</td><td><span class="inline-code">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</span></td></tr>
+                                        <tr><td class="td-key">Condición de activación</td><td>Estado.Value <strong>igual a</strong> "Rechazado"</td></tr>
+                                        <tr><td class="td-key">Cuenta de servicio</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td></tr>
+                                        <tr><td class="td-key">Total de acciones (True)</td><td>7 acciones (incluyendo bucle Foreach con 2 sub-acciones)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <a href="https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE/Lists/CIERRES/AllItems.aspx" target="_blank" rel="noopener" class="doc-nav-btn" style="margin-top:14px;display:inline-flex;background:var(--red-soft);color:var(--red);border-color:rgba(255,69,58,0.2)">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                Ver lista de SharePoint — CIERRES
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-2. ARQUITECTURA ═══ -->
+                    <div class="doc-section" id="cr-arquitectura">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">2</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Arquitectura del Flujo</div>
+                                <div class="section-subtitle">Diagrama de pasos y lógica de ejecución</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">El flujo sigue una secuencia lineal con una bifurcación condicional al inicio y un bucle para la migración de adjuntos:</p>
+                            <div class="flow-diagram">
+                                <div class="flow-node trigger">
+                                    <div class="flow-node-icon forms">📋</div>
+                                    <div><strong>Desencadenador</strong> — Cuando se crea o modifica un elemento · Lista CIERRES</div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-node" style="border-color:var(--orange);background:var(--orange-soft)">
+                                    <div class="flow-node-icon control">🔀</div>
+                                    <div><strong>Condition</strong> — Estado.Value igual a "Rechazado"</div>
+                                </div>
+                                <div class="flow-connector"></div>
+                                <div class="flow-parallel">
+                                    <div class="flow-branch" style="flex:2">
+                                        <div class="flow-branch-node loop" style="font-weight:700;font-size:12px;padding:8px 12px;text-align:left">✅ TRUE — Se ejecuta si Estado = "Rechazado"</div>
+                                        <div class="flow-branch-connector"></div>
+                                        <div class="flow-branch-node" style="text-align:left;padding:8px 12px">
+                                            <span style="color:var(--indigo);font-weight:600">📧 Send an email (V2)</span><br>
+                                            <span style="font-size:11px;color:var(--text-muted)">Notifica al declarante — Asunto: CIERRE RECHAZADO</span>
+                                        </div>
+                                        <div class="flow-branch-connector"></div>
+                                        <div class="flow-branch-node" style="text-align:left;padding:8px 12px">
+                                            <span style="color:var(--accent);font-weight:600">🗂️ Create item</span><br>
+                                            <span style="font-size:11px;color:var(--text-muted)">Crea registro en lista "Cierres Rechazados"</span>
+                                        </div>
+                                        <div class="flow-branch-connector"></div>
+                                        <div class="flow-branch-node" style="text-align:left;padding:8px 12px">
+                                            <span style="color:var(--accent);font-weight:600">📎 Get attachments</span><br>
+                                            <span style="font-size:11px;color:var(--text-muted)">Obtiene adjuntos del ítem original en CIERRES</span>
+                                        </div>
+                                        <div class="flow-branch-connector"></div>
+                                        <div class="flow-branch-node loop" style="text-align:left;padding:8px 12px">
+                                            <span style="font-weight:600">🔁 Foreach</span> — Para cada adjunto:<br>
+                                            <span style="font-size:11px">① Get attachment content &nbsp; ② Add attachment</span>
+                                        </div>
+                                        <div class="flow-branch-connector"></div>
+                                        <div class="flow-branch-node" style="text-align:left;padding:8px 12px;border-color:var(--red-soft);background:var(--red-soft);color:var(--red)">
+                                            <span style="font-weight:600">🗑️ Delete item</span><br>
+                                            <span style="font-size:11px">Elimina el ítem original de la lista CIERRES</span>
+                                        </div>
+                                    </div>
+                                    <div class="flow-branch" style="flex:1">
+                                        <div class="flow-branch-node" style="border-color:rgba(255,69,58,0.3);background:var(--red-soft);color:var(--red);font-weight:700;font-size:12px;padding:8px 12px">❌ FALSE<br><span style="font-size:11px;font-weight:400">0 acciones</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-3. DESENCADENADOR ═══ -->
+                    <div class="doc-section" id="cr-trigger">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">3</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Desencadenador</div>
+                                <div class="section-subtitle">Cuando se crea o se modifica un elemento — Lista CIERRES</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">El trigger es idéntico al de los otros flujos de cierre: monitorea la lista <span class="inline-code">CIERRES</span> del sitio de Contabilidad. Se dispara en cualquier creación o modificación de ítem, pero la condición posterior filtra únicamente los rechazos.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor configurado</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD — https://grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</td></tr>
+                                        <tr><td class="td-key">List Name</td><td class="td-mono">CIERRES</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert info">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>Este mismo trigger es compartido por el flujo <strong>Cierre Finalizado</strong>. Ambos flujos corren en paralelo ante cualquier modificación de CIERRES; la condición interna de cada flujo determina si se ejecutan o no.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-4. CONDICIÓN ═══ -->
+                    <div class="doc-section" id="cr-condicion">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">4</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Condición — Estado</div>
+                                <div class="section-subtitle">Filtro principal que activa la rama de rechazo</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">La condición evalúa el campo de estado del ítem modificado. Solo si el estado es exactamente <strong>"Rechazado"</strong> se ejecuta la rama <span style="color:var(--green);font-weight:600">True</span> con las 7 acciones subsiguientes. La rama <span style="color:var(--red);font-weight:600">False</span> no tiene acciones configuradas.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Campo</th><th>Operador</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Estado.Value</td><td>is equal to</td><td class="td-mono" style="color:var(--red)">Rechazado</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="code-block">
+                                <span class="code-label">Expression</span>
+                                <code><span class="code-comment">// Operador lógico: And</span>
+<span class="code-keyword">@equals</span>(<span class="code-string">triggerOutputs()?['body/Estado/Value']</span>, <span class="code-string">'Rechazado'</span>)</code>
+                            </div>
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>El valor <strong>"Rechazado"</strong> es sensible a mayúsculas/minúsculas y espacios. Si la lista usa un valor diferente (p.ej. "rechazado" o "RECHAZADO"), la condición nunca se cumplirá y el flujo será inoperante.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-5. CORREO ═══ -->
+                    <div class="doc-section" id="cr-correo">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">5</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Send an email (V2) — Notificación de Rechazo</div>
+                                <div class="section-subtitle">Correo automático al declarante con motivo del rechazo</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Es la primera acción dentro de la rama True. Se envía una notificación de alta importancia al declarante responsable del cierre rechazado, informando la fecha y el motivo del rechazo según los comentarios del Dpto. Contable.</p>
+                            <div class="doc-h3">Parámetros del correo</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Campo</th><th>Valor / Expresión dinámica</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">To</td><td><span class="inline-code">Correo Electrónico</span> — Campo del ítem en CIERRES</td></tr>
+                                        <tr><td class="td-key">Subject</td><td><span class="td-mono">CIERRE RECHAZADO</span></td></tr>
+                                        <tr><td class="td-key">Body</td><td><span class="inline-code">Usuario Declarante</span> Se le informa que el cierre del día <span class="inline-code">Fecha Cierre</span> ha sido RECHAZADO por motivo de <span class="inline-code">Comentarios</span> Dpto. Contable</td></tr>
+                                        <tr><td class="td-key">CC</td><td><span class="td-mono">s.franco@grupoimade.com</span></td></tr>
+                                        <tr><td class="td-key">BCC</td><td><span class="td-mono">a.marroquin@grupoimade.com</span></td></tr>
+                                        <tr><td class="td-key">Importance</td><td>High</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert info">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>A diferencia del correo de Cierre Finalizado, este incluye el campo <strong>Comentarios</strong> en el cuerpo del mensaje, lo que permite comunicar al declarante el motivo específico del rechazo sin necesidad de contacto adicional.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-6. CREAR ÍTEM ═══ -->
+                    <div class="doc-section" id="cr-crear">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">6</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Create item — Cierres Rechazados</div>
+                                <div class="section-subtitle">Archiva el registro en la lista de histórico de rechazos</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Crea una copia del ítem en la lista <span class="inline-code">Cierres Rechazados</span> del mismo sitio SharePoint, preservando los campos clave del cierre original. El ID generado por este nuevo ítem se usa posteriormente para adjuntar los documentos.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</td></tr>
+                                        <tr><td class="td-key">List Name</td><td class="td-mono">Cierres Rechazados</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="doc-h3">Campos mapeados (6 de 10 visibles)</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Campo destino</th><th>Valor / Expresión dinámica</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Fecha Cierre</td><td><span class="inline-code">Fecha Cierre</span> — Del ítem origen en CIERRES</td></tr>
+                                        <tr><td class="td-key">Sucursal</td><td><span class="inline-code">Sucursal</span> — Del ítem origen en CIERRES</td></tr>
+                                        <tr><td class="td-key">Usuario Declarante</td><td><span class="inline-code">Usuario Declarante</span> — Del ítem origen en CIERRES</td></tr>
+                                        <tr><td class="td-key">Estado Value</td><td class="td-mono" style="color:var(--red)">Rechazado</td></tr>
+                                        <tr><td class="td-key">Correo Electrónico</td><td><span class="inline-code">Correo Electrónico</span> — Del ítem origen en CIERRES</td></tr>
+                                        <tr><td class="td-key">Observaciones</td><td><span class="inline-code">Observaciones</span> — Del ítem origen en CIERRES</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>La configuración muestra "6 de 10" campos. Según la estructura real de la lista <strong>Cierres Rechazados</strong> (ver sección SharePoint más abajo), los campos restantes corresponden a <span class="inline-code">Comentarios</span> y a metadatos internos de SharePoint (Titulo, Adjuntos, etc.). Verificar que <strong>Comentarios</strong> esté mapeado, ya que es el motivo de rechazo que se usa en el correo.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-7. SHAREPOINT — LISTA CIERRES RECHAZADOS ═══ -->
+                    <div class="doc-section" id="cr-sharepoint">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">7</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">SharePoint — Lista Cierres Rechazados</div>
+                                <div class="section-subtitle">Estructura real de la lista de destino en el sitio CONTABILIDAD</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">La lista <strong>Cierres Rechazados</strong> vive en el mismo sitio SharePoint <span class="inline-code">CONTABILIDAD</span> que las listas <span class="inline-code">CIERRES</span> y <span class="inline-code">Cierres Finalizados</span>, y sirve como histórico permanente de todos los cierres que fueron rechazados por el Dpto. Contable.</p>
+
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Sitio</td><td class="td-mono">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</td></tr>
+                                        <tr><td class="td-key">Nombre de la lista</td><td class="td-mono">Cierres Rechazados</td></tr>
+                                        <tr><td class="td-key">Listas hermanas en el mismo sitio</td><td><span class="inline-code">Cierres</span>, <span class="inline-code">Cierres Finalizados</span>, <span class="inline-code">Papelera de reciclaje</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="doc-h3">Columnas de la lista (vista real)</div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Columna</th><th>Tipo / Ejemplo</th><th>Origen</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">ID</td><td class="td-desc">Numérico autoincremental (1, 2, 3…)</td><td class="td-desc">Generado por SharePoint</td></tr>
+                                        <tr><td class="td-key">Fecha Cierre</td><td class="td-desc">Fecha — ej. 15/09/2025</td><td class="td-desc">Copiado del ítem original en CIERRES</td></tr>
+                                        <tr><td class="td-key">Sucursal</td><td class="td-desc">Texto — ej. PYM San Cristobal</td><td class="td-desc">Copiado del ítem original en CIERRES</td></tr>
+                                        <tr><td class="td-key">Usuario Declarante</td><td class="td-desc">Texto — ej. Karen Matz</td><td class="td-desc">Copiado del ítem original en CIERRES</td></tr>
+                                        <tr><td class="td-key">Datos adjuntos</td><td class="td-desc">Icono de clip 📎 — adjuntos nativos de SharePoint</td><td class="td-desc">Poblado por el bucle Foreach (Add attachment)</td></tr>
+                                        <tr><td class="td-key">Estado</td><td class="td-desc">Choice — etiqueta roja <strong>"Rechazado"</strong></td><td class="td-desc">Valor estático fijado por el flujo</td></tr>
+                                        <tr><td class="td-key">Correo Electronico</td><td class="td-desc">Texto/Email — ej. h.reyes@grupoima...</td><td class="td-desc">Copiado del ítem original en CIERRES</td></tr>
+                                        <tr><td class="td-key">Observaciones</td><td class="td-desc">Texto — notas del declarante</td><td class="td-desc">Copiado del ítem original en CIERRES</td></tr>
+                                        <tr><td class="td-key">Comentarios</td><td class="td-desc">Texto — motivo del rechazo</td><td class="td-desc">Capturado por Contabilidad al rechazar; usado en el correo</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert info">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>Las tres listas (<strong>CIERRES</strong>, <strong>Cierres Finalizados</strong> y <strong>Cierres Rechazados</strong>) comparten exactamente las mismas columnas base, lo que permite que <span class="inline-code">Create item</span> copie los valores del ítem origen sin necesidad de transformación de datos.</div>
+                            </div>
+
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>En la lista <strong>Cierres Rechazados</strong>, la columna <span class="inline-code">Estado</span> aparece posicionada antes de <span class="inline-code">Correo Electronico</span> (a diferencia de CIERRES, donde aparece al final). Esto es solo una diferencia de orden de visualización en la vista de cuadrícula — no afecta el mapeo de campos del flujo.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-8. ADJUNTOS ═══ -->
+                    <div class="doc-section" id="cr-adjuntos">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">8</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Get attachments + Foreach → Copiar Adjuntos</div>
+                                <div class="section-subtitle">Migración de documentos adjuntos al nuevo registro</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <div class="phase-badge a">Paso 1 — Get attachments</div>
+                            <p class="doc-p">Recupera la lista de todos los archivos adjuntos del ítem original en <span class="inline-code">CIERRES</span> usando el ID del desencadenador.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</td></tr>
+                                        <tr><td class="td-key">List Name</td><td class="td-mono">CIERRES</td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> — ID dinámico del ítem que disparó el flujo</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="phase-badge b" style="margin-top:18px">Paso 2 — Foreach (Body)</div>
+                            <p class="doc-p">Itera sobre cada adjunto devuelto por <em>Get attachments</em>. Para cada ítem del arreglo ejecuta 2 acciones en secuencia:</p>
+
+                            <div class="steps">
+                                <div class="step">
+                                    <div class="step-num">①</div>
+                                    <div class="step-body">
+                                        <div class="step-title">Get attachment content</div>
+                                        <div class="step-desc">Descarga el contenido binario del adjunto desde la lista CIERRES. Usa el <span class="inline-code">ID</span> del ítem original y el <span class="inline-code">id</span> del archivo dentro del bucle.</div>
+                                        <div class="doc-table-wrap" style="margin-top:8px">
+                                            <table class="doc-table">
+                                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                                <tbody>
+                                                    <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD_IMADE</td></tr>
+                                                    <tr><td class="td-key">List Name</td><td class="td-mono">CIERRES</td></tr>
+                                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> — Trigger</td></tr>
+                                                    <tr><td class="td-key">File Identifier</td><td><span class="inline-code">id</span> — Ítem actual del Foreach</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="step-num">②</div>
+                                    <div class="step-body">
+                                        <div class="step-title">Add attachment</div>
+                                        <div class="step-desc">Adjunta el archivo al nuevo ítem creado en <span class="inline-code">Cierres Rechazados</span>. Usa el ID del ítem recién creado y el contenido descargado en el paso anterior.</div>
+                                        <div class="doc-table-wrap" style="margin-top:8px">
+                                            <table class="doc-table">
+                                                <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                                <tbody>
+                                                    <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD_IMADE</td></tr>
+                                                    <tr><td class="td-key">List Name</td><td class="td-mono">Cierres Rechazados</td></tr>
+                                                    <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> — Del ítem creado en "Create item"</td></tr>
+                                                    <tr><td class="td-key">File Name</td><td><span class="inline-code">DisplayName</span> — Nombre original del adjunto</td></tr>
+                                                    <tr><td class="td-key">File Content</td><td><span class="inline-code">Body</span> — Contenido de "Get attachment content"</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-8. ELIMINAR ═══ -->
+                    <div class="doc-section" id="cr-eliminar">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">9</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Delete item — Eliminar de CIERRES</div>
+                                <div class="section-subtitle">Paso final destructivo: limpieza del ítem en la lista activa</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <p class="doc-p">Una vez que el registro ha sido creado en <span class="inline-code">Cierres Rechazados</span> y todos sus adjuntos migrados, se elimina el ítem original de la lista <span class="inline-code">CIERRES</span>.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">Site Address</td><td class="td-mono">CONTABILIDAD — grupoimade.sharepoint.com/sites/CONTABILIDAD_IMADE</td></tr>
+                                        <tr><td class="td-key">List Name</td><td class="td-mono">CIERRES</td></tr>
+                                        <tr><td class="td-key">Id</td><td><span class="inline-code">ID</span> — ID del ítem que disparó el flujo (el mismo de CIERRES)</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert danger">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div><strong>Acción irreversible:</strong> La eliminación del ítem en CIERRES es permanente. Si el Foreach falla para algún adjunto antes de completarse, el ítem podría quedar eliminado con adjuntos incompletos en Cierres Rechazados. Se recomienda configurar manejo de errores con bloques <span class="inline-code">Scope</span>.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ═══ CR-9. CONEXIONES ═══ -->
+                    <div class="doc-section" id="cr-conexiones">
+                        <div class="doc-section-header" onclick="toggleSection(this)">
+                            <span class="section-num" style="background:var(--red-soft);color:var(--red)">10</span>
+                            <div style="flex:1">
+                                <div class="section-title-text">Conexiones del Flujo</div>
+                                <div class="section-subtitle">Conectores y cuentas de servicio utilizadas</div>
+                            </div>
+                            <svg class="section-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div class="doc-section-body">
+                            <div class="doc-h3">Conectores utilizados</div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                                <div class="connector-pill"><span class="pill-dot"></span>SharePoint</div>
+                                <div class="connector-pill"><span class="pill-dot"></span>Office 365 Outlook</div>
+                            </div>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Conector</th><th>Cuenta / Usuario</th><th>Acciones que lo utilizan</th></tr></thead>
+                                    <tbody>
+                                        <tr><td class="td-key">SharePoint</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Desencadenador, Get attachments, Get attachment content, Create item, Add attachment, Delete item</td></tr>
+                                        <tr><td class="td-key">Office 365 Outlook</td><td><span class="inline-code">tecnologiadeinformacion@grupoimade.com</span></td><td class="td-desc">Send an email (V2) — Notificación de rechazo al declarante</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert warning">
+                                <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <div>Toda la automatización depende de la cuenta <strong>tecnologiadeinformacion@grupoimade.com</strong>. Si esta cuenta pierde acceso, cambia contraseña sin actualizar conexiones o pierde licencia, el flujo fallará en todos sus pasos.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer nav -->
+                    <div class="doc-nav-footer">
+                        <a href="inicio.html" class="doc-nav-btn">
+                            Regresar al Portal
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+
+                </div><!-- /panel-inner -->
+                </div><!-- /panel-rechazado -->
+
+            </div><!-- /pageContent -->
+        </div><!-- /main -->
+    </div><!-- /shell -->
+
+    <script>
+        function toggleSection(header) {
+            const body = header.nextElementSibling;
+            const chevron = header.querySelector('.section-chevron');
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open', !isOpen);
+            chevron.classList.toggle('open', !isOpen);
+            header.classList.toggle('open', !isOpen);
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            document.querySelectorAll('#nav-cierre .nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function scrollToCF(id) {
+            const el = document.getElementById(id);
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            document.querySelectorAll('#nav-finalizado .nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function switchFlow(flow) {
+            const isCierre = flow === 'cierre';
+            const isFinalizado = flow === 'finalizado';
+            const isRechazado = flow === 'rechazado';
+            document.getElementById('panel-cierre').classList.toggle('visible', isCierre);
+            document.getElementById('panel-finalizado').classList.toggle('visible', isFinalizado);
+            document.getElementById('panel-rechazado').classList.toggle('visible', isRechazado);
+            document.getElementById('nav-cierre').classList.toggle('visible', isCierre);
+            document.getElementById('nav-finalizado').classList.toggle('visible', isFinalizado);
+            document.getElementById('nav-rechazado').classList.toggle('visible', isRechazado);
+            document.getElementById('tab-cierre').classList.toggle('active-tab', isCierre);
+            document.getElementById('tab-finalizado').classList.toggle('active-tab', isFinalizado);
+            document.getElementById('tab-rechazado').classList.toggle('active-tab', isRechazado);
+            document.getElementById('tab-cierre').classList.toggle('green-tab', false);
+            document.getElementById('tab-cierre').classList.toggle('red-tab', false);
+            document.getElementById('tab-finalizado').classList.toggle('green-tab', isFinalizado);
+            document.getElementById('tab-finalizado').classList.toggle('red-tab', false);
+            document.getElementById('tab-rechazado').classList.toggle('red-tab', isRechazado);
+            document.getElementById('tab-rechazado').classList.toggle('green-tab', false);
+            document.getElementById('sidebar-flow-name').textContent = isCierre
+                ? 'Cierre — Power Automate'
+                : isFinalizado ? 'Cierre Finalizado — Power Automate'
+                : 'Cierre Rechazado — Power Automate';
+            const cur = document.querySelector('.breadcrumb .current');
+            if (cur) cur.textContent = isCierre ? 'Flujo Cierre' : isFinalizado ? 'Flujo Cierre Finalizado' : 'Flujo Cierre Rechazado';
+            document.getElementById('pageContent').scrollTop = 0;
+        }
+
+        function scrollToCR(id) {
+            const el = document.getElementById(id);
+            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            document.querySelectorAll('#nav-rechazado .nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('visible');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('visible');
+        }
+
+        // Highlight active nav on scroll — Cierre
+        const sectionsA = document.querySelectorAll('#panel-cierre .doc-section');
+        const navBtnsA = document.querySelectorAll('#nav-cierre .nav-btn');
+        // Highlight active nav on scroll — Finalizado
+        const sectionsB = document.querySelectorAll('#panel-finalizado .doc-section');
+        const navBtnsB = document.querySelectorAll('#nav-finalizado .nav-btn');
+        // Highlight active nav on scroll — Rechazado
+        const sectionsC = document.querySelectorAll('#panel-rechazado .doc-section');
+        const navBtnsC = document.querySelectorAll('#nav-rechazado .nav-btn');
+
+        document.getElementById('pageContent').addEventListener('scroll', () => {
+            const scrollY = document.getElementById('pageContent').scrollTop;
+            const isFinalizadoVisible = document.getElementById('panel-finalizado').classList.contains('visible');
+            const isRechazadoVisible = document.getElementById('panel-rechazado').classList.contains('visible');
+            const sections = isRechazadoVisible ? sectionsC : isFinalizadoVisible ? sectionsB : sectionsA;
+            const navBtns = isRechazadoVisible ? navBtnsC : isFinalizadoVisible ? navBtnsB : navBtnsA;
+            sections.forEach((sec, i) => {
+                const top = sec.offsetTop - 100;
+                const bottom = top + sec.offsetHeight;
+                if (scrollY >= top && scrollY < bottom) {
+                    navBtns.forEach(b => b.classList.remove('active'));
+                    if (navBtns[i]) navBtns[i].classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
